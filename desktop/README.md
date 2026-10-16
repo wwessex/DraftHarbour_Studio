@@ -2,6 +2,12 @@
 
 This package wraps the Vite frontend in a Tauri shell for Windows and Linux. macOS desktop builds use the native SwiftUI/AppKit app in `../macos`.
 
+The desktop shell uses a hybrid architecture: React and TypeScript remain the
+cross-platform application layer, while `src-tauri/src/writing_engine.rs`
+handles CPU-heavy whole-manuscript search and analysis outside the UI thread.
+Every essential native-backed operation has a TypeScript fallback so web, iOS,
+and older desktop builds retain the same writing features.
+
 ## Commands
 - `npm run dev` - desktop dev mode (spawns root Vite dev command from tauri config)
 - `npm run build` - production bundles for configured Windows/Linux targets
@@ -12,6 +18,7 @@ This package wraps the Vite frontend in a Tauri shell for Windows and Linux. mac
 - Restore last window position/size
 - Process `.dhproj` file open events and `draftharbour://` deep links
 - Handle app close with unsaved-edit confirmation semantics
+- Run whole-manuscript search, statistics, and backup validation in Rust
 
 ## Packaging targets
 See `src-tauri/tauri.conf.json` for Windows/Linux bundle targets and signing env variables. macOS local beta packaging is handled by `../script/package_macos.sh`.

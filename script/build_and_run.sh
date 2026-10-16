@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PACKAGE_DIR="$ROOT_DIR/macos"
+PACKAGE_DIR="${DRAFTHARBOUR_MACOS_PACKAGE_DIR:-$ROOT_DIR/macos}"
 PRODUCT="DraftHarbourNative"
 APP_NAME="DraftHarbour"
 APP_BUNDLE="$ROOT_DIR/dist/$APP_NAME.app"
@@ -12,6 +12,7 @@ ICON_SOURCE="$ROOT_DIR/macos/Resources/DraftHarbour.icns"
 APP_VERSION="${DRAFTHARBOUR_VERSION:-2.0.0}"
 APP_BUILD="${DRAFTHARBOUR_BUILD:-200}"
 CONFIGURATION="debug"
+SWIFT_SCRATCH_PATH="${DRAFTHARBOUR_SWIFT_SCRATCH_PATH:-}"
 SHOULD_LAUNCH=1
 SHOULD_VERIFY=0
 STREAM_LOGS=0
@@ -107,9 +108,14 @@ for arg in "$@"; do
 done
 
 echo "Building $PRODUCT..."
-swift build --package-path "$PACKAGE_DIR" -c "$CONFIGURATION" --product "$PRODUCT"
+SWIFT_BUILD_ARGS=(--package-path "$PACKAGE_DIR" -c "$CONFIGURATION")
+if [[ -n "$SWIFT_SCRATCH_PATH" ]]; then
+  SWIFT_BUILD_ARGS+=(--scratch-path "$SWIFT_SCRATCH_PATH")
+fi
 
-BIN_DIR="$(swift build --package-path "$PACKAGE_DIR" -c "$CONFIGURATION" --show-bin-path)"
+swift build "${SWIFT_BUILD_ARGS[@]}" --product "$PRODUCT"
+
+BIN_DIR="$(swift build "${SWIFT_BUILD_ARGS[@]}" --show-bin-path)"
 BIN_PATH="$BIN_DIR/$PRODUCT"
 
 if [[ ! -x "$BIN_PATH" ]]; then

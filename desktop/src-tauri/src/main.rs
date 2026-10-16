@@ -16,6 +16,10 @@ use tauri::{
     AppHandle, Emitter, Manager, WindowEvent,
 };
 
+mod writing_engine;
+
+use writing_engine::{ManuscriptDocument, ManuscriptSearchResult, ManuscriptStatistics};
+
 const KEYRING_SERVICE: &str = "DraftHarbourStudio";
 const ALLOWED_SECRET_KEYS: &[&str] = &["ai_session_token", "sync_auth_header"];
 
@@ -61,6 +65,33 @@ fn quit_app(app: AppHandle) {
 fn read_project_file(path: String) -> Result<String, String> {
     let canonical_path = validate_allowed_project_file(&path)?;
     fs::read_to_string(canonical_path).map_err(|err| err.to_string())
+}
+
+#[tauri::command]
+async fn search_manuscript(
+    documents: Vec<ManuscriptDocument>,
+    query: String,
+    max_results: usize,
+) -> Result<Vec<ManuscriptSearchResult>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        writing_engine::search(&documents, &query, max_results.min(100))
+    })
+    .await
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+async fn analyze_manuscript(
+    documents: Vec<ManuscriptDocument>,
+) -> Result<ManuscriptStatistics, String> {
+    tauri::async_runtime::spawn_blocking(move || writing_engine::statistics(&documents))
+        .await
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn validate_backup(contents: String) -> Result<(), String> {
+    writing_engine::validate_backup_json(&contents)
 }
 
 #[tauri::command]
@@ -317,6 +348,9 @@ fn main() {
             set_unsaved_edits,
             quit_app,
             read_project_file,
+            search_manuscript,
+            analyze_manuscript,
+            validate_backup,
             set_native_menu,
             set_native_menu_command_state,
             open_project_window,

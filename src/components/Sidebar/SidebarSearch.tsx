@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
-import { buildChapterSearchIndex, findChapterContentMatches } from '@/lib/search';
+import { searchManuscript } from '@/lib/desktopWritingEngine';
+import type { ChapterSearchResult } from '@/lib/search';
 import styles from './SidebarSearch.module.css';
 
 const DEBOUNCE_MS = 200;
@@ -10,6 +11,7 @@ export function SidebarSearch() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [results, setResults] = useState<ChapterSearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -17,15 +19,26 @@ export function SidebarSearch() {
     return () => window.clearTimeout(handle);
   }, [query]);
 
-  const searchIndex = useMemo(
-    () => buildChapterSearchIndex(state.chapters),
-    [state.chapters]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    if (!debouncedQuery.trim()) {
+      setResults([]);
+      return;
+    }
 
-  const results = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
-    return findChapterContentMatches(searchIndex, debouncedQuery, 20);
-  }, [searchIndex, debouncedQuery]);
+    void searchManuscript(state.chapters, debouncedQuery, 20)
+      .then(matches => {
+        if (!cancelled) setResults(matches);
+      })
+      .catch(error => {
+        console.error('Whole-manuscript search failed:', error);
+        if (!cancelled) setResults([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.chapters, debouncedQuery]);
 
   const handleSelect = useCallback((chapterId: string) => {
     setActiveChapter(chapterId);

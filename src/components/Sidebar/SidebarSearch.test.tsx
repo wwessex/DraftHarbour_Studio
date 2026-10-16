@@ -66,7 +66,7 @@ describe('SidebarSearch', () => {
     expect(input).not.toBeNull();
   });
 
-  it('shows search results after typing and debounce', () => {
+  it('shows search results after typing and debounce', async () => {
     act(() => { root.render(<SidebarSearch />); });
     const toggle = container.querySelector('[aria-label="Search all chapters"]') as HTMLButtonElement;
     act(() => { toggle.click(); });
@@ -79,12 +79,16 @@ describe('SidebarSearch', () => {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     // Wait for debounce
-    act(() => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
     const results = container.querySelectorAll('[role="option"]');
     expect(results.length).toBeGreaterThan(0);
   });
 
-  it('navigates to chapter on result click', () => {
+  it('navigates to chapter on result click', async () => {
     act(() => { root.render(<SidebarSearch />); });
     const toggle = container.querySelector('[aria-label="Search all chapters"]') as HTMLButtonElement;
     act(() => { toggle.click(); });
@@ -96,7 +100,11 @@ describe('SidebarSearch', () => {
       setter?.call(input, 'once upon');
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    act(() => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
 
     const result = container.querySelector('[role="option"]') as HTMLButtonElement;
     if (result) {

@@ -38,6 +38,17 @@ For build-only verification:
 ./script/build_and_run.sh --verify
 ```
 
+If the repository is stored in a cloud-synchronised folder or its Swift build
+cache is locked, use a local scratch directory without changing the project:
+
+```bash
+DRAFTHARBOUR_SWIFT_SCRATCH_PATH=/tmp/draftharbour-swift-build ./script/build_and_run.sh
+```
+
+For workspaces whose source files are also managed by a cloud file provider,
+the package can be copied to local storage and selected with
+`DRAFTHARBOUR_MACOS_PACKAGE_DIR`.
+
 ## Xcode
 
 Open `macos/Package.swift` in Xcode. Xcode treats this as a native macOS package project with the `DraftHarbourNative` executable and `DraftHarbourNativeCoreTests`.

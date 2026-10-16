@@ -1,6 +1,6 @@
 import Foundation
 
-#if canImport(FoundationModels)
+#if canImport(FoundationModels) && canImport(FoundationModelsMacros)
 import FoundationModels
 #endif
 
@@ -55,7 +55,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
   }
 
   public static func availabilityStatus() -> AppleFoundationModelsAvailabilityStatus {
-    #if canImport(FoundationModels)
+    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
     if #available(macOS 26.0, *) {
       switch SystemLanguageModel.default.availability {
       case .available:
@@ -101,7 +101,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
       throw DraftHarbourError.providerNotConfigured(Self.availabilityStatus().label)
     }
 
-    #if canImport(FoundationModels)
+    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
     if #available(macOS 26.0, *) {
       let started = Date()
       let session = LanguageModelSession(
@@ -131,7 +131,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
 
     let context = projectContext ?? AIProjectContextService.index(for: envelope)
 
-    #if canImport(FoundationModels)
+    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
     if #available(macOS 26.0, *) {
       let session = LanguageModelSession(
         tools: [
@@ -176,7 +176,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
   }
 }
 
-#if canImport(FoundationModels)
+#if canImport(FoundationModels) && canImport(FoundationModelsMacros)
 @available(macOS 26.0, *)
 @Generable
 private struct AppleChatGeneratedEdit {
