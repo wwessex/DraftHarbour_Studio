@@ -30,17 +30,17 @@ export function useCrashRecovery({
 }) {
   const hasUnsavedRef = useRef(hasUnsavedEdits);
   hasUnsavedRef.current = hasUnsavedEdits;
-  const recoveryFiredRef = useRef(false);
+  const recoveryCheckedRef = useRef(false);
 
   // On mount: check if previous session ended uncleanly
   useEffect(() => {
-    if (recoveryFiredRef.current) return;
+    if (recoveryCheckedRef.current) return;
+    recoveryCheckedRef.current = true;
     try {
       const raw = localStorage.getItem(RECOVERY_KEY);
       if (!raw) return;
       const prev: RecoveryState = JSON.parse(raw);
-      if (!prev.clean && prev.novelId) {
-        recoveryFiredRef.current = true;
+      if (prev && prev.clean === false && typeof prev.novelId === 'string' && prev.novelId) {
         onRecoveryDetected({ novelId: prev.novelId, chapterId: prev.chapterId });
       }
     } catch {
@@ -78,7 +78,7 @@ export function useCrashRecovery({
         const raw = localStorage.getItem(RECOVERY_KEY);
         if (raw) {
           const state: RecoveryState = JSON.parse(raw);
-          state.clean = true;
+          state.clean = !hasUnsavedRef.current;
           localStorage.setItem(RECOVERY_KEY, JSON.stringify(state));
         }
       } catch {
@@ -94,6 +94,7 @@ export function useCrashRecovery({
   const handleBeforeUnload = useCallback((e: BeforeUnloadEvent) => {
     if (hasUnsavedRef.current) {
       e.preventDefault();
+      e.returnValue = '';
     }
   }, []);
 

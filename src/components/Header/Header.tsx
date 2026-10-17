@@ -40,7 +40,7 @@ const MOBILE_SECTION_BY_MENU_LABEL: Record<string, MobileMenuSection['section']>
 };
 
 export function Header({ onAction, onToggleInspector, inspectorOpen, hasTextSelection = false, editorFocused = false }: HeaderProps) {
-  const { state, updateNovelTitle } = useApp();
+  const { state, updateNovelTitle, hasUnsavedChanges } = useApp();
   const resolvedTheme = useResolvedTheme(state.settings.theme);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRootRef = useRef<HTMLDivElement>(null);
@@ -279,7 +279,7 @@ export function Header({ onAction, onToggleInspector, inspectorOpen, hasTextSele
               variant="accent"
             />
           )}
-          <SaveStatus isSaving={state.isSaving} />
+          <SaveStatus isSaving={state.isSaving} hasUnsavedChanges={hasUnsavedChanges} />
           <Tooltip content="Toggle inspector (Ctrl+Shift+I)" position="bottom">
             <IconButton
               icon="info"

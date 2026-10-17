@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { useApp } from '@/context/AppContext';
 import { searchManuscript } from '@/lib/desktopWritingEngine';
 import type { ChapterSearchResult } from '@/lib/search';
+import { loadSavedSearches, saveSearches } from '@/lib/savedSearches';
 import styles from './SidebarSearch.module.css';
 
 const DEBOUNCE_MS = 200;
@@ -13,6 +14,11 @@ export function SidebarSearch() {
   const [expanded, setExpanded] = useState(false);
   const [results, setResults] = useState<ChapterSearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
+  const [activeResult, setActiveResult] = useState(0);
+  const [saved, setSaved] = useState<string[]>([]);
+  const [searchError, setSearchError] = useState('');
+  useEffect(() => { setSaved(loadSavedSearches(state.novelId)); }, [state.novelId]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS);
@@ -21,6 +27,7 @@ export function SidebarSearch() {
 
   useEffect(() => {
     let cancelled = false;
+    setActiveResult(0);
     if (!debouncedQuery.trim()) {
       setResults([]);
       return;
@@ -57,11 +64,24 @@ export function SidebarSearch() {
   }, []);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && results.length) {
+      e.preventDefault();
+      setActiveResult(index => (index + (e.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length);
+    }
+    if (e.key === 'Enter' && results[activeResult] && query === debouncedQuery) {
+      e.preventDefault();
+      handleSelect(results[activeResult].chapterId);
+    }
     if (e.key === 'Escape') {
       setQuery('');
       setExpanded(false);
     }
-  }, []);
+  }, [results, activeResult, query, debouncedQuery, handleSelect]);
+
+  const updateSaved = (queries: string[]) => {
+    try { saveSearches(state.novelId, queries); setSaved(loadSavedSearches(state.novelId)); setSearchError(''); }
+    catch { setSearchError('Could not save this search. Manuscript saving is unaffected.'); }
+  };
 
   return (
     <div className={styles.searchContainer}>
@@ -81,6 +101,12 @@ export function SidebarSearch() {
             ref={inputRef}
             className={styles.searchInput}
             type="text"
+            role="combobox"
+            aria-label="Search manuscript"
+            aria-expanded={!!debouncedQuery.trim()}
+            aria-controls={listId}
+            aria-activedescendant={results[activeResult] ? `${listId}-${activeResult}` : undefined}
+            aria-autocomplete="list"
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -88,8 +114,14 @@ export function SidebarSearch() {
             autoComplete="off"
             spellCheck={false}
           />
+          <button type="button" disabled={!query.trim()} onClick={() => updateSaved([query, ...saved])}>Save search</button>
+          {saved.map(term => <div key={term}>
+            <button type="button" onClick={() => setQuery(term)}>{term}</button>
+            <button type="button" aria-label={`Remove saved search ${term}`} onClick={() => updateSaved(saved.filter(item => item !== term))}>×</button>
+          </div>)}
+          {searchError && <p role="status">{searchError}</p>}
           {debouncedQuery.trim() && (
-            <div className={styles.searchResults} role="listbox">
+            <div className={styles.searchResults} role="listbox" id={listId} aria-label="Manuscript search results">
               {results.length === 0 ? (
                 <div className={styles.searchEmpty}>No matches found</div>
               ) : (
@@ -102,7 +134,9 @@ export function SidebarSearch() {
                       className={styles.searchResult}
                       onClick={() => handleSelect(result.chapterId)}
                       role="option"
-                      aria-selected={false}
+                      id={`${listId}-${idx}`}
+                      aria-selected={idx === activeResult}
+                      onMouseEnter={() => setActiveResult(idx)}
                     >
                       <span className={styles.searchResultTitle}>{result.chapterTitle}</span>
                       <span className={styles.searchResultSnippet}>{result.snippet}</span>

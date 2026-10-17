@@ -98,7 +98,8 @@
   transition: background var(--transition-fast, 120ms ease);
 }
 
-.searchResult:hover {
+.searchResult:hover,
+.searchResult[aria-selected="true"] {
   background: var(--btn-bg);
 }
 

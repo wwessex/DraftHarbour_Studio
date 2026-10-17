@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Dialog, Button, Input, Textarea, IconButton } from '@/components/UI';
 import { Select } from '@/components/UI/Select';
 import { useApp } from '@/context/AppContext';
 import { generateId } from '@/lib/utils';
+import { findEntityOccurrences } from '@/lib/entityOccurrences';
 import type { CharacterEntity, WorldEntry } from '@/types';
 import styles from './Modals.module.css';
 
@@ -36,7 +37,8 @@ const STORAGE_KEY_WORLD = 'draftharbour_world';
 function loadEntities<T>(key: string): T[] {
   try {
     const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
+    const parsed = data ? JSON.parse(data) : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -47,12 +49,18 @@ function saveEntities<T>(key: string, entities: T[]) {
 }
 
 export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps) {
-  const { state } = useApp();
+  const { state, setActiveChapter } = useApp();
   const [activeTab, setActiveTab] = useState<TabType>('characters');
   const [characters, setCharacters] = useState<CharacterEntity[]>(() => loadEntities(STORAGE_KEY_CHARS));
   const [worldEntries, setWorldEntries] = useState<WorldEntry[]>(() => loadEntities(STORAGE_KEY_WORLD));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  useEffect(() => {
+    if (!open) return;
+    setCharacters(loadEntities(STORAGE_KEY_CHARS));
+    setWorldEntries(loadEntities(STORAGE_KEY_WORLD));
+    setSelectedId(null);
+  }, [open, state.novelId]);
 
   // Persist on changes
   const updateCharacters = (updated: CharacterEntity[]) => {
@@ -144,6 +152,9 @@ export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps)
 
   const selectedCharacter = characters.find(c => c.id === selectedId);
   const selectedWorld = worldEntries.find(e => e.id === selectedId);
+  const selectedEntity = activeTab === 'characters' ? selectedCharacter : selectedWorld;
+  const occurrences = useMemo(() => findEntityOccurrences(state.chapters || [], selectedEntity
+    ? [selectedEntity.name, ...('aliases' in selectedEntity ? selectedEntity.aliases : [])] : []), [state.chapters, selectedEntity]);
 
   return (
     <Dialog open={open} onClose={onClose} title="Character & World Bible" size="large">
@@ -226,14 +237,14 @@ export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps)
           {activeTab === 'characters' && selectedCharacter ? (
             <CharacterEditor
               character={selectedCharacter}
-              allCharacters={characters}
+              allCharacters={characters.filter(item => !item.novelId || item.novelId === state.novelId)}
               onUpdate={(updates) => updateCharacter(selectedCharacter.id, updates)}
               onDelete={() => deleteCharacter(selectedCharacter.id)}
             />
           ) : activeTab === 'world' && selectedWorld ? (
             <WorldEditor
               entry={selectedWorld}
-              characters={characters}
+              characters={characters.filter(item => !item.novelId || item.novelId === state.novelId)}
               onUpdate={(updates) => updateWorldEntry(selectedWorld.id, updates)}
               onDelete={() => deleteWorldEntry(selectedWorld.id)}
             />
@@ -245,6 +256,15 @@ export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps)
               <p>Select an entry to view details</p>
             </div>
           )}
+          {selectedEntity && <details>
+            <summary>Manuscript mentions ({occurrences.length}{occurrences.length === 100 ? '+' : ''})</summary>
+            <p>Matches use the entry's name and character aliases. Open a chapter to check the passage; no prose is changed.</p>
+            {!occurrences.length && <p>No mentions found in this project.</p>}
+            {occurrences.map((mention, index) => <button key={`${mention.chapterId}-${index}`} type="button" className={styles.bibleItem}
+              onClick={() => { setActiveChapter(mention.chapterId); onClose(); }}>
+              <strong>{mention.chapterTitle}</strong><span>{mention.excerpt}</span>
+            </button>)}
+          </details>}
         </div>
       </div>
     </Dialog>

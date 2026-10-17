@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Novel, Chapter, Snapshot, BackupData, BackupDataV3, LegacyBackupData, ProjectType, CommentThread, DhprojData, DhprojManifest, AppSettings, CharacterEntity, WorldEntry, DhprojIntegrations, IntegrationType, PersistedIntegrationConfig, StoryBlueprint } from '@/types';
+import type { Novel, Chapter, Snapshot, BackupData, BackupDataV3, LegacyBackupData, ProjectType, CommentThread, DhprojData, DhprojManifest, AppSettings, CharacterEntity, WorldEntry, DhprojIntegrations, IntegrationType, PersistedIntegrationConfig, StoryBlueprint, ProjectBackup, TrashEntry } from '@/types';
 import type { ProgressData, DailyProgress } from '@/lib/progressTracker';
 import { generateId } from '@/lib/utils';
 import { jsonToMarkdown } from '@/lib/editor/jsonToMarkdown';
@@ -36,7 +36,15 @@ export function mergeImportedSettings(existingRaw: string | null, importedSettin
   }
 
   const existing = isRecord(existingParsed) ? existingParsed : {};
-  return { ...existing, ...importedSettings };
+  const current = isRecord(existing.data) ? existing.data : existing;
+  const importedRecord = importedSettings as Record<string, unknown>;
+  const imported = isRecord(importedRecord.data) ? importedRecord.data : importedRecord;
+  const merged = { ...current, ...imported };
+  // Importing a project must not activate a remote destination or replace this
+  // device's authentication settings. Those belong to the local installation.
+  if (current.sync) merged.sync = current.sync as AppSettings['sync'];
+  else delete merged.sync;
+  return isRecord(existing.data) ? { ...existing, data: merged } : merged;
 }
 
 export function mergeImportedIntegrations(
@@ -71,6 +79,8 @@ class DraftHarbourDB extends Dexie {
   novels!: EntityTable<Novel, 'id'>;
   chapters!: EntityTable<Chapter, 'id'>;
   snapshots!: EntityTable<Snapshot, 'id'>;
+  backups!: EntityTable<ProjectBackup, 'id'>;
+  trash!: EntityTable<TrashEntry, 'id'>;
 
   constructor() {
     super('DraftHarbourDB');
@@ -118,6 +128,15 @@ class DraftHarbourDB extends Dexie {
           }
         });
       });
+    // Additive safety stores; existing manuscript tables and IDs are untouched.
+    this.version(5).stores({
+      novels: 'id, title, projectType, updatedAt',
+      chapters: 'id, novelId, order, title, updatedAt',
+      snapshots: 'id, chapterId, createdAt',
+      backups: 'id, novelId, createdAt',
+      trash: 'id, novelId, deletedAt',
+    });
+
   }
 }
 
@@ -136,6 +155,33 @@ function normalizeNovel(novel: Novel): Novel {
   return {
     ...novel,
     projectType: normalizeProjectType(novel.projectType)
+  };
+}
+
+function normalizeImportedSections(sections: Chapter[], snapshots: Snapshot[] = [], threads: CommentThread[] = []) {
+  const chapterIds = new Set<string>();
+  for (const chapter of sections) {
+    if (!chapter || typeof chapter.id !== 'string' || !chapter.id || chapterIds.has(chapter.id)) {
+      throw new Error('Invalid project: chapter IDs must be unique non-empty strings');
+    }
+    chapterIds.add(chapter.id);
+  }
+  for (const item of [...snapshots, ...threads]) {
+    if (!item || !chapterIds.has(item.chapterId)) {
+      throw new Error('Invalid project: snapshot or comment references an unknown chapter');
+    }
+  }
+  return {
+    sections: sections.map(chapter => ({
+      ...chapter,
+      content: chapter.content == null ? null : jsonToMarkdown(chapter.content),
+      ...(chapter.sync ? { sync: {
+        ...chapter.sync,
+        lastSyncedContent: chapter.sync.lastSyncedContent == null
+          ? null : jsonToMarkdown(chapter.sync.lastSyncedContent),
+      } } : {}),
+    })),
+    snapshots: snapshots.map(snapshot => ({ ...snapshot, doc: jsonToMarkdown(snapshot.doc) })),
   };
 }
 
@@ -191,7 +237,10 @@ export async function updateNovel(id: string, updates: Partial<Novel>): Promise<
 }
 
 export async function deleteNovel(id: string): Promise<void> {
-  await db.transaction('rw', [db.novels, db.chapters, db.snapshots], async () => {
+  if (!await getNovel(id)) return;
+  const data = await exportBackup(id);
+  await db.transaction('rw', [db.novels, db.chapters, db.snapshots, db.trash], async () => {
+    await db.trash.add({ id: generateId(), novelId: id, title: data.project.title, kind: 'project', deletedAt: Date.now(), data });
     const chapters = await db.chapters.where('novelId').equals(id).toArray();
     const chapterIds = chapters.map(c => c.id);
 
@@ -266,7 +315,18 @@ export async function updateChapter(id: string, updates: Partial<Chapter>): Prom
 }
 
 export async function deleteChapter(id: string): Promise<void> {
-  await db.transaction('rw', [db.chapters, db.snapshots], async () => {
+  const chapter = await getChapter(id);
+  if (!chapter) return;
+  const data: BackupDataV3 = await getNovel(chapter.novelId) ? await exportBackup(chapter.novelId) : {
+    version: 3, projectType: 'book',
+    project: { id: chapter.novelId, title: 'Recovered project', updatedAt: Date.now() },
+    sections: [chapter], snapshots: await getSnapshots(id), commentThreads: getCommentThreads(id), exportedAt: Date.now(),
+  };
+  data.sections = data.sections.filter(item => item.id === id);
+  data.snapshots = data.snapshots?.filter(item => item.chapterId === id);
+  data.commentThreads = data.commentThreads?.filter(item => item.chapterId === id);
+  await db.transaction('rw', [db.chapters, db.snapshots, db.trash], async () => {
+    await db.trash.add({ id: generateId(), novelId: chapter.novelId, title: chapter.title, kind: 'chapter', deletedAt: Date.now(), data });
     await db.snapshots.where('chapterId').equals(id).delete();
     await db.chapters.delete(id);
   });
@@ -292,6 +352,11 @@ export async function getSnapshots(chapterId: string): Promise<Snapshot[]> {
 }
 
 export async function createSnapshot(chapterId: string, doc: Snapshot['doc'], label?: string): Promise<Snapshot> {
+  if (label === 'Auto') {
+    const existing = await db.snapshots.where('chapterId').equals(chapterId).sortBy('createdAt');
+    const latest = existing.at(-1);
+    if (latest?.doc === doc) return latest;
+  }
   const snapshot: Snapshot = {
     id: generateId(),
     chapterId,
@@ -299,7 +364,13 @@ export async function createSnapshot(chapterId: string, doc: Snapshot['doc'], la
     doc,
     ...(label ? { label } : {}),
   };
-  await db.snapshots.add(snapshot);
+  await db.transaction('rw', db.snapshots, async () => {
+    await db.snapshots.add(snapshot);
+    if (label === 'Auto') {
+      const automatic = (await db.snapshots.where('chapterId').equals(chapterId).sortBy('createdAt')).filter(item => item.label === 'Auto');
+      await db.snapshots.bulkDelete(automatic.slice(0, Math.max(0, automatic.length - 30)).map(item => item.id));
+    }
+  });
   return snapshot;
 }
 
@@ -334,12 +405,21 @@ export async function exportBackup(novelId: string, includeSnapshots: boolean = 
     sections: chapters,
     snapshots: includeSnapshots ? snapshots : undefined,
     commentThreads,
-    exportedAt: Date.now()
+    exportedAt: Date.now(),
+    characters: loadStoredEntities<CharacterEntity>(CHARACTERS_STORAGE_KEY).filter(isCharacterEntity).filter(item => item.novelId === novelId),
+    worldEntries: loadStoredEntities<WorldEntry>(WORLD_ENTRIES_STORAGE_KEY).filter(isWorldEntry).filter(item => item.novelId === novelId),
+    storyBlueprint: getStoryBlueprint(novelId),
   };
 }
 
 export async function importBackup(backup: BackupData): Promise<Novel> {
   const normalizedBackup = upgradeBackup(backup);
+  if (!normalizedBackup.project?.id || typeof normalizedBackup.project.title !== 'string' || !Array.isArray(normalizedBackup.sections)) {
+    throw new Error('Invalid backup: a project title, ID and chapter array are required');
+  }
+  const imported = normalizeImportedSections(
+    normalizedBackup.sections, normalizedBackup.snapshots, normalizedBackup.commentThreads,
+  );
   const newNovelId = generateId();
   const idMap = new Map<string, string>();
   idMap.set(normalizedBackup.project.id, newNovelId);
@@ -351,18 +431,21 @@ export async function importBackup(backup: BackupData): Promise<Novel> {
     updatedAt: Date.now()
   };
 
-  const chapters: Chapter[] = normalizedBackup.sections.map(chapter => {
+  const chapters: Chapter[] = imported.sections.map(chapter => {
     const newId = generateId();
     idMap.set(chapter.id, newId);
     return {
       ...chapter,
       id: newId,
       novelId: newNovelId,
+      scenes: (chapter.scenes || []).map(scene => {
+        const id = generateId(); idMap.set(scene.id, id); return { ...scene, id };
+      }),
       updatedAt: Date.now()
     };
   });
 
-  const snapshots: Snapshot[] = (normalizedBackup.snapshots || []).map(snapshot => ({
+  const snapshots: Snapshot[] = imported.snapshots.map(snapshot => ({
     ...snapshot,
     id: generateId(),
     chapterId: idMap.get(snapshot.chapterId) || snapshot.chapterId
@@ -373,17 +456,28 @@ export async function importBackup(backup: BackupData): Promise<Novel> {
     chapterId: idMap.get(thread.chapterId) || thread.chapterId,
   }));
 
-  await db.transaction('rw', [db.novels, db.chapters, db.snapshots], async () => {
-    await db.novels.add(novel);
-    await db.chapters.bulkAdd(chapters);
-    if (snapshots.length > 0) {
-      await db.snapshots.bulkAdd(snapshots);
+  const auxiliaryWrites = buildImportedAuxiliaryWrites(normalizedBackup, newNovelId, commentThreads, idMap);
+  if (novel.portableData) novel.portableData = remapPortableReferences(novel.portableData, idMap) as Record<string, unknown>;
+  const previousValues = new Map<string, string | null>();
+  try {
+    // Synchronous writes inside the transaction throw on quota failure; IndexedDB
+    // aborts and earlier localStorage changes are rolled back below.
+    await db.transaction('rw', [db.novels, db.chapters, db.snapshots], async () => {
+      await db.novels.add(novel);
+      await db.chapters.bulkAdd(chapters);
+      if (snapshots.length) await db.snapshots.bulkAdd(snapshots);
+      for (const [key, value] of auxiliaryWrites) {
+        previousValues.set(key, localStorage.getItem(key));
+        localStorage.setItem(key, value);
+      }
+    });
+  } catch (cause) {
+    for (const [key, value] of previousValues) {
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
     }
-  });
-
-  commentThreads.forEach(thread => {
-    upsertCommentThread(thread);
-  });
+    throw cause;
+  }
 
   return novel;
 }
@@ -545,6 +639,51 @@ function isWorldEntry(value: unknown): value is WorldEntry {
     && typeof candidate.updatedAt === 'number';
 }
 
+function remapPortableReferences(value: unknown, ids: Map<string, string>, key = '', depth = 0): unknown {
+  if (depth > 100) throw new Error('Project extensions exceed the supported nesting depth');
+  if (typeof value === 'string') return /ids?$/i.test(key) || key === 'linkedCharacters' ? ids.get(value) || value : value;
+  if (Array.isArray(value)) return value.map(item => remapPortableReferences(item, ids, key, depth + 1));
+  if (isRecord(value)) return Object.fromEntries(Object.entries(value).map(([name, item]) => [ids.get(name) || name, remapPortableReferences(item, ids, name, depth + 1)]));
+  return value;
+}
+
+function buildImportedAuxiliaryWrites(data: BackupDataV3, novelId: string, threads: CommentThread[], ids: Map<string, string>): Map<string, string> {
+  const writes = new Map<string, string>();
+  const characters = (data.characters || []).filter(isCharacterEntity).filter(item => item.novelId === data.project.id);
+  const characterIds = new Map(characters.map(item => [item.id, generateId()]));
+  for (const [oldId, newId] of characterIds) ids.set(oldId, newId);
+  const importedCharacters = characters.map(item => {
+    const id = characterIds.get(item.id)!;
+    return {
+      ...item, id, novelId,
+      relationships: item.relationships.filter(link => characterIds.has(link.targetId)).map(link => ({ ...link, targetId: characterIds.get(link.targetId)! })),
+      ...(item.voiceProfile ? { voiceProfile: { ...item.voiceProfile, characterId: id } } : {}),
+    };
+  });
+  if (data.characters) writes.set(CHARACTERS_STORAGE_KEY, JSON.stringify([
+    ...loadStoredEntities<CharacterEntity>(CHARACTERS_STORAGE_KEY), ...importedCharacters,
+  ]));
+  if (data.worldEntries) writes.set(WORLD_ENTRIES_STORAGE_KEY, JSON.stringify([
+    ...loadStoredEntities<WorldEntry>(WORLD_ENTRIES_STORAGE_KEY),
+    ...data.worldEntries.filter(isWorldEntry).filter(item => item.novelId === data.project.id).map(item => {
+      const id = generateId(); ids.set(item.id, id);
+      return {
+      ...item, id, novelId,
+      linkedCharacters: item.linkedCharacters.filter(id => characterIds.has(id)).map(id => characterIds.get(id)!),
+    }; }),
+  ]));
+  if (data.storyBlueprint) writes.set(STORY_BLUEPRINTS_STORAGE_KEY, JSON.stringify({ ...loadStoryBlueprints(), [novelId]: data.storyBlueprint }));
+  for (const thread of threads) {
+    const key = `${COMMENT_THREADS_STORAGE_PREFIX}${thread.chapterId}`;
+    const current = writes.has(key) ? JSON.parse(writes.get(key)!) as CommentThread[] : [];
+    const threadId = generateId(); ids.set(thread.id, threadId);
+    writes.set(key, JSON.stringify([...current, {
+      ...thread, id: threadId, comments: thread.comments.map(comment => { const id = generateId(); ids.set(comment.id, id); return { ...comment, id }; }),
+    }]));
+  }
+  return writes;
+}
+
 export function upsertGoalTrendSnapshot(snapshot: GoalTrendSnapshot): GoalTrendSnapshot[] {
   const entries = loadGoalTrendSnapshots();
   const existingIdx = entries.findIndex(item => item.date === snapshot.date);
@@ -568,16 +707,21 @@ export function getGoalTrendSnapshots(days: number = 8): GoalTrendSnapshot[] {
 
 // Clear all data
 export async function clearAllData(): Promise<void> {
-  await db.transaction('rw', [db.novels, db.chapters, db.snapshots], async () => {
+  await db.transaction('rw', [db.novels, db.chapters, db.snapshots, db.backups, db.trash], async () => {
+    await db.backups.clear();
+    await db.trash.clear();
     await db.snapshots.clear();
     await db.chapters.clear();
     await db.novels.clear();
   });
 
-  Object.keys(localStorage)
-    .filter(key => key.startsWith(COMMENT_THREADS_STORAGE_PREFIX))
+  Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+    .filter((key): key is string => key !== null)
+    .filter(key => key.startsWith(COMMENT_THREADS_STORAGE_PREFIX) || key.startsWith('draftharbour_draft_journal_v1_'))
     .forEach(key => localStorage.removeItem(key));
   localStorage.removeItem(STORY_BLUEPRINTS_STORAGE_KEY);
+  localStorage.removeItem('draftharbour_characters');
+  localStorage.removeItem('draftharbour_world');
 }
 
 
@@ -710,7 +854,7 @@ function readSafePersistedIntegrationsFromStorage(): DhprojIntegrations | undefi
     }
 
     // Values are already sanitized by createSafePersistedConfig before being written to localStorage.
-    return parsed as DhprojIntegrations;
+    return mergeImportedIntegrations(null, parsed);
   } catch {
     return undefined;
   }
@@ -733,7 +877,14 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
   let settings: Partial<AppSettings> = {};
   try {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (raw) settings = JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const source = isRecord(parsed?.data) ? parsed.data : parsed;
+      if (isRecord(source)) {
+        settings = { ...source };
+        if (settings.sync) settings.sync = { ...settings.sync, auth: '' };
+      }
+    }
   } catch { /* ignore parse errors */ }
 
   // Read goal trends
@@ -772,6 +923,7 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
   };
 
   const data: DhprojData = {
+    ...novel.portableData,
     manifest,
     project: novel,
     projectType: novel.projectType || 'book',
@@ -784,6 +936,7 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
     integrations,
     characters,
     worldEntries,
+    storyBlueprint: getStoryBlueprint(novelId),
   };
 
   const JSZip = (await import('jszip')).default;
@@ -795,43 +948,32 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
 }
 
 export async function importDhproj(file: File): Promise<Novel> {
-  const JSZip = (await import('jszip')).default;
-  const zip = await JSZip.loadAsync(file);
-
-  const manifestFile = zip.file('manifest.json');
-  if (manifestFile) {
-    let manifestRaw: string;
-    try {
-      manifestRaw = await manifestFile.async('string');
-    } catch {
-      throw new Error('Invalid .dhproj file: unable to read manifest.json');
-    }
-
-    let manifestData: unknown;
-    try {
-      manifestData = JSON.parse(manifestRaw);
-    } catch {
-      throw new Error('Invalid .dhproj file: malformed manifest.json');
-    }
-
-    const manifest = manifestData as Partial<DhprojManifest>;
-    if (manifest.format !== 'dhproj') {
-      throw new Error('Invalid .dhproj file: manifest format must be "dhproj"');
-    }
-
-    if (!SUPPORTED_DHPROJ_VERSIONS.has(Number(manifest.version))) {
-      throw new Error(`Unsupported .dhproj version: ${String(manifest.version)}`);
-    }
-  }
-
-  const projectFile = zip.file('project.json');
-  if (!projectFile) throw new Error('Invalid .dhproj file: missing project.json');
-
+  if (file.size > 100 * 1024 * 1024) throw new Error('Project file exceeds the 100 MiB import limit.');
+  const bytes = await new Promise<ArrayBuffer>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error || new Error('Could not read project file'));
+    reader.readAsArrayBuffer(file);
+  });
+  const text = new TextDecoder().decode(bytes);
   let raw: string;
-  try {
+  if (text.trimStart().startsWith('{')) {
+    // Native macOS files use a plain JSON envelope; older web files use ZIP.
+    raw = text;
+  } else {
+    const JSZip = (await import('jszip')).default;
+    const zip = await JSZip.loadAsync(bytes);
+    const manifestFile = zip.file('manifest.json');
+    if (manifestFile) {
+      let manifest: Partial<DhprojManifest>;
+      try { manifest = JSON.parse(await manifestFile.async('string')); }
+      catch { throw new Error('Invalid .dhproj file: malformed manifest.json'); }
+      if (!manifest || manifest.format !== 'dhproj') throw new Error('Invalid .dhproj file: manifest format must be "dhproj"');
+      if (!SUPPORTED_DHPROJ_VERSIONS.has(Number(manifest.version))) throw new Error(`Unsupported .dhproj version: ${String(manifest.version)}`);
+    }
+    const projectFile = zip.file('project.json');
+    if (!projectFile) throw new Error('Invalid .dhproj file: missing project.json');
     raw = await projectFile.async('string');
-  } catch {
-    throw new Error('Invalid .dhproj file: unable to read project.json');
   }
 
   let parsed: unknown;
@@ -846,6 +988,9 @@ export async function importDhproj(file: File): Promise<Novel> {
   }
 
   const candidate = parsed as Partial<DhprojData>;
+  if (candidate.manifest && (candidate.manifest.format !== 'dhproj' || !SUPPORTED_DHPROJ_VERSIONS.has(candidate.manifest.version))) {
+    throw new Error('Invalid .dhproj file: unsupported manifest format or version');
+  }
   if (!candidate.project || typeof candidate.project !== 'object') {
     throw new Error('Invalid .dhproj file: malformed payload (missing project)');
   }
@@ -877,90 +1022,32 @@ export async function importDhproj(file: File): Promise<Novel> {
   }
 
   const data = candidate as DhprojData;
+  const imported = normalizeImportedSections(
+    data.sections,
+    Array.isArray(data.snapshots) ? data.snapshots : [],
+    Array.isArray(data.commentThreads) ? data.commentThreads : [],
+  );
   const projectId = typeof data.project.id === 'string' ? data.project.id : undefined;
   if (!projectId) {
     throw new Error('Invalid .dhproj file: malformed payload (project.id is required)');
   }
 
-  // Remap IDs so the imported project doesn't collide with existing data
-  const newNovelId = generateId();
-  const idMap = new Map<string, string>();
-  idMap.set(projectId, newNovelId);
-
-  const novel: Novel = {
-    ...data.project,
-    id: newNovelId,
-    projectType: normalizeProjectType(data.projectType),
-    updatedAt: Date.now(),
-  };
-
-  const chapters: Chapter[] = data.sections.map(chapter => {
-    const newId = generateId();
-    idMap.set(chapter.id, newId);
-    return { ...chapter, id: newId, novelId: newNovelId, updatedAt: Date.now() };
-  });
-
-  const snapshotsSource = Array.isArray(data.snapshots) ? data.snapshots : [];
-  const snapshots: Snapshot[] = snapshotsSource.map(snapshot => ({
-    ...snapshot,
-    id: generateId(),
-    chapterId: idMap.get(snapshot.chapterId) || snapshot.chapterId,
-  }));
-
-  const commentThreadsSource = Array.isArray(data.commentThreads) ? data.commentThreads : [];
-  const commentThreads = commentThreadsSource.map(thread => ({
-    ...thread,
-    chapterId: idMap.get(thread.chapterId) || thread.chapterId,
-  }));
-
-  const importedCharactersSource = Array.isArray(data.characters) ? data.characters : [];
-  const importedCharacters = importedCharactersSource
-    .filter(isCharacterEntity)
-    .filter(character => character.novelId === projectId)
-    .map(character => ({
-      ...character,
-      novelId: newNovelId,
-    }));
-  const importedCharacterIds = new Set(importedCharacters.map(character => character.id));
-
-  const importedWorldEntriesSource = Array.isArray(data.worldEntries) ? data.worldEntries : [];
-  const importedWorldEntries = importedWorldEntriesSource
-    .filter(isWorldEntry)
-    .filter(entry => entry.novelId === projectId)
-    .map(entry => ({
-      ...entry,
-      novelId: newNovelId,
-      linkedCharacters: entry.linkedCharacters.filter(characterId => importedCharacterIds.has(characterId)),
-    }));
-
-  await db.transaction('rw', [db.novels, db.chapters, db.snapshots], async () => {
-    await db.novels.add(novel);
-    await db.chapters.bulkAdd(chapters);
-    if (snapshots.length > 0) {
-      await db.snapshots.bulkAdd(snapshots);
-    }
-  });
-
-  // Restore comment threads
-  commentThreads.forEach(thread => upsertCommentThread(thread));
-
-  if (importedCharactersSource.length > 0) {
-    const existingCharacters = loadStoredEntities<CharacterEntity>(CHARACTERS_STORAGE_KEY).filter(isCharacterEntity);
-    const mergedCharacters = [
-      ...existingCharacters.filter(character => character.novelId !== newNovelId),
-      ...importedCharacters,
-    ];
-    localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(mergedCharacters));
+  const portableData = { ...data.project.portableData };
+  for (const key of ['exportHistory', 'aiChatThreads', 'aiRevisionLog', 'collaboration', 'deletedSections']) {
+    if (key in data) portableData[key] = (data as unknown as Record<string, unknown>)[key];
   }
-
-  if (importedWorldEntriesSource.length > 0) {
-    const existingWorldEntries = loadStoredEntities<WorldEntry>(WORLD_ENTRIES_STORAGE_KEY).filter(isWorldEntry);
-    const mergedWorldEntries = [
-      ...existingWorldEntries.filter(entry => entry.novelId !== newNovelId),
-      ...importedWorldEntries,
-    ];
-    localStorage.setItem(WORLD_ENTRIES_STORAGE_KEY, JSON.stringify(mergedWorldEntries));
-  }
+  const novel = await importBackup({
+    version: 3,
+    projectType: data.projectType,
+    project: { ...data.project, portableData },
+    sections: imported.sections,
+    snapshots: imported.snapshots,
+    commentThreads: data.commentThreads,
+    characters: data.characters,
+    worldEntries: data.worldEntries,
+    storyBlueprint: data.storyBlueprint,
+    exportedAt: Date.now(),
+  });
 
   // Restore settings if present
   if (data.settings && typeof data.settings === 'object') {
@@ -1024,4 +1111,51 @@ export async function importDhproj(file: File): Promise<Novel> {
 
 export async function secureWipeIntegrationArtifacts(): Promise<void> {
   localStorage.removeItem(INTEGRATIONS_STORAGE_KEY);
+}
+
+async function backupChecksum(data: BackupDataV3): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(data));
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function listProjectBackups(novelId: string): Promise<ProjectBackup[]> {
+  return (await db.backups.where('novelId').equals(novelId).sortBy('createdAt')).reverse();
+}
+
+export async function createProjectBackup(novelId: string, automatic = false, label?: string): Promise<ProjectBackup> {
+  const data = await exportBackup(novelId);
+  // Verify the same content readers will consume before recording a backup.
+  normalizeImportedSections(data.sections, data.snapshots, data.commentThreads);
+  if (automatic) {
+    const latest = (await listProjectBackups(novelId)).find(item => item.automatic);
+    if (latest && JSON.stringify({ ...latest.data, exportedAt: 0 }) === JSON.stringify({ ...data, exportedAt: 0 })) return latest;
+  }
+  const backup: ProjectBackup = { id: generateId(), novelId, automatic, label: label?.trim() || undefined, createdAt: Date.now(), checksum: await backupChecksum(data), data };
+  await db.transaction('rw', db.backups, async () => {
+    await db.backups.add(backup);
+    const entries = (await db.backups.where('novelId').equals(novelId).sortBy('createdAt')).filter(item => item.automatic);
+    await db.backups.bulkDelete(entries.slice(0, Math.max(0, entries.length - 10)).map(item => item.id));
+  });
+  return backup;
+}
+
+export async function restoreProjectBackup(id: string): Promise<Novel> {
+  const backup = await db.backups.get(id);
+  if (!backup || await backupChecksum(backup.data) !== backup.checksum) throw new Error('Backup integrity check failed. The original project has not been changed.');
+  // Restoring always creates a separate project; the current manuscript is retained.
+  return importBackup(backup.data);
+}
+
+export async function listTrash(): Promise<TrashEntry[]> {
+  return db.trash.orderBy('deletedAt').reverse().toArray();
+}
+
+export async function restoreTrash(id: string): Promise<Novel> {
+  const entry = await db.trash.get(id);
+  if (!entry) throw new Error('Trash item not found');
+  // A separate project also handles the case where the original project was deleted.
+  const novel = await importBackup({ ...entry.data, project: { ...entry.data.project, title: `${entry.data.project.title} (Recovered)` } });
+  await db.trash.delete(id);
+  return novel;
 }

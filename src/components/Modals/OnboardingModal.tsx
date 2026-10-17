@@ -122,7 +122,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
           <>
             <h3 className={styles.onboarding__title}>Welcome to DraftHarbour Studio</h3>
             <p className={styles.onboarding__description}>
-              You are in {state.projectType === 'screenplay' ? 'screenplay' : 'book'} mode. Build your project setup now so AI outputs stay consistent.
+              You are in {state.projectType === 'screenplay' ? 'screenplay' : 'book'} mode. Start a chapter, organise your scenes, and keep your drafts on this device. You can create a story blueprint whenever you are ready.
             </p>
           </>
         ) : (
@@ -136,9 +136,9 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
           </>
         )}
         <div className={styles.onboarding__actions}>
-          <Button variant="ghost" onClick={() => (step === 0 ? closeAll() : setStep(0))}>{step === 0 ? 'Skip' : 'Back'}</Button>
+          <Button variant={step === 0 ? "primary" : "ghost"} onClick={() => (step === 0 ? closeAll() : setStep(0))}>{step === 0 ? 'Start Writing' : 'Back'}</Button>
           {step === 0 && <Button variant="default" onClick={() => setInBlueprintWizard(true)}>Create Blueprint</Button>}
-          <Button variant="primary" onClick={() => (step === 1 ? closeAll() : setStep(1))}>{step === 1 ? 'Start Writing' : 'Next'}</Button>
+          <Button variant={step === 1 ? "primary" : "ghost"} onClick={() => (step === 1 ? closeAll() : setStep(1))}>{step === 1 ? 'Start Writing' : 'Quick Tips'}</Button>
         </div>
       </div>
     </Dialog>

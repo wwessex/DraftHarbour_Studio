@@ -140,6 +140,7 @@ describe('DashboardModal', () => {
   let root: Root;
 
   beforeEach(() => {
+    vi.setSystemTime(new Date('2026-02-25T12:00:00Z'));
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -147,6 +148,7 @@ describe('DashboardModal', () => {
   });
 
   afterEach(async () => {
+    vi.useRealTimers();
     await act(async () => { root.unmount(); });
     container.remove();
   });

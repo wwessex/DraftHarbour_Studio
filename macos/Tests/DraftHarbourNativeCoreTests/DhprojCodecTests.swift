@@ -2,6 +2,30 @@ import DraftHarbourNativeCore
 import XCTest
 
 final class DhprojCodecTests: XCTestCase {
+  private func sharedFixture(_ name: String) throws -> Data {
+    let root = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent().deletingLastPathComponent()
+      .deletingLastPathComponent().deletingLastPathComponent()
+    return try Data(contentsOf: root.appendingPathComponent("fixtures/\(name)"))
+  }
+
+  func testSharedWebAndNativeContract() throws {
+    let json = try sharedFixture("dhproj-v1.json")
+    let envelope = try DhprojCodec.decode(json)
+    XCTAssertEqual(envelope.sections.first?.content, "Alice watched the harbour.")
+    XCTAssertEqual(envelope.storyBlueprint?.genre, "Mystery")
+    XCTAssertEqual(envelope.worldEntries.first?.linkedCharacters, ["character-fixture"])
+    XCTAssertEqual(try DhprojCodec.decode(DhprojCodec.encode(envelope)), envelope)
+  }
+
+  func testSharedWebZipContainer() throws {
+    let base64 = String(decoding: try sharedFixture("dhproj-v1.zip.base64"), as: UTF8.self)
+    let zipped = try XCTUnwrap(Data(base64Encoded: base64, options: .ignoreUnknownCharacters))
+    let envelope = try DhprojCodec.decode(zipped)
+    XCTAssertEqual(envelope.project.title, "Shared Harbour")
+    XCTAssertEqual(envelope.characters.first?.name, "Alice")
+  }
+
   func testDecodesCurrentDhprojV1Envelope() throws {
     let json = """
     {

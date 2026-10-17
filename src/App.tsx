@@ -28,6 +28,7 @@ import {
 } from "@/lib/continuityMemory";
 import type { CharacterEntity } from "@/types";
 import { useModalState } from "@/hooks/useModalState";
+import { listRecoveryDrafts } from "@/lib/recoveryJournal";
 import { useProjectFileActions } from "@/hooks/useProjectFileActions";
 import { useCommentActions } from "@/hooks/useCommentActions";
 import { useAppKeyboardShortcuts } from "@/hooks/useAppKeyboardShortcuts";
@@ -140,6 +141,7 @@ function AppScene({
     activeChapter,
     loadNovel,
     loadNovelById,
+    flushPendingSaves,
     createChapter: createNewChapter,
     dispatch,
     updateSettings,
@@ -207,11 +209,17 @@ function AppScene({
     handleOpenProjectFile,
     handleImportBackup,
     handleImportDocument,
-  } = useProjectFileActions({ state, loadNovel, showToast });
+  } = useProjectFileActions({ state, loadNovel, loadNovelById, flushPendingSaves, showToast });
 
   useLoadNovel({
     loadNovel,
-    onLoaded: () => setIsLoading(false),
+    onLoaded: () => {
+      setIsLoading(false);
+      if (listRecoveryDrafts().length) {
+        showToast('Unsaved recovery drafts are available. Recover them as separate chapters in Projects.', 'warning');
+        openModal('projects');
+      }
+    },
     onError: (err) => {
       console.error("Failed to load novel:", err);
       setError(`Failed to load: ${err.message || "Unknown error"}`);
@@ -536,12 +544,10 @@ function AppScene({
 }
 
 function AppEditorProvider() {
-  const { activeChapter, updateChapter, state } = useApp();
+  const { activeChapter, updateChapter, state, hasUnsavedChanges } = useApp();
   const [screenplayMode, setScreenplayMode] = useState(
     state.projectType === "screenplay",
   );
-  const [hasUnsavedEdits, setHasUnsavedEdits] = useState(false);
-  const unsavedTimerRef = useRef<number | null>(null);
 
   const activeChapterRef = useRef(activeChapter);
   activeChapterRef.current = activeChapter;
@@ -556,7 +562,6 @@ function AppEditorProvider() {
     const chapter = activeChapterRef.current;
     if (chapter) {
       updateChapterRef.current(chapter.id, { content });
-      setHasUnsavedEdits(true);
     }
   }, []);
 
@@ -568,30 +573,13 @@ function AppEditorProvider() {
   });
 
   // Sync content when switching chapters
-  const prevChapterIdRef = useRef(activeChapter?.id);
   useEffect(() => {
     if (!adapter) return;
-    if (prevChapterIdRef.current !== activeChapter?.id) {
+    if (adapter.getContent() !== (activeChapter?.content || "")) {
       adapter.setContent(activeChapter?.content || "");
-      prevChapterIdRef.current = activeChapter?.id;
     }
   }, [adapter, activeChapter?.id, activeChapter?.content]);
 
-  useEffect(() => {
-    if (state.isSaving) return;
-    if (unsavedTimerRef.current) {
-      window.clearTimeout(unsavedTimerRef.current);
-    }
-    unsavedTimerRef.current = window.setTimeout(() => {
-      setHasUnsavedEdits(false);
-    }, 1200);
-
-    return () => {
-      if (unsavedTimerRef.current) {
-        window.clearTimeout(unsavedTimerRef.current);
-      }
-    };
-  }, [state.isSaving]);
 
   return (
     <EditorContext.Provider value={{ editor: adapter }}>
@@ -600,7 +588,7 @@ function AppEditorProvider() {
       <AppScene
         screenplayMode={screenplayMode}
         onToggleScreenplayMode={() => setScreenplayMode((mode) => !mode)}
-        hasUnsavedEdits={hasUnsavedEdits || state.isSaving}
+        hasUnsavedEdits={hasUnsavedChanges || state.isSaving}
         editor={adapter}
       />
     </EditorContext.Provider>

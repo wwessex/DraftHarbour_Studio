@@ -8,26 +8,30 @@ import { SidebarSearch } from './SidebarSearch';
 
 const setActiveChapterMock = vi.fn();
 
+// Keep the context fixture stable across renders, like the real provider.
+const searchState = {
+  novelId: 'n1',
+  chapters: [
+    {
+      id: 'ch1',
+      title: 'Chapter One',
+      content: 'Once upon a time',
+      order: 0,
+      novelId: 'n1',
+      updatedAt: Date.now(),
+      summary: '',
+      pov: '',
+      status: 'draft',
+      tags: [],
+      wordGoal: 0,
+      scenes: [],
+    },
+  ],
+};
+
 vi.mock('@/context/AppContext', () => ({
   useApp: () => ({
-    state: {
-      chapters: [
-        {
-          id: 'ch1',
-          title: 'Chapter One',
-          content: 'Once upon a time',
-          order: 0,
-          novelId: 'n1',
-          updatedAt: Date.now(),
-          summary: '',
-          pov: '',
-          status: 'draft',
-          tags: [],
-          wordGoal: 0,
-          scenes: [],
-        },
-      ],
-    },
+    state: searchState,
     setActiveChapter: setActiveChapterMock,
   }),
 }));
@@ -126,5 +130,26 @@ describe('SidebarSearch', () => {
     });
     // After escape, panel should close
     expect(container.querySelector('input[placeholder="Search all chapters..."]')).toBeNull();
+  });
+
+  it('selects a keyboard result and recalls a saved project search', async () => {
+    act(() => root.render(<SidebarSearch />));
+    act(() => (container.querySelector('[aria-label="Search all chapters"]') as HTMLButtonElement).click());
+    const input = container.querySelector('input')!;
+    act(() => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'once');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => { vi.advanceTimersByTime(300); await Promise.resolve(); });
+    act(() => [...container.querySelectorAll('button')].find(button => button.textContent === 'Save search')!.click());
+    expect(container.querySelector('[aria-label="Remove saved search once"]')).not.toBeNull();
+    act(() => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    expect(setActiveChapterMock).toHaveBeenCalledWith('ch1');
+    act(() => (container.querySelector('[aria-label="Search all chapters"]') as HTMLButtonElement).click());
+    act(() => [...container.querySelectorAll('button')].find(button => button.textContent === 'once')!.click());
+    expect(container.querySelector('input')!.value).toBe('once');
   });
 });

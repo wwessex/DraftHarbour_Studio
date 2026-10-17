@@ -51,6 +51,16 @@ describe('SaveStatus', () => {
     expect(container.querySelector('[role="status"]')).toBeNull();
   });
 
+  it('never claims saved while edits remain pending after a write', () => {
+    act(() => { root.render(<SaveStatus isSaving hasUnsavedChanges />); });
+    act(() => { root.render(<SaveStatus isSaving={false} hasUnsavedChanges />); });
+    expect(container.textContent).toContain('Unsaved changes');
+    act(() => { vi.advanceTimersByTime(3000); });
+    expect(container.textContent).toContain('Unsaved changes');
+    act(() => { root.render(<SaveStatus isSaving={false} hasUnsavedChanges={false} />); });
+    expect(container.textContent).toContain('Saved');
+  });
+
   it('clears pending timer if saving restarts', () => {
     act(() => { root.render(<SaveStatus isSaving={true} />); });
     act(() => { root.render(<SaveStatus isSaving={false} />); });

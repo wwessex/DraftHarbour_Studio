@@ -1,38 +1,52 @@
 # DraftHarbour Studio (PWA) — Offline/Online Novel Word Processor
 
 A lightweight, installable web app for writing novels:
-- Rich text editor (Tiptap/ProseMirror)
+- Markdown editor powered by CodeMirror 6, with formatting controls and live previews
 - Chapter sidebar (create/rename/delete), **drag to reorder**
 - **Chapter-isolated editing** (each chapter is a separate document)
 - Autosave to **IndexedDB**
 - Optional online sync (simple JSON REST endpoint)
 - Export (project-type aware):
-  - Novel/manuscript projects: **DOCX**, **PDF**, **RTF**
+  - Novel/manuscript projects: **DOCX**, **PDF**, **RTF**, text-only **EPUB**
   - Screenplay projects: **screenplay PDF**, **.fountain**
 
-## Collaboration and cloud features
-- **Real-time collaboration:** Invite co-authors with view, comment, or edit permissions.
-- **Full version history:** Track revisions with diff previews and restore earlier drafts.
-- **Continuous cloud sync:** Automatic syncing across devices with offline editing and eventual synchronization.
-- **Comments and inline feedback:** Threaded discussions attached to specific text ranges.
+## Manuscript protection and organisation
+
+Projects → **Backups, recovery & trash** provides verified project backups, saved-versus-recovered draft comparison, and recovery of deleted chapters/projects as separate copies. Automatic backups keep ten changed versions; manual copies can be named. Download an external copy to protect against device or browser-storage loss.
+
+Snapshots support aligned comparisons and a safety version before restoring. Chapters can be split at the cursor or merged with the next chapter; scene plans can move between chapters. Draft/Plan/Review sidebar controls, saved manuscript searches and story-bible mention links support revision without changing prose automatically.
+
+Portable `.dhproj` files support native JSON and web ZIP containers; see the [format contract](docs/contracts/dhproj-v1.md) for contents and compatibility limits.
+
+## Optional collaboration and cloud integrations
+
+Collaboration and cross-device sync depend on a configured supported backend/provider and differ by runtime. Static hosting alone does not provide real-time collaboration or continuous cloud backup. Local chapter snapshots and threaded comments work on the device. AI/provider features require explicit configuration; drafting remains available offline.
 
 ## Run
-This is a static site. Serve the folder with any static server (recommended for Service Worker):
 
-### Option A: Python
+The web app uses React, TypeScript and Vite. Install dependencies and start the development server:
+
 ```bash
-python3 -m http.server 8080
+npm ci
+npm run dev
 ```
-Open: http://localhost:8080
 
-### Option B: VS Code Live Server
-Right-click `index.html` → Open with Live Server.
+Use the local URL printed by Vite. To build and preview the production app:
+
+```bash
+npm run build
+npm run preview
+```
+
+Deploy the generated `dist/` directory to a static host. Optional AI and integration endpoints require a separately configured backend; static hosting alone does not provide them.
 
 ## Install (PWA)
 In Chrome/Edge/Safari (iOS): use "Add to Home Screen" / "Install App".
 
 
 ## Native macOS App
+
+Changes are maintained across web/PWA, Tauri Windows/Linux, Capacitor iOS and the independent native macOS app. See the [platform parity report](docs/reviews/platform-parity-2026-10-17.md) for verification and remaining device/toolchain limits.
 
 The macOS desktop app is the SwiftUI/AppKit document app in `macos/`. It opens and saves `.dhproj` v1 files directly, includes native import/export, AI workflow configuration, recovery metadata, Generic REST sync, Dropbox/Google Drive sync, and the Scrivener package bridge.
 
@@ -389,5 +403,5 @@ If `IntegrationConfig` schema fields are added/renamed, existing users with olde
 - Apply one-way migration functions (`v1 -> v2 -> ...`) instead of hard-failing older payloads.
 
 ## Notes
-- External libraries are loaded from CDN ESM endpoints. The Service Worker will cache them after first load.
+- Frontend dependencies are bundled by Vite. The production Service Worker caches app assets; Google Fonts are cached separately after they are fetched.
 - If you update files and caching seems stuck, open once with `?nosw=1` to unregister the Service Worker.

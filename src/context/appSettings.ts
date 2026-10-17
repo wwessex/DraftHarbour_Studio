@@ -83,7 +83,7 @@ export const createDefaultSettings = (isMobile: boolean): AppSettings => ({
   onboardingComplete: false,
   typewriterMode: false,
   releaseChannel: 'stable',
-  sidebarPanels: {},
+  sidebarPanels: { visible: { chapters: true, scenePlanner: false, outline: false } },
   goalConfiguration: {
     dailyWordTarget: 0,
     weeklyWordTarget: 0,

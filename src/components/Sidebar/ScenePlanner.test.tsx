@@ -12,7 +12,8 @@ const mockReorderScenes = vi.fn();
 
 vi.mock('@/context/AppContext', () => ({
   useApp: () => ({
-    state: { projectType: 'book' },
+    state: { projectType: 'book', chapters: [{ id: 'ch-1', title: 'Chapter One' }, { id: 'ch-2', title: 'Chapter Two' }] },
+    moveScene: vi.fn(async () => {}),
     activeChapter: {
       id: 'ch-1',
       title: 'Chapter One',

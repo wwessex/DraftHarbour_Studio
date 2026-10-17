@@ -38,6 +38,18 @@ function makeRemote(body: string, overrides?: Partial<ProviderDocument>): Provid
 }
 
 describe('mergeChapterFromRemote', () => {
+  it('preserves both versions when a large changed region exceeds the comparison budget', async () => {
+    const lines = (prefix: string) => Array.from({ length: 1100 }, (_, index) => `${prefix} ${index}`).join('\n');
+    const base = lines('Base');
+    const local = lines('Local');
+    const remote = lines('Remote');
+    const chapter = makeChapter({ content: local, sync: { providerRevisionIds: {}, lastSyncedContent: base } });
+    const result = await mergeChapterFromRemote({ chapter, remoteDocument: makeRemote(remote), context: { provider: 'dropbox', remoteRevision: 'large' } });
+    expect(result.conflict?.localContent).toBe(local);
+    expect(result.conflict?.remoteContent).toBe(remote);
+    expect(result.conflict?.mergedContent).toContain('Local 1099');
+    expect(result.conflict?.mergedContent).toContain('Remote 1099');
+  });
   it('keeps lastSyncedContent at base when only local content changed', async () => {
     const chapter = makeChapter({
       content: 'Local draft change',

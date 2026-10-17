@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './SaveStatus.module.css';
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+type SaveState = 'idle' | 'saving' | 'saved' | 'pending';
 
 interface SaveStatusProps {
   isSaving: boolean;
+  hasUnsavedChanges?: boolean;
 }
 
-export function SaveStatus({ isSaving }: SaveStatusProps) {
+export function SaveStatus({ isSaving, hasUnsavedChanges = false }: SaveStatusProps) {
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const timerRef = useRef<number | null>(null);
   const hadSaveRef = useRef(false);
@@ -20,6 +21,8 @@ export function SaveStatus({ isSaving }: SaveStatusProps) {
         window.clearTimeout(timerRef.current);
         timerRef.current = null;
       }
+    } else if (hasUnsavedChanges) {
+      setSaveState('pending');
     } else if (hadSaveRef.current) {
       setSaveState('saved');
       timerRef.current = window.setTimeout(() => {
@@ -33,7 +36,7 @@ export function SaveStatus({ isSaving }: SaveStatusProps) {
         window.clearTimeout(timerRef.current);
       }
     };
-  }, [isSaving]);
+  }, [isSaving, hasUnsavedChanges]);
 
   if (saveState === 'idle') return null;
 
@@ -55,10 +58,10 @@ export function SaveStatus({ isSaving }: SaveStatusProps) {
           <span>Saved</span>
         </>
       )}
-      {saveState === 'error' && (
+      {saveState === 'pending' && (
         <>
-          <span className="material-symbols-rounded" style={{ fontSize: '0.875rem' }}>error</span>
-          <span>Save failed</span>
+          <span className={styles.saveDot} />
+          <span>Unsaved changes</span>
         </>
       )}
     </span>

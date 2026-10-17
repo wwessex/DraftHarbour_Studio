@@ -100,7 +100,11 @@ async function hashContent(content: string | null | undefined): Promise<string> 
     return `sha256:${bytesToHex(new Uint8Array(digest))}`;
   })();
 
-  contentHashMemo.set(serialized, digestPromise);
+  if (serialized.length <= 250_000) {
+    if (contentHashMemo.size >= 32) contentHashMemo.delete(contentHashMemo.keys().next().value!);
+    contentHashMemo.set(serialized, digestPromise);
+    void digestPromise.catch(() => { if (contentHashMemo.get(serialized) === digestPromise) contentHashMemo.delete(serialized); });
+  }
   return digestPromise;
 }
 
@@ -113,6 +117,21 @@ function sanitizeLegacyPushedHash(lastPushedHash: string | undefined): string | 
 }
 
 function computeLineEdits(base: string[], variant: string[]): LineEdit[] {
+  let prefix = 0;
+  while (prefix < base.length && prefix < variant.length && base[prefix] === variant[prefix]) prefix++;
+  let suffix = 0;
+  while (suffix < base.length - prefix && suffix < variant.length - prefix && base[base.length - 1 - suffix] === variant[variant.length - 1 - suffix]) suffix++;
+  const baseMiddle = base.slice(prefix, base.length - suffix);
+  const variantMiddle = variant.slice(prefix, variant.length - suffix);
+  // Preserve both versions through conflict resolution instead of allocating an
+  // unbounded quadratic matrix for a very large changed region.
+  if (baseMiddle.length * variantMiddle.length > 1_000_000) {
+    return [{ start: prefix, end: base.length - suffix, lines: variantMiddle }];
+  }
+  return computeLineEditsCore(baseMiddle, variantMiddle).map(edit => ({ ...edit, start: edit.start + prefix, end: edit.end + prefix }));
+}
+
+function computeLineEditsCore(base: string[], variant: string[]): LineEdit[] {
   const m = base.length;
   const n = variant.length;
   const lcs: number[][] = Array.from({ length: m + 1 }, () => Array.from({ length: n + 1 }, () => 0));

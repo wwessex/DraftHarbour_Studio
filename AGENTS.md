@@ -4,6 +4,14 @@
 
 DraftHarbour Studio is an offline-first writing app built with React 19, TypeScript, and Vite. The repo also ships a Tauri desktop app under `desktop/` and a Capacitor iOS wrapper under `ios/`.
 
+## Standing user preference: all versions
+
+- Every requested fix, feature, review and validation applies to **all applicable versions** by default: web/PWA, Windows/Linux Tauri desktop, Capacitor iOS, and the separate SwiftUI/AppKit macOS app in `macos/`.
+- Inspect both shared code and platform-specific implementations. Shared React changes do not by themselves update native macOS behavior.
+- Implement equivalent behavior in each maintained runtime, preserve portable project data and keep native assets/dependencies synchronized where relevant.
+- Run appropriate checks for every version. Clearly distinguish source/build checks from runtime/device checks, and report platform/toolchain blockers rather than claiming unperformed tests passed.
+- Include cross-platform parity and regression checks in completion reports. Do not leave a platform behind silently or assume a web-only scope unless the user explicitly requests one.
+
 ## Core workflows
 
 - Install dependencies with `npm ci`.

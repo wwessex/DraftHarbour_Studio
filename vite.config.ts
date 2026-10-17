@@ -136,6 +136,7 @@ export default defineConfig({
   ],
 
   test: {
+    include: ['src/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     coverage: {
@@ -156,6 +157,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  // Native build output also contains HTML; only scan the web entry point.
+  optimizeDeps: {
+    entries: ['index.html'],
   },
   build: {
     target: ['es2020', 'safari14'],
