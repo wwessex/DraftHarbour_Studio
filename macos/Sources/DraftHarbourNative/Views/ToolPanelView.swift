@@ -277,6 +277,14 @@ struct ToolPanelView: View {
     let hasErrors = issues.contains { $0.severity == .error }
 
     return VStack(alignment: .leading, spacing: 14) {
+      DisclosureGroup("Contents and Text Preview") {
+        ForEach(store.envelope.sections) { section in
+          DisclosureGroup(section.title + " · " + String(MarkdownTools.wordCount(section.content ?? "")) + " words") {
+            Text(MarkdownTools.plainText(from: section.content ?? "")).textSelection(.enabled)
+          }
+        }
+        Text("Text preview only; pagination depends on format. EPUB omits images.").foregroundStyle(.secondary)
+      }
       Picker("Export Mode", selection: $exportTab) {
         ForEach(ExportPanelTab.allCases.filter { store.projectType == .book || $0 != .manuscript }) { tab in
           Text(exportTabTitle(tab)).tag(tab)
@@ -563,6 +571,8 @@ struct ToolPanelView: View {
       return "text.alignleft"
     case .markdown:
       return "chevron.left.forwardslash.chevron.right"
+    case .epub:
+      return "book"
     case .publishingBundle:
       return "shippingbox"
     }
@@ -606,6 +616,8 @@ struct ToolPanelView: View {
       return "Screenplay PDF"
     case .docx:
       return "DOCX"
+    case .epub:
+      return "EPUB"
     case .publishingBundle:
       return "Publishing Bundle"
     }
@@ -677,9 +689,14 @@ struct ToolPanelView: View {
               if showSnapshotDiff {
                 let diff = SnapshotDiffServices.diff(old: compare?.doc ?? store.activeSection?.content ?? "", new: selected.doc)
                 List(diff) { line in
-                  Text(line.text.isEmpty ? " " : line.text)
-                    .foregroundStyle(line.kind == .added ? .green : line.kind == .removed ? .red : .primary)
-                    .font(.system(.body, design: .monospaced))
+                  HStack(alignment: .top, spacing: 16) {
+                    Text(line.kind == .added ? " " : (line.text.isEmpty ? " " : line.text))
+                      .foregroundStyle(line.kind == .removed ? .red : .primary)
+                      .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(line.kind == .removed ? " " : (line.text.isEmpty ? " " : line.text))
+                      .foregroundStyle(line.kind == .added ? .green : .primary)
+                      .frame(maxWidth: .infinity, alignment: .leading)
+                  }.font(.system(.body, design: .monospaced))
                 }
                 .frame(minHeight: 260)
               } else {
@@ -691,6 +708,10 @@ struct ToolPanelView: View {
                   .clipShape(RoundedRectangle(cornerRadius: 8))
               }
 
+              Picker("Compare against", selection: $compareSnapshotID) {
+                Text("Current draft").tag(String?.none)
+                ForEach(activeSnapshots.filter { $0.id != selected.id }) { version in Text(version.label ?? "Snapshot").tag(Optional(version.id)) }
+              }
               Toggle("Show diff", isOn: $showSnapshotDiff)
             } else {
               ContentUnavailableView("Select a Snapshot", systemImage: "doc.text.magnifyingglass")
@@ -1231,10 +1252,25 @@ struct ToolPanelView: View {
       )
 
       Divider()
-      bibleDetail
+      VStack(alignment: .leading) { bibleDetail; manuscriptMentions }
         .frame(minWidth: 320, maxWidth: .infinity, minHeight: 440, alignment: .topLeading)
     }
     .frame(maxWidth: .infinity, minHeight: 460, alignment: .topLeading)
+  }
+
+  private var manuscriptMentions: some View {
+    let character = store.envelope.characters.first { $0.id == selectedCharacterID }
+    let world = store.envelope.worldEntries.first { $0.id == selectedWorldEntryID }
+    let names = character.map { [$0.name] + $0.aliases } ?? world.map { [$0.name] } ?? []
+    let matches = EntityOccurrenceServices.find(names: names, sections: store.envelope.sections)
+    return DisclosureGroup("Manuscript Mentions (\(matches.count))") {
+      ForEach(matches) { occurrence in
+        Button { store.selectSection(occurrence.sectionID) } label: {
+          VStack(alignment: .leading) { Text(occurrence.title).bold(); Text(occurrence.excerpt) }
+        }.buttonStyle(.plain)
+      }
+      if matches.isEmpty { Text("No mentions in this project.").foregroundStyle(.secondary) }
+    }
   }
 
   private func storyBibleListColumn(
@@ -2031,6 +2067,8 @@ struct ToolPanelView: View {
 
   private var gettingStartedContent: some View {
     VStack(alignment: .leading, spacing: 16) {
+      Button("Start Writing") { dismiss() }.buttonStyle(.borderedProminent)
+      Text("A blueprint is optional. You can start drafting immediately.")
       GroupBox("Project Blueprint") {
         Form {
           TextField("Genre", text: textBinding(

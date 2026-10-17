@@ -321,21 +321,26 @@ public enum SnapshotDiffServices {
   public static func diff(old: String, new: String) -> [SnapshotDiffLine] {
     let oldLines = MarkdownTools.plainText(from: old).components(separatedBy: .newlines)
     let newLines = MarkdownTools.plainText(from: new).components(separatedBy: .newlines)
-    let count = max(oldLines.count, newLines.count)
-    var result: [SnapshotDiffLine] = []
-    for index in 0..<count {
-      let oldLine = index < oldLines.count ? oldLines[index] : nil
-      let newLine = index < newLines.count ? newLines[index] : nil
-      if oldLine == newLine, let newLine {
-        result.append(SnapshotDiffLine(kind: .unchanged, text: newLine))
-      } else {
-        if let oldLine, !oldLine.isEmpty {
-          result.append(SnapshotDiffLine(kind: .removed, text: oldLine))
-        }
-        if let newLine, !newLine.isEmpty {
-          result.append(SnapshotDiffLine(kind: .added, text: newLine))
+    let m = oldLines.count, n = newLines.count
+    guard m <= 1_000_000 / max(1, n) else {
+      return oldLines.map { SnapshotDiffLine(kind: .removed, text: $0) } + newLines.map { SnapshotDiffLine(kind: .added, text: $0) }
+    }
+    var matrix = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
+    if m > 0 && n > 0 {
+      for i in stride(from: m - 1, through: 0, by: -1) {
+        for j in stride(from: n - 1, through: 0, by: -1) {
+          matrix[i][j] = oldLines[i] == newLines[j] ? matrix[i + 1][j + 1] + 1 : max(matrix[i + 1][j], matrix[i][j + 1])
         }
       }
+    }
+    var result: [SnapshotDiffLine] = []
+    var i = 0, j = 0
+    while i < m || j < n {
+      if i < m && j < n && oldLines[i] == newLines[j] {
+        result.append(SnapshotDiffLine(kind: .unchanged, text: newLines[j])); i += 1; j += 1
+      } else if j < n && (i == m || matrix[i][j + 1] >= matrix[i + 1][j]) {
+        result.append(SnapshotDiffLine(kind: .added, text: newLines[j])); j += 1
+      } else { result.append(SnapshotDiffLine(kind: .removed, text: oldLines[i])); i += 1 }
     }
     return result
   }

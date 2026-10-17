@@ -466,6 +466,8 @@ struct SettingsView: View {
 
   private func exportTitle(_ format: ExportFormat) -> String {
     switch format {
+    case .epub:
+      return "EPUB"
     case .markdown:
       return "Markdown"
     case .plainText:

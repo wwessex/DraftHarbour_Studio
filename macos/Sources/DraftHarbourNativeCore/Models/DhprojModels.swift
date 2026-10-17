@@ -396,6 +396,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
   public var aiChatThreads: [AIChatThread]
   public var aiRevisionLog: [AIRevisionRecord]
   public var collaboration: CollaborationState
+  public var deletedSections: [DeletedSection]
 
   enum CodingKeys: String, CodingKey {
     case manifest
@@ -416,6 +417,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     case aiChatThreads
     case aiRevisionLog
     case collaboration
+    case deletedSections
   }
 
   public init(
@@ -436,7 +438,8 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     aiProviders: [AIProviderConfig] = [],
     aiChatThreads: [AIChatThread] = [],
     aiRevisionLog: [AIRevisionRecord] = [],
-    collaboration: CollaborationState = CollaborationState()
+    collaboration: CollaborationState = CollaborationState(),
+    deletedSections: [DeletedSection] = []
   ) {
     self.manifest = manifest
     self.project = project
@@ -456,6 +459,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     self.aiChatThreads = aiChatThreads
     self.aiRevisionLog = aiRevisionLog
     self.collaboration = collaboration
+    self.deletedSections = deletedSections
   }
 
   public init(from decoder: Decoder) throws {
@@ -479,6 +483,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     aiChatThreads = try container.decodeIfPresent([AIChatThread].self, forKey: .aiChatThreads) ?? []
     aiRevisionLog = try container.decodeIfPresent([AIRevisionRecord].self, forKey: .aiRevisionLog) ?? []
     collaboration = try container.decodeIfPresent(CollaborationState.self, forKey: .collaboration) ?? CollaborationState()
+    deletedSections = try container.decodeIfPresent([DeletedSection].self, forKey: .deletedSections) ?? []
     sections.sort { $0.order < $1.order }
   }
 }

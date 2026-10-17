@@ -150,6 +150,11 @@ struct InspectorView: View {
                 get: { $0.pageEstimate.map { String(format: "%.1f", $0) } ?? "" },
                 set: { $0.pageEstimate = Double($1.trimmingCharacters(in: .whitespacesAndNewlines)) }
               ))
+              Menu("Move Scene To…") {
+                ForEach(store.envelope.sections.filter { $0.id != section.id }) { target in
+                  Button(target.title) { try? store.moveScene(sceneID: scene.id, from: section.id, to: target.id) }
+                }
+              }
               Button("Delete Scene", role: .destructive) {
                 store.deleteScene(sectionID: section.id, sceneID: scene.id)
               }

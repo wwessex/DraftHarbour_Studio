@@ -1,0 +1,95 @@
+{
+  "manifest": {
+    "format": "dhproj",
+    "version": 1,
+    "appVersion": "2.0.0",
+    "createdAt": "2026-10-16T12:00:00Z"
+  },
+  "project": {
+    "id": "project-fixture",
+    "title": "Shared Harbour",
+    "projectType": "book",
+    "updatedAt": 1
+  },
+  "projectType": "book",
+  "sections": [
+    {
+      "id": "chapter-fixture",
+      "novelId": "project-fixture",
+      "order": 0,
+      "title": "The Quay",
+      "updatedAt": 1,
+      "content": "Alice watched the harbour.",
+      "summary": "A quiet arrival",
+      "pov": "Alice",
+      "status": "draft",
+      "tags": [
+        "arrival"
+      ],
+      "wordGoal": 1000,
+      "scenes": []
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snapshot-fixture",
+      "chapterId": "chapter-fixture",
+      "createdAt": 1,
+      "doc": "An earlier arrival.",
+      "label": "First draft"
+    }
+  ],
+  "commentThreads": [],
+  "characters": [
+    {
+      "id": "character-fixture",
+      "novelId": "project-fixture",
+      "name": "Alice",
+      "aliases": [
+        "Al"
+      ],
+      "description": "A sailor",
+      "role": "protagonist",
+      "traits": [
+        "curious"
+      ],
+      "notes": "Research notes",
+      "relationships": [],
+      "createdAt": 1,
+      "updatedAt": 1
+    }
+  ],
+  "worldEntries": [
+    {
+      "id": "world-fixture",
+      "novelId": "project-fixture",
+      "name": "Quay",
+      "category": "location",
+      "description": "An old harbour",
+      "tags": [
+        "coast"
+      ],
+      "linkedCharacters": [
+        "character-fixture"
+      ],
+      "notes": "Map notes",
+      "createdAt": 1,
+      "updatedAt": 1
+    }
+  ],
+  "storyBlueprint": {
+    "genre": "Mystery",
+    "subgenre": "Coastal",
+    "targetAudience": "Adult",
+    "ageBand": "adult",
+    "tone": "Warm",
+    "voice": "Close third",
+    "structure": "three-act",
+    "targetWordCount": 80000,
+    "pacingProfile": "balanced"
+  },
+  "settings": {
+    "theme": "light"
+  },
+  "goalTrends": []
+}

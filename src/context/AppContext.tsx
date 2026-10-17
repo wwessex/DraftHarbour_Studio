@@ -6,12 +6,16 @@ import {
   useCallback,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
   type Dispatch
 } from 'react';
 import type { Chapter, Novel, Scene, ProjectType, AppSettings, AppState, StoryBlueprint } from '@/types';
 import * as storage from '@/lib/storage';
-import { debounce, generateId } from '@/lib/utils';
+import { generateId } from '@/lib/utils';
+import { splitChapterAt, mergeWithNextChapter, moveSceneToChapter } from '@/lib/chapterOperations';
+import { ChapterSaveQueue } from '@/lib/chapterSaveQueue';
+import { journalChapter, commitJournalChapter } from '@/lib/recoveryJournal';
 import { createDefaultSettings, normalizeSidebarPanels, type SettingsUpdate } from './appSettings';
 import { reportAppError, storageErrorFrom } from '@/lib/errors';
 import { useToast } from '@/components/UI';
@@ -21,11 +25,11 @@ import {
   loadDefaultNovelAndChapters,
   loadNovelAndChaptersById,
   persistSettingsToLocalStorage,
-  readSettingsFromLocalStorage,
-  withSavingDispatch
+  readSettingsFromLocalStorage
 } from './services/appServices';
 import { getWorkspaceStore, setLastOpenedChapter, trackProjectOpen } from './services/workspaceService';
 import { useResolvedTheme } from '@/hooks/useResolvedTheme';
+import { useAutomaticBackups } from '@/hooks/useAutomaticBackups';
 
 import { isMobileViewport } from '@/hooks/useIsMobile';
 
@@ -36,6 +40,8 @@ interface AppContextType {
   state: AppState;
   dispatch: Dispatch<AppAction>;
   activeChapter: Chapter | null;
+  hasUnsavedChanges: boolean;
+  flushPendingSaves: () => Promise<void>;
   loadNovel: () => Promise<void>;
   loadNovelById: (id: string) => Promise<void>;
   createNewNovel: (title: string, projectType: ProjectType) => Promise<Novel>;
@@ -57,6 +63,9 @@ interface AppContextType {
   updateScene: (chapterId: string, sceneId: string, updates: Partial<Scene>) => void;
   deleteScene: (chapterId: string, sceneId: string) => void;
   reorderScenes: (chapterId: string, sceneIds: string[]) => void;
+  splitActiveChapter: (position: number) => Promise<void>;
+  mergeActiveChapter: () => Promise<void>;
+  moveScene: (chapterId: string, targetId: string, sceneId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -69,6 +78,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const resolvedTheme = useResolvedTheme(state.settings.theme);
   const stateRef = useRef(state);
   const { showErrorToast } = useToast();
+
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const savingCount = useRef(0);
 
   const reorderUndoStack = useRef<string[][]>([]);
   const reorderRedoStack = useRef<string[][]>([]);
@@ -85,7 +98,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [showErrorToast]);
 
   const runWithSavingState = useCallback(async (operation: () => Promise<void>) => {
-    await withSavingDispatch(dispatch, operation);
+    savingCount.current += 1;
+    dispatch({ type: 'SET_SAVING', payload: true });
+    try {
+      await operation();
+    } finally {
+      savingCount.current -= 1;
+      dispatch({ type: 'SET_SAVING', payload: savingCount.current > 0 });
+    }
   }, []);
 
   useEffect(() => {
@@ -96,6 +116,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to load settings:', error);
       dispatch({ type: 'SET_SETTINGS', payload: createDefaultSettings(isMobile) });
+    } finally {
+      setSettingsLoaded(true);
     }
   }, []);
 
@@ -112,12 +134,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.projectType, state.settings.sidebarPanels]);
 
   useEffect(() => {
+    if (!settingsLoaded) return;
     try {
       persistSettingsToLocalStorage(state.settings);
     } catch (error) {
       console.error('Failed to persist settings:', error);
     }
-  }, [state.settings]);
+  }, [settingsLoaded, state.settings]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = resolvedTheme;
@@ -137,20 +160,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const debouncedSave = useMemo(
-    () => debounce(async (id: string, updates: Partial<Chapter>) => {
-      try {
-        await runWithSavingState(async () => {
-          await storage.updateChapter(id, updates);
-        });
-      } catch (cause) {
-        reportStorageError(`autosave chapter(${id})`, cause);
-      }
-    }, state.settings.autosaveMs),
-    [state.settings.autosaveMs, runWithSavingState, reportStorageError]
-  );
+  const saveCallbacksRef = useRef({ runWithSavingState, reportStorageError });
+  saveCallbacksRef.current = { runWithSavingState, reportStorageError };
+  const [saveQueue] = useState(() => new ChapterSaveQueue(
+    (id, updates) => saveCallbacksRef.current.runWithSavingState(() => storage.updateChapter(id, updates)),
+    setHasUnsavedChanges,
+    cause => saveCallbacksRef.current.reportStorageError('autosave', cause),
+    state.settings.autosaveMs,
+    {
+      stage: (id, updates) => {
+        const chapter = stateRef.current.chapters.find(item => item.id === id);
+        if (chapter) journalChapter(chapter, updates);
+      },
+      commit: commitJournalChapter,
+    },
+  ));
+  const flushPendingSaves = useCallback(() => saveQueue.flush(), [saveQueue]);
+  useAutomaticBackups(state.novelId, flushPendingSaves, cause => reportStorageError('automatic backup', cause));
+
+  useEffect(() => {
+    saveQueue.setDelay(state.settings.autosaveMs);
+  }, [saveQueue, state.settings.autosaveMs]);
+
+  useEffect(() => {
+    const flush = () => { void saveQueue.flush().catch(() => {}); };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      flush();
+    };
+  }, [saveQueue]);
 
   const loadNovel = useCallback(async () => {
+    await saveQueue.flush();
     const workspace = getWorkspaceStore();
     const recentTargetId = workspace.lastProjectId;
     const result = recentTargetId
@@ -163,9 +210,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (lastChapterId) {
       dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: lastChapterId });
     }
-  }, []);
+  }, [saveQueue]);
 
   const loadNovelById = useCallback(async (id: string) => {
+    await saveQueue.flush();
+    reorderUndoStack.current = [];
+    reorderRedoStack.current = [];
     const result = await loadNovelAndChaptersById(id);
     if (!result) return;
     trackProjectOpen(id);
@@ -176,10 +226,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (lastChapterId) {
       dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: lastChapterId });
     }
-  }, []);
+  }, [saveQueue]);
 
   const actions = useMemo(() => ({
+    splitActiveChapter: async (position: number) => {
+      const current = stateRef.current;
+      if (!current.activeChapterId) return;
+      await saveQueue.flush();
+      const id = await splitChapterAt(current.activeChapterId, position);
+      await loadNovelById(current.novelId);
+      dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: id });
+    },
+    mergeActiveChapter: async () => {
+      const current = stateRef.current;
+      if (!current.activeChapterId) return;
+      await saveQueue.flush();
+      await mergeWithNextChapter(current.activeChapterId);
+      await loadNovelById(current.novelId);
+      dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: current.activeChapterId });
+    },
+    moveScene: async (chapterId: string, targetId: string, sceneId: string) => {
+      const current = stateRef.current;
+      await saveQueue.flush();
+      await moveSceneToChapter(chapterId, targetId, sceneId);
+      await loadNovelById(current.novelId);
+      dispatch({ type: 'SET_ACTIVE_CHAPTER', payload: current.activeChapterId });
+    },
     createNewNovel: async (title: string, projectType: ProjectType): Promise<Novel> => {
+      await saveQueue.flush();
       const result = await createNovelWithFirstChapter(title, projectType);
       trackProjectOpen(result.novel.id);
       dispatch({ type: 'SET_NOVEL', payload: result });
@@ -190,6 +264,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     deleteCurrentNovel: async () => {
       const currentId = stateRef.current.novelId;
       try {
+        await saveQueue.flush();
         await storage.deleteNovel(currentId);
       } catch (cause) {
         reportStorageError(`deleteNovel(${currentId})`, cause);
@@ -215,7 +290,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     deleteChapter: async (id: string) => {
       try {
+        await saveQueue.flush();
         await storage.deleteChapter(id);
+        saveQueue.discard(id);
         dispatch({ type: 'DELETE_CHAPTER', payload: id });
       } catch (cause) {
         reportStorageError(`deleteChapter(${id})`, cause);
@@ -224,15 +301,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     updateChapter: (id: string, updates: Partial<Chapter>) => {
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id, updates } });
-      debouncedSave(id, updates);
+      saveQueue.enqueue(id, updates);
     },
 
     updateChapterImmediate: async (id: string, updates: Partial<Chapter>) => {
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id, updates } });
       try {
-        await runWithSavingState(async () => {
-          await storage.updateChapter(id, updates);
-        });
+        saveQueue.enqueue(id, updates);
+        await saveQueue.flush();
       } catch (cause) {
         reportStorageError(`updateChapterImmediate(${id})`, cause);
       }
@@ -349,9 +425,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const updates = { scenes: [...existingScenes, newScene] };
 
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id: chapterId, updates } });
-      storage.updateChapter(chapterId, updates).catch((cause) => {
-        reportStorageError('addScene', cause);
-      });
+      saveQueue.enqueue(chapterId, updates);
 
       return newScene.id;
     },
@@ -365,9 +439,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ));
 
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id: chapterId, updates: { scenes } } });
-      storage.updateChapter(chapterId, { scenes }).catch((cause) => {
-        reportStorageError('updateScene', cause);
-      });
+      saveQueue.enqueue(chapterId, { scenes });
     },
 
     deleteScene: (chapterId: string, sceneId: string) => {
@@ -376,9 +448,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const scenes = (chapter.scenes || []).filter(scene => scene.id !== sceneId);
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id: chapterId, updates: { scenes } } });
-      storage.updateChapter(chapterId, { scenes }).catch((cause) => {
-        reportStorageError('deleteScene', cause);
-      });
+      saveQueue.enqueue(chapterId, { scenes });
     },
 
     reorderScenes: (chapterId: string, sceneIds: string[]) => {
@@ -390,11 +460,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .filter((scene): scene is Scene => scene !== null && scene !== undefined);
 
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id: chapterId, updates: { scenes } } });
-      storage.updateChapter(chapterId, { scenes }).catch((cause) => {
-        reportStorageError('reorderScenes', cause);
-      });
+      saveQueue.enqueue(chapterId, { scenes });
     }
-  }), [debouncedSave, reportStorageError, runWithSavingState]);
+  }), [saveQueue, reportStorageError, loadNovelById]);
 
   const activeChapter = useMemo(
     () => state.chapters.find(chapter => chapter.id === state.activeChapterId) || null,
@@ -405,12 +473,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     state,
     dispatch,
     activeChapter,
+    hasUnsavedChanges,
+    flushPendingSaves,
     loadNovel,
     loadNovelById,
     ...actions,
     canUndoReorder: reorderUndoStack.current.length > 0,
     canRedoReorder: reorderRedoStack.current.length > 0
-  }), [state, activeChapter, loadNovel, loadNovelById, actions]);
+  }), [state, activeChapter, hasUnsavedChanges, flushPendingSaves, loadNovel, loadNovelById, actions]);
 
   return (
     <AppContext.Provider value={value}>

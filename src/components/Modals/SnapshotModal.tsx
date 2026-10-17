@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Dialog, Button, IconButton } from '@/components/UI';
 import { useToast } from '@/components/UI';
 import { useApp } from '@/context/AppContext';
+import { alignRevisionLines } from '@/lib/revisionDiff';
 import { getSnapshots, createSnapshot, deleteSnapshot, updateSnapshotLabel } from '@/lib/storage';
 import { editorToPlainText, formatDateTime, countWords } from '@/lib/utils';
 import type { Snapshot } from '@/types';
@@ -66,7 +67,7 @@ interface SnapshotModalProps {
 }
 
 export function SnapshotModal({ open, onClose }: SnapshotModalProps) {
-  const { activeChapter, updateChapter, state } = useApp();
+  const { activeChapter, updateChapter, state, flushPendingSaves } = useApp();
   const { showToast } = useToast();
   const sectionLabel = state.projectType === 'screenplay' ? 'scene' : 'chapter';
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
@@ -119,8 +120,14 @@ export function SnapshotModal({ open, onClose }: SnapshotModalProps) {
     if (!selectedSnapshot || !activeChapter) return;
     if (!confirm(`Restore this snapshot? Current ${sectionLabel} content will be replaced.`)) return;
 
-    updateChapter(activeChapter.id, { content: selectedSnapshot.doc });
-    onClose();
+    try {
+      await createSnapshot(activeChapter.id, activeChapter.content || '', 'Before restore');
+      updateChapter(activeChapter.id, { content: selectedSnapshot.doc });
+      await flushPendingSaves();
+      onClose();
+    } catch {
+      showToast('Could not complete restoration. Your saved snapshots have been retained.', 'error');
+    }
   };
 
   const handleDeleteSnapshot = async (snapshot: Snapshot) => {
@@ -173,10 +180,7 @@ export function SnapshotModal({ open, onClose }: SnapshotModalProps) {
       ? editorToPlainText(compareSnapshot.doc)
       : (activeChapter ? editorToPlainText(activeChapter.content) : '');
 
-    const newLines = newText.split('\n');
-    const oldLines = oldText.split('\n');
-
-    return { newLines, oldLines };
+    return alignRevisionLines(oldText, newText);
   }, [showDiff, selectedSnapshot, compareSnapshot, activeChapter]);
 
   if (!activeChapter) {
@@ -335,6 +339,13 @@ export function SnapshotModal({ open, onClose }: SnapshotModalProps) {
                       Diff
                     </Button>
                   </div>
+                  <label>
+                    Compare selected snapshot with
+                    <select aria-label="Comparison version" value={compareSnapshot?.id || ''} onChange={e => setCompareSnapshot(snapshots.find(item => item.id === e.target.value) || null)}>
+                      <option value="">Current chapter</option>
+                      {snapshots.filter(item => item.id !== selectedSnapshot.id).map(item => <option key={item.id} value={item.id}>{item.label || formatDateTime(item.createdAt)}</option>)}
+                    </select>
+                  </label>
                   <div className={styles.diffView}>
                     <div className={styles.diffPane}>
                       <div className={styles.diffPane__header}>

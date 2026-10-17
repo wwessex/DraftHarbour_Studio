@@ -3,6 +3,8 @@ import SwiftUI
 
 struct SidebarView: View {
   @Bindable var store: ProjectStore
+  var showSafety: () -> Void = {}
+  @State private var savedSearches: [String] = []
   @State private var searchText = ""
   @State private var statusFilter = "all"
 
@@ -67,8 +69,24 @@ struct SidebarView: View {
       }
     }
     .listStyle(.sidebar)
+    .onSubmit(of: .search) { if let first = filteredSections.first { store.selectSection(first.id) } }
+    .onAppear { loadSearches() }
+    .onChange(of: store.envelope.project.id) { _, _ in loadSearches() }
     .searchable(text: $searchText, placement: .sidebar, prompt: "Search manuscript")
     .safeAreaInset(edge: .top) {
+      VStack(alignment: .leading) {
+        HStack {
+          Button("Save Search") {
+            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !query.isEmpty else { return }
+            savedSearches = Array(([query] + savedSearches.filter { $0 != query }).prefix(20))
+            UserDefaults.standard.set(savedSearches, forKey: searchKey)
+          }.disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+          Menu("Saved") {
+            ForEach(savedSearches, id: \.self) { query in Button(query) { searchText = query } }
+            Button("Clear Saved Searches") { savedSearches = []; UserDefaults.standard.removeObject(forKey: searchKey) }
+          }
+        }
       Picker("Status", selection: $statusFilter) {
         Text("All").tag("all")
         ForEach(ChapterStatus.allCases, id: \.self) { status in
@@ -79,6 +97,7 @@ struct SidebarView: View {
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
       .background(.bar)
+      }.padding(.horizontal, 8)
     }
     .safeAreaInset(edge: .bottom) {
       HStack {
@@ -89,6 +108,7 @@ struct SidebarView: View {
         }
         .buttonStyle(.borderless)
 
+        Button("Backups & Trash", action: showSafety)
         Spacer()
 
         Text("\(store.metrics.totalWords) words")
@@ -100,4 +120,7 @@ struct SidebarView: View {
       .background(.bar)
     }
   }
+  private var searchKey: String { "DraftHarbour.savedSearches." + store.envelope.project.id }
+  private func loadSearches() { savedSearches = UserDefaults.standard.stringArray(forKey: searchKey) ?? [] }
+
 }

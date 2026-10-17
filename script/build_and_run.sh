@@ -109,6 +109,9 @@ done
 
 echo "Building $PRODUCT..."
 SWIFT_BUILD_ARGS=(--package-path "$PACKAGE_DIR" -c "$CONFIGURATION")
+if [[ -n "${DRAFTHARBOUR_MACOS_SDK:-}" ]]; then
+  SWIFT_BUILD_ARGS+=(--sdk "$DRAFTHARBOUR_MACOS_SDK")
+fi
 if [[ -n "$SWIFT_SCRATCH_PATH" ]]; then
   SWIFT_BUILD_ARGS+=(--scratch-path "$SWIFT_SCRATCH_PATH")
 fi

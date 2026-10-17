@@ -20,7 +20,7 @@ export function OutlinePanel() {
     quickJump: true,
     details: true,
     scenes: false,
-    insights: true
+    insights: false
   });
 
   const isScreenplay = state.projectType === 'screenplay';
@@ -34,7 +34,7 @@ export function OutlinePanel() {
 
   const [aiPromptDraft, setAiPromptDraft] = useState('');
 
-  const heuristicInsights = useMemo(() => buildProjectHeuristicInsights(state.chapters), [state.chapters]);
+  const heuristicInsights = useMemo(() => buildProjectHeuristicInsights(state.chapters.filter(chapter => countWords(editorToPlainText(chapter.content)) >= 50)), [state.chapters]);
 
   const insightsByChapter = useMemo(() => new Map(heuristicInsights.map(insight => [insight.chapterId, insight])), [heuristicInsights]);
 

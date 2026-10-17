@@ -82,6 +82,7 @@ describe('AppContext action flows', () => {
     await act(async () => { await app.createChapter(); });
     const createdId = app.state.chapters[1].id;
     await act(async () => { app.updateChapter(createdId, { title: 'Renamed' }); });
+    await act(async () => { await app.flushPendingSaves(); });
     await act(async () => { await app.reorderChapters([createdId, app.state.chapters[0].id]); });
     await act(async () => { await app.undoReorder(); await app.redoReorder(); });
     await act(async () => { await app.deleteChapter(createdId); });

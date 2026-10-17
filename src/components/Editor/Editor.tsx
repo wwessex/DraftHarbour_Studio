@@ -31,7 +31,7 @@ interface EditorProps {
 }
 
 export function Editor({ screenplayMode, onToggleScreenplayMode }: EditorProps) {
-  const { state, activeChapter, updateChapterImmediate, deleteChapter, dispatch } = useApp();
+  const { state, activeChapter, updateChapterImmediate, deleteChapter, dispatch, splitActiveChapter, mergeActiveChapter } = useApp();
   const { editor } = useCurrentEditor();
   const { showToast } = useToast();
 
@@ -60,7 +60,7 @@ export function Editor({ screenplayMode, onToggleScreenplayMode }: EditorProps) 
   }, [activeChapter, updateChapterImmediate]);
 
   const handleDelete = useCallback(() => {
-    if (activeChapter && confirm('Delete this chapter? This cannot be undone.')) {
+    if (activeChapter && confirm('Move this chapter to Trash? You can restore it from Projects.')) {
       deleteChapter(activeChapter.id);
     }
   }, [activeChapter, deleteChapter]);
@@ -155,6 +155,13 @@ export function Editor({ screenplayMode, onToggleScreenplayMode }: EditorProps) 
             aria-label="Chapter title"
           />
           <div className={styles.editorHeaderActions}>
+            <IconButton icon="content_cut" label="Split chapter at cursor" variant="ghost" onClick={() => {
+              if (!editor) return;
+              void splitActiveChapter(editor.getSelection().from).catch(cause => showToast(cause instanceof Error ? cause.message : 'Could not split chapter', 'error'));
+            }} />
+            <IconButton icon="merge" label="Merge with next chapter" variant="ghost" disabled={state.chapters.at(-1)?.id === activeChapter.id} onClick={() => {
+              void mergeActiveChapter().catch(cause => showToast(cause instanceof Error ? cause.message : 'Could not merge chapter', 'error'));
+            }} />
             {state.projectType === 'screenplay' && (
               <button
                 type="button"

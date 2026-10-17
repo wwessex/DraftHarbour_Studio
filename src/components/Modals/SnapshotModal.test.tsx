@@ -26,6 +26,7 @@ vi.mock('@/context/AppContext', () => ({
   useApp: () => ({
     state: { projectType: 'book' },
     activeChapter: mocks.activeChapter,
+    flushPendingSaves: vi.fn(async () => {}),
     updateChapter: mocks.updateChapter,
   }),
 }));
@@ -240,6 +241,21 @@ describe('SnapshotModal', () => {
 
   it('exports SnapshotModal as a function component', () => {
     expect(typeof SnapshotModal).toBe('function');
+  });
+
+  it('keeps the draft unchanged when the safety snapshot cannot be saved', async () => {
+    mocks.activeChapter = { id: 'ch-1', title: 'Chapter 1', content: 'Current draft' };
+    mocks.getSnapshots.mockResolvedValue(snapshotData);
+    mocks.createSnapshot.mockRejectedValueOnce(new Error('Storage full'));
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await act(async () => root.render(<SnapshotModal open onClose={mocks.onClose} />));
+    await act(async () => (container.querySelector('[role="button"]') as HTMLElement).click());
+    await act(async () => [...container.querySelectorAll('button')].find(button => button.textContent?.includes('Restore'))!.click());
+    expect(mocks.createSnapshot).toHaveBeenCalledWith('ch-1', 'Current draft', 'Before restore');
+    expect(mocks.updateChapter).not.toHaveBeenCalled();
+    expect(mocks.onClose).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 
   it('shows error toast when loading snapshots fails', async () => {

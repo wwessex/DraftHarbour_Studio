@@ -10,6 +10,7 @@ import { getProfileDefaults, validateExport, getValidationIssues, hasValidationE
 import { recordExport } from '@/lib/exportHistory';
 import { countWords, editorToPlainText } from '@/lib/utils';
 import styles from './Modals.module.css';
+import { exportToEpub } from '@/lib/export/epub';
 
 interface ExportModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ interface ExportPreset {
 }
 
 const EXPORT_PRESETS: ExportPreset[] = [
+  { id: 'epub-reading', name: 'Ebook (EPUB)', icon: 'auto_stories', description: 'Text-only EPUB 3 with a table of contents and basic formatting. Images are noted but not embedded.', format: 'epub', includeHeadings: true, projectTypes: ['book'] },
   {
     id: 'submission-us',
     name: 'US Manuscript Submission',
@@ -102,7 +104,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
     id: 'archive-docx',
     name: 'Archive Copy',
     icon: 'inventory_2',
-    description: 'Full DOCX backup with all chapter headings for archiving.',
+    description: 'Manuscript DOCX with chapter headings. Use Export Backup for a complete project copy.',
     format: 'docx',
     includeHeadings: true,
     projectTypes: ['book', 'screenplay'],
@@ -193,6 +195,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
     markdown: 'Markdown',
     txt: 'Plain Text',
     publishingBundle: 'Publishing Bundle',
+    epub: 'EPUB',
   };
 
   const totalWords = state.chapters.reduce((sum, ch) => sum + countWords(editorToPlainText(ch.content)), 0);
@@ -266,6 +269,9 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
     setExporting(true);
     try {
       switch (format) {
+        case 'epub':
+          await exportToEpub(state.chapters, state.novelTitle, authorName, locale);
+          break;
         case 'docx':
           await exportToDocx(state.chapters, state.novelTitle, resolvedIncludeHeadings, manuscriptOpts);
           break;
@@ -365,6 +371,15 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 
   return (
     <Dialog open={open} onClose={onClose} title="Export" size="medium">
+      <details>
+        <summary>Contents and text preview · {state.chapters.length} chapters · {totalWords.toLocaleString()} words</summary>
+        <p>This preview shows manuscript text. Pagination depends on the chosen format. Backups also include project notes and story-bible data.</p>
+        {state.chapters.map(chapter => <details key={chapter.id}>
+          <summary>{chapter.title} · {countWords(editorToPlainText(chapter.content))} words{!chapter.content?.trim() ? ' · Empty chapter' : ''}</summary>
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 240, overflow: 'auto', font: 'inherit' }}>{editorToPlainText(chapter.content)}</pre>
+        </details>)}
+        {state.chapters.some(chapter => /!\[.*?\]\(/.test(chapter.content || '')) && <p>Text-only EPUB notes image locations but does not embed images.</p>}
+      </details>
       {/* Tab bar */}
       <div className={styles.exportTabBar}>
         <button

@@ -61,6 +61,8 @@ public final class ProjectStore {
 
   public func replaceEnvelope(_ envelope: DhprojEnvelope, activeSectionID: String? = nil) {
     self.envelope = DhprojCodec.normalize(envelope)
+    sectionOrderUndoStack.removeAll()
+    sectionOrderRedoStack.removeAll()
     if let activeSectionID, self.envelope.sections.contains(where: { $0.id == activeSectionID }) {
       self.activeSectionID = activeSectionID
     } else {
@@ -163,6 +165,7 @@ public final class ProjectStore {
     guard let index = envelope.sections.firstIndex(where: { $0.id == id }) else {
       throw DraftHarbourError.missingSection(id)
     }
+    envelope.deletedSections.insert(DeletedSection(section: envelope.sections[index], snapshots: envelope.snapshots.filter { $0.chapterId == id }, comments: envelope.commentThreads.filter { $0.chapterId == id }), at: 0)
     envelope.sections.remove(at: index)
     envelope.snapshots.removeAll { $0.chapterId == id }
     envelope.commentThreads.removeAll { $0.chapterId == id }
@@ -362,13 +365,19 @@ public final class ProjectStore {
 
   public func createAutoSnapshotForActiveSection() throws {
     guard let section = activeSection, let content = section.content, !content.isEmpty else { return }
-    _ = try createSnapshot(label: "Auto")
+    let automatic = envelope.snapshots.filter { $0.chapterId == section.id && $0.label == "Auto" }
+    guard automatic.first?.doc != content else { return }
+    let newest = try createSnapshot(label: "Auto")
+    let retained = Set(([newest] + automatic).prefix(30).map(\.id))
+    envelope.snapshots.removeAll { $0.chapterId == section.id && $0.label == "Auto" && !retained.contains($0.id) }
   }
 
   public func restoreSnapshot(id: String) throws {
     guard let snapshot = envelope.snapshots.first(where: { $0.id == id }) else {
       throw DraftHarbourError.missingSnapshot(id)
     }
+    guard let current = envelope.sections.first(where: { $0.id == snapshot.chapterId }) else { throw DraftHarbourError.missingSection(snapshot.chapterId) }
+    envelope.snapshots.insert(Snapshot(chapterId: current.id, doc: current.content ?? "", label: "Before restore"), at: 0)
     updateSection(id: snapshot.chapterId) { section in
       section.content = snapshot.doc
     }
@@ -473,11 +482,15 @@ public final class ProjectStore {
   public func replaceInActiveSection(query: String, replacement: String, caseSensitive: Bool = false) -> Int {
     guard var content = activeSection?.content, let activeSectionID, !query.isEmpty else { return 0 }
     let options: String.CompareOptions = caseSensitive ? [] : [.caseInsensitive]
-    var count = 0
-    while let range = content.range(of: query, options: options) {
-      content.replaceSubrange(range, with: replacement)
-      count += 1
+    let original = content
+    var matches: [Range<String.Index>] = []
+    var cursor = original.startIndex
+    while cursor < original.endIndex, let range = original.range(of: query, options: options, range: cursor..<original.endIndex) {
+      matches.append(range)
+      cursor = range.upperBound
     }
+    let count = matches.count
+    for range in matches.reversed() { content.replaceSubrange(range, with: replacement) }
     if count > 0 {
       updateSection(id: activeSectionID) { section in
         section.content = content
@@ -1160,7 +1173,7 @@ public final class ProjectStore {
     markChanged()
   }
 
-  private func renumberSections() {
+  func renumberSections() {
     for index in envelope.sections.indices {
       envelope.sections[index].order = index
       envelope.sections[index].novelId = envelope.project.id
@@ -1176,7 +1189,7 @@ public final class ProjectStore {
     markChanged()
   }
 
-  private func markChanged() {
+  func markChanged() {
     envelope.project.updatedAt = currentTimeMilliseconds()
     revision += 1
   }

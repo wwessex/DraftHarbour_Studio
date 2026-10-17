@@ -127,6 +127,8 @@ export function Sidebar({ onExportBackup, onImportBackup }: SidebarProps) {
         role={isMobileDialogOpen ? 'dialog' : 'complementary'}
         aria-modal={isMobileDialogOpen ? 'true' : undefined}
         aria-label="Sidebar"
+        aria-hidden={isHidden}
+        inert={isHidden}
         tabIndex={isMobileDialogOpen ? -1 : undefined}
         style={!isMobile && !isHidden ? { width: size } : undefined}
       >
@@ -158,6 +160,14 @@ export function Sidebar({ onExportBackup, onImportBackup }: SidebarProps) {
           </div>
         )}
         <SidebarSearch />
+        <nav className={styles.workflow} aria-label="Writing workflow">
+          {(['Draft', 'Plan', 'Review'] as const).map(mode => {
+            const current = sidebarPanels.visible?.scenePlanner !== false ? 'Plan' : sidebarPanels.visible?.outline !== false ? 'Review' : 'Draft';
+            return <Button key={mode} size="small" variant={current === mode ? 'primary' : 'ghost'} aria-pressed={current === mode} onClick={() => updateSettings({
+              sidebarPanels: { visible: { chapters: true, scenePlanner: mode === 'Plan', outline: mode !== 'Draft' }, collapsed: { scenePlanner: false, outline: false } },
+            })}>{mode}</Button>;
+          })}
+        </nav>
         <div className={styles.sidebar__content}>
           {panelOrder.map(panelId => {
             const panel = panelDefinitions.find(def => def.id === panelId);

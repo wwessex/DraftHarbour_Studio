@@ -9,16 +9,19 @@ type ToastFn = (message: string, type?: 'success' | 'error' | 'info' | 'warning'
 interface UseProjectFileActionsParams {
   state: AppState;
   loadNovel: () => Promise<void>;
+  flushPendingSaves: () => Promise<void>;
+  loadNovelById: (id: string) => Promise<void>;
   showToast: ToastFn;
 }
 
-export function useProjectFileActions({ state, loadNovel, showToast }: UseProjectFileActionsParams) {
+export function useProjectFileActions({ state, loadNovel, loadNovelById, flushPendingSaves, showToast }: UseProjectFileActionsParams) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const projectFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExportBackup = useCallback(async () => {
     try {
+      await flushPendingSaves();
       const backup = await exportBackup(state.novelId, true);
       const json = JSON.stringify(backup, null, 2);
       downloadFile(json, `${state.novelTitle}-backup.json`);
@@ -27,10 +30,11 @@ export function useProjectFileActions({ state, loadNovel, showToast }: UseProjec
       console.error('Backup export failed:', err);
       showToast('Failed to export backup', 'error');
     }
-  }, [state.novelId, state.novelTitle, showToast]);
+  }, [state.novelId, state.novelTitle, flushPendingSaves, showToast]);
 
   const handleSaveProjectFile = useCallback(async () => {
     try {
+      await flushPendingSaves();
       const blob = await exportDhproj(state.novelId, {
         includeSnapshots: true,
         includeIntegrationArtifacts: false,
@@ -41,23 +45,24 @@ export function useProjectFileActions({ state, loadNovel, showToast }: UseProjec
       console.error('Project file save failed:', err);
       showToast('Failed to save project file', 'error');
     }
-  }, [state.novelId, state.novelTitle, showToast]);
+  }, [state.novelId, state.novelTitle, flushPendingSaves, showToast]);
 
   const handleOpenProjectFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      await importDhproj(file);
-      showToast('Project file opened successfully. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1000);
+      await flushPendingSaves();
+      const novel = await importDhproj(file);
+      await loadNovelById(novel.id);
+      showToast('Project file opened successfully', 'success');
     } catch (err) {
       console.error('Project file open failed:', err);
       showToast('Failed to open project file. Check the file format.', 'error');
     }
 
     e.target.value = '';
-  }, [showToast]);
+  }, [flushPendingSaves, loadNovelById, showToast]);
 
   const handleImportBackup = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,16 +71,17 @@ export function useProjectFileActions({ state, loadNovel, showToast }: UseProjec
     try {
       const text = await file.text();
       const backup = JSON.parse(text);
-      await importBackup(backup);
-      showToast('Backup imported successfully. Reloading...', 'success');
-      setTimeout(() => window.location.reload(), 1000);
+      await flushPendingSaves();
+      const novel = await importBackup(backup);
+      await loadNovelById(novel.id);
+      showToast('Backup imported successfully', 'success');
     } catch (err) {
       console.error('Backup import failed:', err);
       showToast('Failed to import backup. Check the file format.', 'error');
     }
 
     e.target.value = '';
-  }, [showToast]);
+  }, [flushPendingSaves, loadNovelById, showToast]);
 
   const handleImportDocument = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

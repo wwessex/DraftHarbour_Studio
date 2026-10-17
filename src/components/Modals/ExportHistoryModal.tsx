@@ -25,6 +25,7 @@ const FORMAT_ICONS: Record<string, string> = {
   markdown: 'code',
   txt: 'text_snippet',
   publishingBundle: 'inventory_2',
+  epub: 'auto_stories',
 };
 
 export function ExportHistoryModal({ open, onClose }: ExportHistoryModalProps) {

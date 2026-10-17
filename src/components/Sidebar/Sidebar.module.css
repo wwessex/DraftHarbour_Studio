@@ -1,4 +1,5 @@
 /* Sidebar — frosted glass left panel with smooth collapse */
+.workflow { display: flex; gap: 4px; padding: 8px 12px; }
 .sidebar {
   display: flex;
   flex-direction: column;

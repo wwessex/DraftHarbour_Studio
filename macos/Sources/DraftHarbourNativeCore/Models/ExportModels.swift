@@ -234,6 +234,7 @@ public struct ExportPreset: Codable, Equatable, Identifiable, Sendable {
 
 public enum ExportPresetCatalog {
   public static let presets: [ExportPreset] = [
+    ExportPreset(id: "ebook-epub", name: "Ebook (EPUB)", description: "Text-only EPUB 3 with contents and basic emphasis. Images are noted but not embedded.", format: .epub, includeHeadings: true, projectTypes: [.book]),
     ExportPreset(
       id: "submission-us",
       name: "US Manuscript Submission",

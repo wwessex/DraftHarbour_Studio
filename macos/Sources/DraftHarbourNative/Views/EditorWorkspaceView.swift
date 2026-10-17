@@ -17,6 +17,7 @@ struct EditorWorkspaceView: View {
   @AppStorage("DraftHarbour.editor.lineHeight") private var lineHeight = 1.5
   @AppStorage("DraftHarbour.editor.pageView") private var pageView = false
   @AppStorage("DraftHarbour.editor.typewriterMode") private var typewriterMode = false
+  @State private var operationError: String?
   @State private var screenplayMode = false
 
   var body: some View {
@@ -61,6 +62,9 @@ struct EditorWorkspaceView: View {
         ContentUnavailableView("No Section Selected", systemImage: "doc.text.magnifyingglass")
       }
     }
+    .alert("Chapter Operation", isPresented: Binding(get: { operationError != nil }, set: { if !$0 { operationError = nil } })) {
+      Button("OK", role: .cancel) {}
+    } message: { Text(operationError ?? "") }
     .onAppear {
       screenplayMode = store.projectType == .screenplay
     }
@@ -81,6 +85,14 @@ struct EditorWorkspaceView: View {
         .foregroundStyle(.secondary)
 
       Spacer()
+      Button("Split at Cursor") {
+        do { _ = try store.splitActiveSection(atUTF16: selectedRange.location); selectedRange = NSRange(location: 0, length: 0) }
+        catch { operationError = "Choose a cursor inside the chapter, outside a comment anchor. " + error.localizedDescription }
+      }
+      Button("Merge Next") {
+        do { try store.mergeActiveSectionWithNext() }
+        catch { operationError = error.localizedDescription }
+      }.disabled(store.envelope.sections.last?.id == section.id)
 
       formattingButton("bold", command: .bold)
       formattingButton("italic", command: .italic)

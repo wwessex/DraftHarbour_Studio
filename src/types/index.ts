@@ -100,6 +100,8 @@ export interface Novel {
   title: string;
   projectType?: ProjectType;
   updatedAt: number;
+  // Native-only project records are carried through web edits without activation.
+  portableData?: Record<string, unknown>;
 }
 
 export type Project = Novel;
@@ -230,7 +232,7 @@ export interface TextAnalysis {
   longSentences: string[];
 }
 
-export type ExportFormat = 'docx' | 'pdf' | 'screenplayPdf' | 'rtf' | 'fountain' | 'markdown' | 'txt' | 'publishingBundle';
+export type ExportFormat = 'docx' | 'pdf' | 'screenplayPdf' | 'rtf' | 'fountain' | 'markdown' | 'txt' | 'publishingBundle' | 'epub';
 
 // ── Manuscript export profiles & options ──
 
@@ -313,6 +315,9 @@ export interface BackupDataV3 {
   snapshots?: Snapshot[];
   commentThreads?: CommentThread[];
   exportedAt: number;
+  characters?: CharacterEntity[];
+  worldEntries?: WorldEntry[];
+  storyBlueprint?: StoryBlueprint | null;
 }
 
 export type BackupData = LegacyBackupData | BackupDataV3;
@@ -342,6 +347,26 @@ export interface DhprojData {
   integrations?: DhprojIntegrations;
   characters?: CharacterEntity[];
   worldEntries?: WorldEntry[];
+  storyBlueprint?: StoryBlueprint | null;
+}
+
+export interface ProjectBackup {
+  id: string;
+  novelId: string;
+  createdAt: number;
+  checksum: string;
+  automatic: boolean;
+  label?: string;
+  data: BackupDataV3;
+}
+
+export interface TrashEntry {
+  id: string;
+  novelId: string;
+  title: string;
+  kind: 'chapter' | 'project';
+  deletedAt: number;
+  data: BackupDataV3;
 }
 
 

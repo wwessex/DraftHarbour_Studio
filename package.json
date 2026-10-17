@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "build:native": "npm run build && npx cap sync",
     "preview": "vite preview",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint src vite.config.ts eslint.config.js --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:inventory": "node scripts/test-inventory.mjs",
@@ -35,8 +35,8 @@
     "smoke:providers": "node scripts/provider-smoke.mjs"
   },
   "dependencies": {
-    "@capacitor/core": "^8.1.0",
-    "@capacitor/ios": "^8.1.0",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "@codemirror/autocomplete": "^6.20.1",
     "@codemirror/commands": "^6.10.3",
     "@codemirror/lang-markdown": "^6.5.0",
@@ -71,7 +71,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
@@ -82,9 +82,9 @@
     "lint-staged": "^16.2.7",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
-    "vite": "^6.0.5",
+    "vite": "^6.4.4",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^4.0.18",
+    "vitest": "^4.1.12",
     "workbox-window": "^7.3.0"
   }
 }

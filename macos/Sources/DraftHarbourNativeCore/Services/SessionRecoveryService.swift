@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 public struct RecoverySnapshot: Codable, Equatable, Sendable {
   public var projectId: String
@@ -70,7 +71,10 @@ public struct SessionRecoveryService {
   }
 
   public func recoveryURL(projectId: String) -> URL {
-    baseDirectory.appendingPathComponent("\(projectId).recovery.json")
+    let safeID = projectId.range(of: "^[A-Za-z0-9_-]{1,128}$", options: .regularExpression) != nil
+      ? projectId
+      : SHA256.hash(data: Data(projectId.utf8)).map { String(format: "%02x", $0) }.joined()
+    return baseDirectory.appendingPathComponent("\(safeID).recovery.json")
   }
 
   public func recordLastOpenedProjectURL(_ url: URL, limit: Int = 10) {

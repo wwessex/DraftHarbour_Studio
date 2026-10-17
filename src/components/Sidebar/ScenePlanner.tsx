@@ -16,7 +16,7 @@ const STATUS_OPTIONS = [
 ];
 
 export function ScenePlanner() {
-  const { state, activeChapter, addScene, updateScene, deleteScene, reorderScenes } = useApp();
+  const { state, activeChapter, addScene, updateScene, deleteScene, reorderScenes, moveScene } = useApp();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [popoutSceneId, setPopoutSceneId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'planned' | 'draft' | 'revised' | 'final'>('all');
@@ -257,6 +257,15 @@ export function ScenePlanner() {
 
               {isExpanded && (
                 <div className={styles.sceneCard__body}>
+                  <label>
+                    Move scene to chapter
+                    <select aria-label={`Move ${scene.title} to chapter`} value="" onChange={e => {
+                      if (e.target.value) void moveScene(activeChapter.id, e.target.value, scene.id).catch(cause => alert(cause instanceof Error ? cause.message : 'Could not move scene'));
+                    }}>
+                      <option value="">Choose a chapter</option>
+                      {state.chapters.filter(chapter => chapter.id !== activeChapter.id).map(chapter => <option key={chapter.id} value={chapter.id}>{chapter.title}</option>)}
+                    </select>
+                  </label>
                   <div className={styles.sceneCard__field}>
                     <label>Title</label>
                     <Input

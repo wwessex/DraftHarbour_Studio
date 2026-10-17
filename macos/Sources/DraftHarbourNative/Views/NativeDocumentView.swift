@@ -78,12 +78,14 @@ struct NativeDocumentView: View {
   @State private var columnVisibility = NavigationSplitViewVisibility.all
   @SceneStorage("DraftHarbour.workspaceMode") private var workspaceModeRaw = WorkspaceMode.write.rawValue
   @SceneStorage("DraftHarbour.selectedToolPanel") private var selectedToolPanel = ToolPanel.dashboard.rawValue
-  @SceneStorage("DraftHarbour.inspectorVisible") private var inspectorVisible = true
+  @SceneStorage("DraftHarbour.inspectorVisible") private var inspectorVisible = false
   @State private var showingQuickSwitcher = false
   @State private var showingFindReplace = false
   @State private var exportError: String?
   @State private var operationMessage: String?
   @State private var recoveryState = "Ready"
+  @State private var recoveryNeedsArchiving = false
+  @State private var showingSafety = false
   @State private var pendingRecovery: RecoverySnapshot?
   @State private var spotlightIndexTask: Task<Void, Never>?
   @State private var selectedRange = NSRange(location: 0, length: 0)
@@ -118,7 +120,7 @@ struct NativeDocumentView: View {
 
   var body: some View {
     NavigationSplitView(columnVisibility: $columnVisibility) {
-      SidebarView(store: store)
+      SidebarView(store: store, showSafety: { showingSafety = true })
         .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
     } detail: {
       workspace
@@ -224,28 +226,36 @@ struct NativeDocumentView: View {
     } message: {
       Text("Attach a comment to the current selection.")
     }
-    .alert("Restore Unsaved Draft?", isPresented: Binding(get: { pendingRecovery != nil }, set: { if !$0 { pendingRecovery = nil } })) {
-      Button("Restore") {
-        if let pendingRecovery {
-          store.replaceEnvelope(pendingRecovery.envelope, activeSectionID: pendingRecovery.activeSectionID)
-        }
-        pendingRecovery = nil
+    .sheet(isPresented: $showingSafety) {
+      ProjectSafetyView(store: store, restoreCopy: saveRecoveredProject)
+    }
+    .sheet(isPresented: Binding(get: { pendingRecovery != nil }, set: { if !$0 { pendingRecovery = nil } })) {
+      if let recovery = pendingRecovery {
+        RecoveryComparisonView(saved: store.envelope, recovery: recovery, restore: {
+          do { saveRecoveredProject(try DhprojCodec.copyAsNewProject(recovery.envelope)); pendingRecovery = nil }
+          catch { exportError = error.localizedDescription }
+        }, later: { pendingRecovery = nil })
       }
-      Button("Discard", role: .destructive) {
-        try? recoveryService.clear(projectId: store.envelope.project.id)
-        pendingRecovery = nil
-      }
-      Button("Later", role: .cancel) {
-        pendingRecovery = nil
-      }
-    } message: {
-      Text("A newer autosaved recovery copy exists for this project.")
     }
     .onChange(of: store.revision) { _, _ in
       document.envelope = store.envelope
-      _ = try? recoveryService.save(envelope: store.envelope, activeSectionID: store.activeSectionID, sourceURL: fileURL)
-      recoveryState = "Recovery saved"
+      if pendingRecovery == nil && !recoveryNeedsArchiving {
+        do {
+          _ = try recoveryService.save(envelope: store.envelope, activeSectionID: store.activeSectionID, sourceURL: fileURL)
+          recoveryState = "Recovery saved"
+        } catch { recoveryState = "Recovery failed"; exportError = error.localizedDescription }
+      }
       scheduleSpotlightIndexing()
+    }
+    .task {
+      var delay: UInt64 = 60_000_000_000
+      while !Task.isCancelled {
+        do { try await Task.sleep(nanoseconds: delay) } catch { return }
+        guard !Task.isCancelled else { return }
+        do { _ = try ProjectSafetyService().save(store.envelope, automatic: true) }
+        catch { recoveryState = "Backup failed"; exportError = error.localizedDescription }
+        delay = 300_000_000_000
+      }
     }
     .onChange(of: store.activeSectionID) { _, newValue in
       recoveryService.recordActiveSectionID(newValue, projectId: store.envelope.project.id)
@@ -263,10 +273,18 @@ struct NativeDocumentView: View {
          store.envelope.sections.contains(where: { $0.id == savedActiveSection }) {
         store.selectSection(savedActiveSection)
       }
-      if let snapshot = try? recoveryService.load(projectId: store.envelope.project.id),
-         recoveryService.shouldOfferRestore(snapshot, documentURL: fileURL) {
-        pendingRecovery = snapshot
-        recoveryState = "Recovery available"
+      do {
+        if let snapshot = try recoveryService.load(projectId: store.envelope.project.id),
+           recoveryService.shouldOfferRestore(snapshot, documentURL: fileURL) {
+          do { _ = try ProjectSafetyService().save(snapshot.envelope, label: "Unsaved session recovery") }
+          catch { recoveryNeedsArchiving = true; exportError = error.localizedDescription }
+          pendingRecovery = snapshot
+          recoveryState = "Recovery available"
+        }
+      } catch {
+        recoveryNeedsArchiving = true
+        recoveryState = "Recovery unreadable"
+        exportError = "The earlier recovery file could not be read and has been preserved. " + error.localizedDescription
       }
       scheduleSpotlightIndexing(delay: 0)
     }
@@ -421,6 +439,21 @@ struct NativeDocumentView: View {
     }
   }
 
+  private func saveRecoveredProject(_ envelope: DhprojEnvelope) {
+    let panel = NSSavePanel()
+    panel.allowedContentTypes = [.dhproj]
+    panel.nameFieldStringValue = envelope.project.title + " (Recovered).dhproj"
+    panel.begin { response in
+      guard response == .OK, let url = panel.url else { return }
+      do {
+        try DhprojCodec.encode(envelope).write(to: url, options: .atomic)
+        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, error in
+          if let error { exportError = error.localizedDescription }
+        }
+      } catch { exportError = error.localizedDescription }
+    }
+  }
+
   private func importProjectBackup() {
     let panel = NSOpenPanel()
     panel.canChooseFiles = true
@@ -431,8 +464,7 @@ struct NativeDocumentView: View {
       guard response == .OK, let url = panel.url else { return }
       do {
         let envelope = try DhprojCodec.decode(Data(contentsOf: url))
-        store.replaceEnvelope(envelope)
-        operationMessage = "Imported backup from \(url.lastPathComponent)."
+        saveRecoveredProject(try DhprojCodec.copyAsNewProject(envelope))
       } catch {
         exportError = error.localizedDescription
       }
@@ -753,7 +785,6 @@ struct NativeDocumentView: View {
       importDocument()
     case .saveProjectFile:
       sendResponderAction("saveDocument:")
-      _ = try? recoveryService.clear(projectId: store.envelope.project.id)
     case .openProjectFile:
       NSDocumentController.shared.openDocument(nil)
     case .openRecent:

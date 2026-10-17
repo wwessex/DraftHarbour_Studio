@@ -11,6 +11,7 @@ public enum ExportFormat: String, Codable, CaseIterable, Sendable {
   case screenplayPdf
   case docx
   case publishingBundle
+  case epub
 }
 
 public struct ExportedFile: Equatable, Sendable {
@@ -347,6 +348,8 @@ public struct PublishingBundleExporter: Exporter {
 public enum ExporterRegistry {
   public static func exporter(for format: ExportFormat) -> Exporter {
     switch format {
+    case .epub:
+      return EPUBExporter()
     case .markdown:
       return MarkdownExporter()
     case .plainText:

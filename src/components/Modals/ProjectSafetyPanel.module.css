@@ -1,0 +1,5 @@
+.panel { display: grid; gap: 12px; padding-block: 16px; }
+.panel article { border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.comparison pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 240px; overflow: auto; font: inherit; }
+@media (max-width: 640px) { .comparison { grid-template-columns: 1fr; } }

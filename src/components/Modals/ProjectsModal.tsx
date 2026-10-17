@@ -6,6 +6,8 @@ import { editorToPlainText, countWords } from '@/lib/utils';
 import type { Novel, ProjectType, StoryBlueprint, StoryStructurePreference, PacingProfile } from '@/types';
 import { getWorkspaceStore, isProjectLockedElsewhere, togglePinnedProject, trackProjectOpen } from '@/context/services/workspaceService';
 import styles from './Modals.module.css';
+import { ProjectSafetyPanel } from './ProjectSafetyPanel';
+import { listRecoveryDrafts } from '@/lib/recoveryJournal';
 
 interface ProjectsModalProps {
   open: boolean;
@@ -32,6 +34,7 @@ export function ProjectsModal({ open, onClose }: ProjectsModalProps) {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [showSafety, setShowSafety] = useState(() => listRecoveryDrafts().length > 0);
   const [newTitle, setNewTitle] = useState('');
   const [newType, setNewType] = useState<ProjectType>('book');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -114,6 +117,8 @@ export function ProjectsModal({ open, onClose }: ProjectsModalProps) {
 
   return (
     <Dialog open={open} onClose={onClose} title="Projects" size="medium">
+      <Button variant="ghost" onClick={() => setShowSafety(value => !value)} aria-expanded={showSafety}>Backups, recovery &amp; trash</Button>
+      {showSafety && open && <ProjectSafetyPanel onRestored={onClose} />}
       <div className={styles.projectsLayout}>
         <div className={styles.projectsCurrent}>
           <div className={styles.projectsCurrentInfo}>
