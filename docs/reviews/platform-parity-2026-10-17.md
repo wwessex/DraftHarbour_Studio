@@ -32,3 +32,9 @@ The native build script accepts `DRAFTHARBOUR_MACOS_SDK` to select a compatible 
 The user's preference is saved in both `/Users/williamwessex/.codex/AGENTS.md` and the repository `AGENTS.md`: inspect, implement and validate **every applicable maintained version** by default, including independent native implementations; disclose platform/toolchain limits. The global instruction was subsequently supplied back into this chat, confirming that it is being loaded.
 
 Changes remain uncommitted. Existing manuscripts were not opened or modified through terminal scripts. No release was published.
+
+## Subsequent GitHub validation
+
+[PR #296](https://github.com/wwessex/Writer1/pull/296) adds remote evidence beyond the local limits above. GitHub passed the full macOS XCTest suite (88 tests before the additional backup-metadata regression), native app build, web tests and coverage, Windows and Linux native-shell tests, and iOS simulator compilation. The PR's checks show the current commit's final results. Native GUI interaction and physical-device testing remain separate from these build and test results.
+
+The final backup hardening rejects a stored backup whose identifier is not a UUID or does not match its actual filename, preventing corrupt metadata from redirecting rotation to another path. A regression covers both traversal and mismatched filenames. The PR workflow also explicitly limits its token to read-only contents access.

@@ -37,7 +37,13 @@ public struct ProjectSafetyService {
     guard FileManager.default.fileExists(atPath: path.path) else { return [] }
     return try FileManager.default.contentsOfDirectory(at: path, includingPropertiesForKeys: nil)
       .filter { $0.pathExtension == "json" }
-      .map { try JSONDecoder().decode(VerifiedProjectBackup.self, from: Data(contentsOf: $0)) }
+      .map { url in
+        let backup = try JSONDecoder().decode(VerifiedProjectBackup.self, from: Data(contentsOf: url))
+        guard UUID(uuidString: backup.id) != nil, url.lastPathComponent == backup.id + ".json" else {
+          throw CocoaError(.fileReadCorruptFile)
+        }
+        return backup
+      }
       .sorted { $0.createdAt > $1.createdAt }
   }
   @discardableResult

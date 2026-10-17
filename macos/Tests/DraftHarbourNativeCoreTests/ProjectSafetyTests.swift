@@ -4,6 +4,23 @@ import XCTest
 import ZIPFoundation
 
 final class ProjectSafetyTests: XCTestCase {
+  func testBackupMetadataCannotRedirectRotationToAnotherFile() throws {
+    let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: folder) }
+    let service = ProjectSafetyService(directory: folder)
+    let envelope = DhprojCodec.newProject(title: "Rotation boundary")
+    let backup = try service.save(envelope)
+    let projectFolder = try XCTUnwrap(FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil).first)
+    let record = projectFolder.appendingPathComponent(backup.id + ".json")
+    for invalidID in ["../../unrelated", UUID().uuidString] {
+      var damaged = backup
+      damaged.id = invalidID
+      try JSONEncoder().encode(damaged).write(to: record, options: .atomic)
+      XCTAssertThrowsError(try service.list(projectID: envelope.project.id))
+      XCTAssertTrue(FileManager.default.fileExists(atPath: record.path))
+    }
+  }
+
   func testRecoveryIdentifierCannotEscapeItsDirectory() {
     let folder = FileManager.default.temporaryDirectory.appendingPathComponent("RecoverySandbox")
     let service = SessionRecoveryService(baseDirectory: folder)
