@@ -40,6 +40,9 @@ vi.mock('@/components/UI', () => ({
     }),
 }));
 
+let actionEditor: { getContent: () => string; getSelection: () => { from: number; to: number; empty: boolean }; replaceRange: ReturnType<typeof vi.fn> } | null = null;
+vi.mock('@/lib/editor/EditorContext', () => ({ useCurrentEditor: () => ({ editor: actionEditor }) }));
+
 // AppContext mock
 const mockUpdateChapter = vi.fn();
 const mockState = {
@@ -219,6 +222,8 @@ describe('AIWritingModal', () => {
     onCloseMock = vi.fn();
     mockExecute.mockReset().mockResolvedValue({ text: 'AI response text', provider: 'openai-compatible' });
     mockDestroy.mockReset();
+    mockUpdateChapter.mockClear();
+    actionEditor = null;
     currentAIConfig = { ...defaultAIConfig };
     mockState.projectType = 'book';
   });
@@ -251,7 +256,7 @@ describe('AIWritingModal', () => {
       root.render(<AIWritingModal open={true} onClose={onCloseMock} />);
     });
     const text = container.textContent || '';
-    expect(text).toContain('Continue Writing');
+    expect(text).toContain('Continue');
     expect(text).toContain('Suggest Alternatives');
     expect(text).toContain('Summarise');
     expect(text).toContain('Expand');
@@ -441,7 +446,7 @@ describe('AIWritingModal', () => {
 
     // Click a preset to trigger sendPrompt
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
     expect(continueBtn).toBeDefined();
 
     await act(async () => {
@@ -465,7 +470,7 @@ describe('AIWritingModal', () => {
 
     // Click a preset
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -477,7 +482,7 @@ describe('AIWritingModal', () => {
 
     const allButtons = Array.from(container.querySelectorAll('button'));
     const copyBtn = allButtons.find(b => b.textContent?.includes('Copy'));
-    const insertBtn = allButtons.find(b => b.textContent?.includes('Insert to Chapter'));
+    const insertBtn = allButtons.find(b => b.textContent?.includes('Append to Chapter'));
     expect(copyBtn).toBeDefined();
     expect(insertBtn).toBeDefined();
   });
@@ -492,7 +497,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -722,7 +727,7 @@ describe('AIWritingModal', () => {
 
     // Trigger a response via preset
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -732,14 +737,14 @@ describe('AIWritingModal', () => {
     });
 
     const allButtons = Array.from(container.querySelectorAll('button'));
-    const insertBtn = allButtons.find(b => b.textContent?.includes('Insert to Chapter'));
+    const insertBtn = allButtons.find(b => b.textContent?.includes('Append to Chapter'));
     expect(insertBtn).toBeDefined();
 
     await act(async () => {
       insertBtn!.click();
     });
 
-    expect(mockUpdateChapter).toHaveBeenCalledWith('ch-1', { content: 'AI response text' });
+    expect(mockUpdateChapter).toHaveBeenCalledWith('ch-1', { content: 'Hello world\n\nAI response text' });
   });
 
   /* --- Copy response --- */
@@ -757,7 +762,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -963,7 +968,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     expect(continueBtn).toBeTruthy();
     expect(continueBtn!.disabled).toBe(true);
@@ -986,7 +991,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     expect(continueBtn).toBeTruthy();
     expect(continueBtn!.disabled).toBe(true);
@@ -1040,7 +1045,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -1065,7 +1070,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -1156,7 +1161,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -1214,7 +1219,7 @@ describe('AIWritingModal', () => {
     });
 
     const buttons = Array.from(container.querySelectorAll('button'));
-    const continueBtn = buttons.find(b => b.textContent?.includes('Continue Writing'));
+    const continueBtn = buttons.find(b => b.textContent?.includes('Continue'));
 
     await act(async () => {
       continueBtn!.click();
@@ -1288,4 +1293,40 @@ describe('AIWritingModal', () => {
     const text = container.textContent || '';
     expect(text).toContain('add API key only if needed');
   });
+  it('rewrites a selected passage and applies only after explicit acceptance through the editor transaction', async () => {
+    const original = 'Opening.\n\nA rough line.\n\nEnding.';
+    actionEditor = { getContent: () => original, getSelection: () => ({ from: 10, to: 23, empty: false }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    const rewrite = [...container.querySelectorAll('button')].find(b => b.textContent === 'Rewrite')!;
+    await act(async () => rewrite.click());
+    expect(mockExecute.mock.calls.at(-1)?.[0]).toMatchObject({ action: 'rewrite' });
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('TARGET PASSAGE:\nA rough line.');
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent?.includes('Replace Passage'))!.click());
+    expect(actionEditor.replaceRange).toHaveBeenCalledWith(10, 23, 'AI response text');
+  });
+
+  it('refuses a stale suggestion and requires instructions for Write', async () => {
+    let content = 'Original.';
+    actionEditor = { getContent: () => content, getSelection: () => ({ from: 0, to: 0, empty: true }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Write')!.click());
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('instruction box');
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Continue')!.click());
+    content = 'Edited during review.';
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent?.includes('Append to Chapter'))!.click());
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('changed after generation');
+  });
+
+  it('preserves the explicitly configured Narratryx provider instead of autodetecting another service', async () => {
+    currentAIConfig = { provider: 'custom-llm', customLlm: { profile: 'narratryx', backend: 'generic-openai', baseUrl: 'http://127.0.0.1:8890', model: 'narratryx-craft-v1', streaming: false } };
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    expect(container.textContent).toContain('Current AI Mode: Local Model');
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Continue')!.click());
+    expect(mockExecute).toHaveBeenCalled();
+  });
+
 });

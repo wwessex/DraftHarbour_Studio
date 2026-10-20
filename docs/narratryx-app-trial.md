@@ -48,6 +48,16 @@ Use a disposable project and short passages initially.
 
 Setup does not carry another provider's secret into the new endpoint. Shared setup selects the experimental provider only after a click and leaves the endpoint blank until entered. Native setup prepares a new provider; an existing saved provider remains intact. To roll back, select the prior provider or the comparison base. Review responses through existing suggestion/application controls; the model cannot directly write a manuscript or run tools.
 
+## Write, Rewrite and Continue
+
+Open **Tools → AI Writing Tools** in web/PWA, Tauri or iOS. Native macOS exposes the same buttons in **AI Writing** and **AI Suggestions**. They use the configured provider, including the experimental Narratryx service; they require no retraining.
+
+- **Write:** enter instructions, then generate a new passage to append. It can start an empty chapter.
+- **Rewrite:** select a passage in the editor before opening the tools. With no selection, it targets the final paragraph. Optional instructions can request a change in voice, clarity or pace. It returns one replacement, without a required minimum length.
+- **Continue:** generates after the final paragraph, preserving existing writing. It does not treat the published next paragraph as the expected answer.
+
+Generation previews the result. **Append to Chapter** accepts new writing; **Replace Passage** accepts a rewrite. The target chapter and source text must still match the request snapshot; changed text requires a fresh generation. Shared clients apply passage changes through the existing editor transaction/undo path. Native macOS creates a before-change snapshot and offers **Undo AI Change**, guarded against intervening edits. The existing advanced pipeline and other suggestion tools retain their own behavior.
+
 ## Limits, reachability and errors
 
 This service supports text-only, non-streaming chat: one generation at a time, at most 512 output tokens, 4,096 total input-plus-reserved-output tokens, 32 messages, a 64 KiB request and a 120-second cancellation deadline. The engine checks the token count itself because the underlying MLX cache does not enforce this model's requested window. It rejects oversized requests with HTTP 413; it does not truncate manuscript context. Disconnects and deadlines cancel generation. The app profile disables automatic retries of inference requests; a busy response is explicit.

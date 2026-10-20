@@ -17,7 +17,8 @@ final class ToolPanelWindowCoordinator: NSObject, NSWindowDelegate {
     exportAction: @escaping (ExportRequest) -> Void,
     runCommand: @escaping (NativeCommandID) -> Void,
     selectionChanged: @escaping (String) -> Void,
-    focusEditProposal: @escaping (AIEditProposal) -> Void
+    focusEditProposal: @escaping (AIEditProposal) -> Void,
+    editorSelection: @escaping () -> NSRange
   ) {
     let content = ToolPanelView(
       panel: selectedPanel,
@@ -26,6 +27,7 @@ final class ToolPanelWindowCoordinator: NSObject, NSWindowDelegate {
       runCommand: runCommand,
       selectionChanged: selectionChanged,
       focusEditProposal: focusEditProposal,
+      editorSelection: editorSelection,
       closeAction: { [weak self] in self?.close() }
     )
 

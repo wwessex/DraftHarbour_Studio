@@ -560,7 +560,8 @@ struct NativeDocumentView: View {
         selectedToolPanel = rawValue
         persistToolPanelSelection(rawValue)
       },
-      focusEditProposal: focusAIEditProposal(_:)
+      focusEditProposal: focusAIEditProposal(_:),
+      editorSelection: { selectedRange }
     )
   }
 

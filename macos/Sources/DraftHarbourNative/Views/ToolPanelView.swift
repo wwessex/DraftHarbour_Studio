@@ -60,6 +60,7 @@ struct ToolPanelView: View {
   var runCommand: (NativeCommandID) -> Void = { _ in }
   var selectionChanged: (String) -> Void = { _ in }
   var focusEditProposal: (AIEditProposal) -> Void = { _ in }
+  var editorSelection: () -> NSRange = { NSRange(location: 0, length: 0) }
   var closeAction: (() -> Void)?
   @Environment(\.dismiss) private var dismiss
 
@@ -107,6 +108,9 @@ struct ToolPanelView: View {
   @State private var selectedAIProviderID: String?
   @State private var aiPrompt = ""
   @State private var aiResult = ""
+  @State private var writingTask: Task<Void, Never>?
+  @State private var writingDraft: (plan: WritingPlan, sectionID: String, providerID: String)?
+  @State private var writingUndo: (sectionID: String, before: String, after: String)?
   @State private var aiError: String?
   @State private var selectedStageID = AIWorkflowServices.pipelineStages.first?.id ?? "continue"
   @State private var insertionMode = PipelineInsertionMode.append
@@ -1883,6 +1887,8 @@ struct ToolPanelView: View {
         .padding(.vertical, 4)
       }
 
+      writingActionsContent
+
       GroupBox("Workflow") {
         VStack(alignment: .leading, spacing: 10) {
           Picker("Stage", selection: $selectedStageID) {
@@ -1915,7 +1921,7 @@ struct ToolPanelView: View {
         .padding(.vertical, 4)
       }
 
-      if !aiResult.isEmpty {
+      if !aiResult.isEmpty && writingDraft == nil {
         GroupBox("Last Result") {
           Text(aiResult)
             .textSelection(.enabled)
@@ -1945,9 +1951,10 @@ struct ToolPanelView: View {
 
   private var aiSuggestionsContent: some View {
     VStack(alignment: .leading, spacing: 14) {
+      writingActionsContent
+
       GroupBox("Quick Actions") {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
-          aiSuggestionButton("Continue", systemImage: "square.and.pencil", stageID: "continue")
           aiSuggestionButton("Revise", systemImage: "wand.and.stars", stageID: "revise")
           aiSuggestionButton("Strengthen", systemImage: "bolt", stageID: "revise", prompt: "Make the current section more vivid with stronger verbs, sensory details, and clearer stakes.")
           aiSuggestionButton("Shorten", systemImage: "arrow.down.forward.and.arrow.up.backward", stageID: "revise", prompt: "Tighten the current section to half its length without losing meaning.")
@@ -1976,7 +1983,7 @@ struct ToolPanelView: View {
         }
       }
 
-      if !aiResult.isEmpty {
+      if !aiResult.isEmpty && writingDraft == nil {
         GroupBox("Latest Suggestion") {
           Text(aiResult)
             .textSelection(.enabled)
@@ -1989,6 +1996,86 @@ struct ToolPanelView: View {
           .foregroundStyle(.red)
       }
     }
+  }
+
+  private var writingActionsContent: some View {
+    GroupBox("Write · Rewrite · Continue") {
+      VStack(alignment: .leading, spacing: 10) {
+        TextField("Instructions (required for Write, optional for Rewrite or Continue)", text: $aiPrompt, axis: .vertical)
+          .lineLimit(2...5)
+        HStack {
+          ForEach(WritingAction.allCases, id: \.rawValue) { action in
+            Button(action.title) { writingTask = Task { await runWritingAction(action) } }
+              .disabled(isGenerating || store.activeSection == nil)
+          }
+        }
+        if isGenerating, writingTask != nil { Button("Stop") { writingTask?.cancel() } }
+        Text("Rewrite uses selected text, or the final paragraph. Continue adds after the final paragraph. Review before applying.")
+          .font(.caption).foregroundStyle(.secondary)
+        if let draft = writingDraft {
+          Text(aiResult).textSelection(.enabled)
+          HStack {
+            Button(draft.plan.action == .rewrite ? "Replace Passage" : "Append to Chapter") { applyWritingDraft() }
+              .disabled(isGenerating)
+            Button("Discard") { writingDraft = nil; aiResult = "" }
+          }
+        }
+        if writingUndo != nil {
+          Button("Undo AI Change") { undoWritingChange() }
+        }
+      }
+    }
+  }
+
+  @MainActor
+  private func runWritingAction(_ action: WritingAction) async {
+    guard let section = store.activeSection else { return }
+    isGenerating = true
+    aiError = nil
+    aiResult = ""
+    writingDraft = nil
+    defer { isGenerating = false; writingTask = nil }
+    do {
+      let plan = try WritingActions.prepare(action, source: section.content ?? "", selection: editorSelection(), direction: aiPrompt)
+      let config = try saveAIProviderConfig()
+      let provider = try NativeAIProviderFactory().provider(from: config)
+      let response = try await provider.generate(AIRequest(prompt: plan.prompt,
+        context: AIWorkflowServices.buildStoryContext(envelope: store.envelope, section: section),
+        projectType: store.projectType, sectionTitle: section.title, model: aiModel))
+      guard !Task.isCancelled else { return }
+      guard !response.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        throw DraftHarbourError.providerNotConfigured("The model returned no passage to review.")
+      }
+      aiResult = response.text
+      writingDraft = (plan, section.id, response.provider)
+    } catch { aiError = error.localizedDescription }
+  }
+
+  private func applyWritingDraft() {
+    guard let draft = writingDraft else { return }
+    do {
+      guard store.activeSection?.id == draft.sectionID else {
+        throw DraftHarbourError.providerNotConfigured("The active chapter changed. Generate again before applying.")
+      }
+      let before = store.activeSection?.content ?? ""
+      let after = try WritingActions.applying(draft.plan, current: before, output: aiResult)
+      try store.createSnapshot(label: "Before AI \(draft.plan.action.title)")
+      store.updateActiveSectionContent(after)
+      store.recordAIRevision(sectionID: draft.sectionID, providerId: draft.providerID, prompt: draft.plan.prompt, before: before, after: after)
+      writingUndo = (draft.sectionID, before, after)
+      writingDraft = nil
+      aiResult = ""
+    } catch { aiError = error.localizedDescription }
+  }
+
+  private func undoWritingChange() {
+    guard let change = writingUndo else { return }
+    guard store.activeSection?.id == change.sectionID, store.activeSection?.content == change.after else {
+      aiError = "The chapter changed after applying. Use the revision log or a snapshot to recover earlier text."
+      return
+    }
+    store.updateActiveSectionContent(change.before)
+    writingUndo = nil
   }
 
   private func aiSuggestionButton(_ title: String, systemImage: String, stageID: String, prompt: String = "") -> some View {
@@ -2759,6 +2846,7 @@ struct ToolPanelView: View {
     isGenerating = true
     aiError = nil
     aiResult = ""
+    writingDraft = nil
     do {
       let config = try saveAIProviderConfig()
       let provider = try NativeAIProviderFactory().provider(from: config)

@@ -59,6 +59,8 @@ Narratryx is model development, not an established released specialist model. Th
 
 The opt-in integration is implemented in `src/lib/ai/narratryx.ts`, shared `AIConfigPanel`, native `NarratryxProfile.swift` and native AI tools. The separate `llm/Narratryx/runtime/local/` service pins the craft adapter and cached base, authenticates inference, bounds context/output and exposes base/candidate IDs. Live HTTP and the actual shared provider path passed locally; this does not establish target-device or literary-quality acceptance. Read [the current integration guide](docs/narratryx-app-trial.md); the earlier [readiness assessment](docs/narratryx-integration-readiness-2026-10-20.md) is historical.
 
+Passage-scoped writing actions live in `src/lib/ai/writingActions.ts` and native `Services/WritingActions.swift`, with common UTF-16/paragraph fixtures. New Write/Rewrite/Continue actions preview before acceptance and reject stale source text. Native selection reaches the tool panel through `editorSelection`; do not infer selection from panel focus.
+
 Keep model versions replaceable and model serving/training outside the application. Do not enable experimental adapters by default, embed Studio credentials, require ordinary users to train locally, or silently alter manuscripts. Existing Narratryx branding/default model strings are not evidence those models are installed.
 
 ## Checks and reporting
