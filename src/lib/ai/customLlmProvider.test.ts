@@ -335,6 +335,20 @@ describe('testCustomLlmConnection', () => {
     vi.restoreAllMocks();
   });
 
+  it('rejects an HTTP 200 response that is not a completion', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+    const result = await testCustomLlmConnection({ backend: 'generic-openai', baseUrl: 'https://models.example.test', model: 'narratryx-craft-v1' });
+    expect(result.ok).toBe(false);
+  });
+
+  it('authenticates the compatible endpoint and rejects an empty completion', async () => {
+    const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: '' } }] }), { status: 200 }));
+    const result = await testCustomLlmConnection({ backend: 'generic-openai', baseUrl: 'https://models.example.test', model: 'narratryx-craft-v1', apiKey: 'private-test-key' });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain('empty completion');
+    expect(fetch).toHaveBeenCalledWith('https://models.example.test/v1/chat/completions', expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer private-test-key' }) }));
+  });
+
   it('returns ok on successful response', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,

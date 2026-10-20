@@ -35,7 +35,7 @@ The wrapper uses shared provider settings and frontend request parsing. Local LL
 
 **`127.0.0.1` on an iPhone refers to the phone.** The Mac's Unsloth Studio at `127.0.0.1:8888` is not directly reachable through that phone URL. Use an intentionally configured reachable service, preferably authenticated HTTPS, and verify transport/CORS/private-network policy without weakening production defaults.
 
-The [Narratryx pilot](../llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) remains experimental and is not bundled or enabled here. Follow the [integration test plan](../docs/narratryx-integration-readiness-2026-10-20.md). Ordinary users must not need local model training; hosted optional inference remains separate from offline drafting.
+Narratryx now has an explicit **Set up Narratryx (experimental)** control through the existing provider settings (native macOS: AI tools → Provider). Follow the [app trial guide](../docs/narratryx-app-trial.md) for authenticated service configuration, exact model IDs, rollback and validation boundaries. The adapter remains experimental and is not bundled or enabled by default. Ordinary clients need service access, not local training or expensive hardware.
 
 ## Data compatibility
 

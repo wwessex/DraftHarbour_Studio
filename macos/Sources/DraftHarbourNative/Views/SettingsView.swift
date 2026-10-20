@@ -232,8 +232,11 @@ struct SettingsView: View {
 
   private var aiPane: some View {
     Form {
-      if sectionMatches("ai provider endpoint model default local openai translation suggestions insertion") {
+      if sectionMatches("ai provider endpoint model default local openai translation suggestions insertion narratryx experimental") {
         Section("Default Provider") {
+          Text("Narratryx (experimental) is available from the AI tools panel’s provider setup. Enter your service URL and access token there, then save the provider for the project. Training is not required on this device.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
           Picker("Provider", selection: $aiProvider) {
             Text("Local OpenAI-compatible").tag("local-openai")
             Text("OpenAI-compatible").tag("openai-compatible")
@@ -262,7 +265,7 @@ struct SettingsView: View {
         }
       }
 
-      if !paneMatches("ai provider endpoint model default local openai translation suggestions insertion publishing assistant synopsis description keywords category") {
+      if !paneMatches("ai provider endpoint model default local openai translation suggestions insertion publishing assistant synopsis description keywords category narratryx experimental") {
         Section {
           noResultsText
         }

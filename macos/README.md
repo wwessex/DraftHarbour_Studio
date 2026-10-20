@@ -44,7 +44,7 @@ Native providers/factory are in `AIProvider.swift`, `AIWorkflowServices.swift` a
 
 Apple Foundation Models is conditional on framework/macro availability and macOS 26+ runtime eligibility; the app's macOS 14 minimum does not make that provider universally available. Native prompts and pipeline stage lists differ from the shared frontend; test behavior rather than assuming exact parity.
 
-The [Narratryx craft adapter](../llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) is not a promoted model and is not configured by this documentation update. An optional endpoint-based trial is feasible, subject to [service/authentication and app smoke checks](../docs/narratryx-integration-readiness-2026-10-20.md). Local training libraries are not an application dependency.
+Narratryx now has an explicit **Set up Narratryx (experimental)** control through the existing provider settings (native macOS: AI tools → Provider). Follow the [app trial guide](../docs/narratryx-app-trial.md) for authenticated service configuration, exact model IDs, rollback and validation boundaries. The adapter remains experimental and is not bundled or enabled by default. Ordinary clients need service access, not local training or expensive hardware.
 
 Dropbox needs a registered app key/redirect configuration; Google Drive needs a desktop OAuth client and uses the native loopback flow. Implementations include PKCE, Keychain-backed tokens and revision/conflict handling. Test credential-backed flows with the intended accounts; source presence is not evidence of configured production sync.
 

@@ -24,7 +24,7 @@ export const AI_ENDPOINT_PRESETS: AIEndpointPreset[] = [
 export const AI_CONFIG_TEXT = {
   setupCta: 'Pick a provider below, then paste your API key to enable AI writing tools.',
   keyStorage: 'Your API key is stored locally in your browser and only sent to the endpoint you specify.',
-  localSetup: 'Connect to a local or self-hosted LLM server (Ollama, vLLM, llama.cpp). All data stays on your machine.',
+  localSetup: 'Connect to a compatible inference service (Ollama, vLLM, llama.cpp or a hosted endpoint). Text is sent to the server you configure; it stays on this device only when the server runs here.',
   configuredCta: 'AI provider configured. Open AI Writing Tools from the menu to start using AI assistance.',
   endpointValidation: 'Enter an API endpoint and key to test this provider.',
   localValidation: 'Enter a base URL and model to test this local setup.',

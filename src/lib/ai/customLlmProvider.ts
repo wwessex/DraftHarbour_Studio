@@ -265,6 +265,11 @@ export async function testCustomLlmConnection(
       return { ok: false, message: `${remediated} (HTTP ${res.status})` };
     }
 
+    const data = await res.json();
+    const result = extractNonStreamResponse(data, config.backend);
+    if (!result.text.trim()) {
+      return { ok: false, message: 'The inference service returned an empty completion. Check its model configuration.' };
+    }
     return { ok: true, message: `Connected to ${CUSTOM_LLM_BACKEND_LABELS[config.backend]} successfully.` };
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -342,7 +347,9 @@ export class CustomLlmProvider implements AIProvider {
       headers,
       body,
       signal: request.signal,
-    });
+    }, llmConfig.profile === 'narratryx'
+      ? { retries: 0, initialDelayMs: 0, backoffMultiplier: 1, timeoutMs: 125_000 }
+      : undefined);
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');

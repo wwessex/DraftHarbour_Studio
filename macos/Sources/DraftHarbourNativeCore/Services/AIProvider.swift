@@ -42,13 +42,15 @@ public struct OpenAICompatibleProvider: AIProvider {
   public var endpoint: URL
   public var apiKey: String?
   public var defaultModel: String
+  public var session: URLSession
 
-  public init(id: String, displayName: String, endpoint: URL, apiKey: String?, defaultModel: String) {
+  public init(id: String, displayName: String, endpoint: URL, apiKey: String?, defaultModel: String, session: URLSession = .shared) {
     self.id = id
     self.displayName = displayName
     self.endpoint = endpoint
     self.apiKey = apiKey
     self.defaultModel = defaultModel
+    self.session = session
   }
 
   public func generate(_ request: AIRequest) async throws -> AIResponse {
@@ -58,6 +60,9 @@ public struct OpenAICompatibleProvider: AIProvider {
 
     let started = Date()
     var urlRequest = URLRequest(url: endpoint)
+    if NarratryxProfile.recognizes(request.model ?? defaultModel) {
+      urlRequest.timeoutInterval = 125
+    }
     urlRequest.httpMethod = "POST"
     urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
     if let apiKey, !apiKey.isEmpty {
@@ -74,9 +79,12 @@ public struct OpenAICompatibleProvider: AIProvider {
     )
     urlRequest.httpBody = try JSONEncoder().encode(payload)
 
-    let (data, response) = try await URLSession.shared.data(for: urlRequest)
+    let (data, response) = try await session.data(for: urlRequest)
     if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-      throw DraftHarbourError.providerNotConfigured("\(displayName) HTTP \(http.statusCode)")
+      let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+      let details = (payload?["error"] as? [String: Any])?["message"] as? String
+      let explanation = details.map { " — " + String($0.prefix(240)) } ?? ""
+      throw DraftHarbourError.providerNotConfigured("\(displayName) HTTP \(http.statusCode)\(explanation)")
     }
 
     let decoded = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)

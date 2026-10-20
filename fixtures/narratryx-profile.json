@@ -1,0 +1,8 @@
+{
+  "label": "Narratryx (experimental)",
+  "model": "narratryx-craft-v1",
+  "baseModel": "narratryx-base",
+  "streaming": false,
+  "maxTokens": 512,
+  "temperature": 0
+}

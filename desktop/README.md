@@ -33,7 +33,7 @@ Project records remain in the renderer's IndexedDB; the shell is not a separate 
 
 Existing shared provider settings can connect to an authenticated compatible inference service. Local LLM → Custom Endpoint expects the **base URL** and appends `/v1/chat/completions`; use the exact model ID advertised by the server. A Windows/Linux client's `127.0.0.1` is not the development Mac. MLX training artifacts are not a Windows inference runtime.
 
-The [Narratryx pilot](../llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) remains experimental. It has not been bundled into this app or validated through this shell. See the [integration test plan](../docs/narratryx-integration-readiness-2026-10-20.md). Normal users should be able to use optional hosted inference without training or special local hardware.
+Narratryx now has an explicit **Set up Narratryx (experimental)** control through the existing provider settings (native macOS: AI tools → Provider). Follow the [app trial guide](../docs/narratryx-app-trial.md) for authenticated service configuration, exact model IDs, rollback and validation boundaries. The adapter remains experimental and is not bundled or enabled by default. Ordinary clients need service access, not local training or expensive hardware.
 
 ## Validation
 

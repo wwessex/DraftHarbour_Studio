@@ -283,6 +283,7 @@ export function SettingsWindow({ open, onClose }: SettingsWindowProps) {
   const customLlm = aiConfig.customLlm;
   const customLlmBackend = customLlm?.backend;
   const customLlmBaseUrl = customLlm?.baseUrl;
+  const customLlmApiKey = customLlm?.apiKey;
   const currentAIMode = resolveAIConfigMode(aiConfig);
   const syncUrlValidation = validateSyncServerUrl(state.settings.sync.url);
   const syncAuthValidation = validateAuthorizationHeader(state.settings.sync.auth);
@@ -303,8 +304,12 @@ export function SettingsWindow({ open, onClose }: SettingsWindowProps) {
     if (customLlmBackend === 'ollama') return;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    fetch(`${customLlmBaseUrl.replace(/\/+$/, '')}/v1/models`, { signal: controller.signal })
+    fetch(`${customLlmBaseUrl.replace(/\/+$/, '')}/v1/models`, {
+      signal: controller.signal,
+      headers: customLlmApiKey?.trim() ? { Authorization: `Bearer ${customLlmApiKey.trim()}` } : undefined,
+    })
       .then(res => {
+        if (controller.signal.aborted) return;
         if (!res.ok) {
           setLocalLlmTestResult({ ok: false, message: `Server returned ${res.status}. Check your configuration.` });
         } else {
@@ -312,11 +317,12 @@ export function SettingsWindow({ open, onClose }: SettingsWindowProps) {
         }
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         setLocalLlmTestResult({ ok: false, message: `Could not reach ${CUSTOM_LLM_BACKEND_LABELS[customLlmBackend]} at ${customLlmBaseUrl}.` });
       })
       .finally(() => clearTimeout(timeout));
     return () => { controller.abort(); clearTimeout(timeout); };
-  }, [customLlmBackend, customLlmBaseUrl, aiConfig.provider]);
+  }, [customLlmBackend, customLlmBaseUrl, customLlmApiKey, aiConfig.provider]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);

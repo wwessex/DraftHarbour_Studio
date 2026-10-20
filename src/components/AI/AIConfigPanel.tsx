@@ -5,6 +5,7 @@ import { HelpTooltip } from '@/components/UI/Tooltip';
 import { CUSTOM_LLM_BACKEND_LABELS, CUSTOM_LLM_DEFAULTS, fetchOllamaModels } from '@/lib/ai';
 import type { AIProviderConfig, CustomLlmBackend, CustomLlmConfig } from '@/lib/ai';
 import { AI_CONFIG_TEXT, AI_ENDPOINT_PRESETS, matchAIPresetId } from '@/lib/ai/configUi';
+import { createNarratryxConfig, isNarratryxConfig, NARRATRYX_BASE_MODEL, NARRATRYX_HELP, NARRATRYX_LABEL, NARRATRYX_MODEL } from '@/lib/ai/narratryx';
 
 interface TestResult {
   ok: boolean;
@@ -181,6 +182,35 @@ export function AIConfigPanel({
       {showLocalFields && (
         <>
           <div>
+            <Button
+              onClick={() => onConfigChange(createNarratryxConfig())}
+              aria-pressed={config.provider === 'custom-llm' && isNarratryxConfig(config.customLlm)}
+              size="small"
+            >
+              Set up {NARRATRYX_LABEL}
+            </Button>
+            {isNarratryxConfig(config.customLlm) && (
+              <div>
+                <p>{NARRATRYX_HELP}</p>
+                <p>Enter your service base URL and access token below. A hosted service works on ordinary Windows, Mac and iOS devices. For a service on this device only, use http://127.0.0.1:8890.</p>
+                <label>
+                  Experiment model
+                  <select
+                    aria-label="Narratryx experiment model"
+                    value={config.customLlm?.model || NARRATRYX_MODEL}
+                    onChange={e => onCustomLlmConfigChange({ model: e.target.value })}
+                  >
+                    <option value={NARRATRYX_MODEL}>Craft adapter (experimental)</option>
+                    <option value={NARRATRYX_BASE_MODEL}>Unchanged base (comparison)</option>
+                    {config.customLlm?.model && ![NARRATRYX_MODEL, NARRATRYX_BASE_MODEL].includes(config.customLlm.model) && (
+                      <option value={config.customLlm.model}>{config.customLlm.model}</option>
+                    )}
+                  </select>
+                </label>
+              </div>
+            )}
+          </div>
+          <div>
             <p>{AI_CONFIG_TEXT.localSetup}</p>
           </div>
           <div>
@@ -194,6 +224,8 @@ export function AIConfigPanel({
                     type="button"
                     aria-pressed={isActive}
                     onClick={() => onCustomLlmConfigChange({
+                      profile: undefined,
+                      apiKey: undefined,
                       backend,
                       baseUrl: CUSTOM_LLM_DEFAULTS[backend].baseUrl,
                       model: CUSTOM_LLM_DEFAULTS[backend].model,

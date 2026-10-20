@@ -1813,6 +1813,23 @@ struct ToolPanelView: View {
     VStack(alignment: .leading, spacing: 14) {
       GroupBox("Provider") {
         VStack(alignment: .leading, spacing: 10) {
+          Button("Set up Narratryx (experimental)") {
+            let config = NarratryxProfile.configuration()
+            selectedAIProviderID = nil
+            aiProviderType = config.provider
+            aiProviderLabel = config.label
+            aiEndpoint = config.endpoint
+            aiModel = config.model
+            aiAPIKey = ""
+          }
+          if NarratryxProfile.recognizes(aiModel) {
+            Text(NarratryxProfile.help)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+            Text("Enter the full service URL ending in /v1/chat/completions and its access token, then Save Provider. Use narratryx-base as the model to compare with the unchanged base. A hosted service works without local training.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
           Picker("Type", selection: $aiProviderType) {
             ForEach(AIProviderType.allCases, id: \.self) { providerType in
               Text(aiProviderTypeTitle(providerType)).tag(providerType)
