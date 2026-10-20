@@ -437,8 +437,10 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
           err instanceof Error ? err.message : 'An unexpected error occurred.';
         setError(message);
       } finally {
-        setLoading(false);
-        setIsStreaming(false);
+        if (abortRef.current === controller) {
+          setLoading(false);
+          setIsStreaming(false);
+        }
         provider.destroy();
       }
     },
@@ -447,7 +449,6 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
 
 
   const handleRunPipeline = useCallback(async () => {
-    setWritingPlan(null);
     if (!isConfigured) {
       setError('Configure AI first before running the writing pipeline.');
       return;
@@ -472,6 +473,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     setLoading(true);
     setError(null);
     setResponse('');
+    setWritingPlan(null);
 
     const provider = createProvider(config);
     const stages = AI_WRITING_PIPELINE_STAGES.filter(stage => includeToneMatchPass || !stage.optional);

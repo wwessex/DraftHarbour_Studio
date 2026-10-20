@@ -30,10 +30,10 @@ public enum WritingActions {
     switch action {
     case .write:
       guard !instructions.isEmpty else { throw failure("Describe what you want to write in the instruction box first.") }
-      task = "Write new fiction from the author’s instructions. Use the chapter context for continuity. Return only the new passage to append, without repeating existing text or adding commentary."
+      task = "Write new fiction from the author’s instructions. Use the project’s prose or screenplay format. Use the chapter context for continuity. Return only the new passage to append, without repeating existing text or adding commentary."
     case .continue:
       guard !trimmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw failure("Write a paragraph first, or use Write to start a new scene.") }
-      task = "Continue immediately after the final paragraph below. Match its voice, point of view, tense and continuity. Return only the next passage; do not repeat, rewrite or summarise the existing ending.\n\nFINAL PARAGRAPH:\n" + ns.substring(with: NSRange(location: start, length: end - start))
+      task = "Continue immediately after the final paragraph below. Match its voice, point of view, tense, format and continuity. Return only the next passage; do not repeat, rewrite or summarise the existing ending.\n\nFINAL PARAGRAPH:\n" + ns.substring(with: NSRange(location: start, length: end - start))
     case .rewrite:
       guard !trimmed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw failure("Select a passage or write a paragraph to rewrite first.") }
       if let selection, selection.location >= 0, selection.length > 0,
@@ -45,7 +45,7 @@ public enum WritingActions {
       }
       let target = ns.substring(with: range)
       guard !target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw failure("Select a passage containing text to rewrite.") }
-      task = "Rewrite only the target passage below. Preserve meaning, point of view, tense and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation.\n\nTARGET PASSAGE:\n" + target
+      task = "Rewrite only the target passage below. Preserve meaning, point of view, tense, format and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation.\n\nTARGET PASSAGE:\n" + target
     }
     return WritingPlan(action: action, source: source, range: range,
       prompt: task + (instructions.isEmpty ? "" : "\n\nAUTHOR INSTRUCTIONS:\n" + instructions))
