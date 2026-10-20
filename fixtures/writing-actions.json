@@ -40,5 +40,15 @@
     "direction": "Introduce the stranger.",
     "output": "A stranger arrived.",
     "expected": "Existing.\n\nA stranger arrived."
+  },
+  {
+    "id": "rewrite-selection-keeps-line-boundary",
+    "action": "rewrite",
+    "source": "First.\nSecond.\nThird.",
+    "from": 7,
+    "to": 15,
+    "output": "Improved.",
+    "expected": "First.\nImproved.\nThird.",
+    "target": "Second."
   }
 ]

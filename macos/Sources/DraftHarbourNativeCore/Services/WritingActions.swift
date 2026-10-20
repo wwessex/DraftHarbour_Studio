@@ -56,6 +56,10 @@ public enum WritingActions {
     let text = output.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !text.isEmpty else { throw failure("The model returned no passage to apply.") }
     let separator = plan.action == .rewrite || current.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "" : current.hasSuffix("\n\n") ? "" : current.hasSuffix("\n") ? "\n" : "\n\n"
-    return (current as NSString).replacingCharacters(in: plan.range, with: separator + text)
+    let target = (current as NSString).substring(with: plan.range)
+    let replacement = plan.action == .rewrite
+      ? String(target.prefix(while: { $0.isWhitespace })) + text + String(target.reversed().prefix(while: { $0.isWhitespace }).reversed())
+      : separator + text
+    return (current as NSString).replacingCharacters(in: plan.range, with: replacement)
   }
 }

@@ -38,6 +38,9 @@ export function writingReplacement(plan: WritingPlan, current: string, output: s
   if (current !== plan.source) throw new Error('The chapter changed after generation. Generate again before applying this suggestion.');
   if (!output.trim()) throw new Error('The model returned no passage to apply.');
   const separator = plan.action === 'rewrite' || !current.trim() ? '' : current.endsWith('\n\n') ? '' : current.endsWith('\n') ? '\n' : '\n\n';
-  const replacement = separator + output.trim();
+  const target = current.slice(plan.from, plan.to);
+  const replacement = plan.action === 'rewrite'
+    ? (target.match(/^\s*/)?.[0] ?? '') + output.trim() + (target.match(/\s*$/)?.[0] ?? '')
+    : separator + output.trim();
   return { text: current.slice(0, plan.from) + replacement + current.slice(plan.to), replacement };
 }
