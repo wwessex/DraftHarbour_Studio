@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "record_kind": "external-dataset-candidate-not-rights-clearance",
+  "dataset_id": "PleIAs/English-PD",
+  "revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+  "inspected_on": "2026-10-18",
+  "hub_url": "https://huggingface.co/datasets/PleIAs/English-PD",
+  "pinned_card_url": "https://huggingface.co/datasets/PleIAs/English-PD/blob/0d451478c7d517a72298431f47bf57aa9c4e0e1e/README.md",
+  "card_sha256": "d3ac4d50352c2a88ddf0b4fb4759a9fce91f15633336a6b2153c97ddfd0c6af9",
+  "split_discovered": {
+    "config": "default",
+    "split": "train"
+  },
+  "publisher_claims": {
+    "purpose": "LLM training",
+    "public_domain": "Publisher claims public domain in all regions; not independently verified per work.",
+    "date_filter": "Publisher says titles published before 1884 as of June 2024.",
+    "text_method": "OCR; card acknowledges errors and unwanted page/header material."
+  },
+  "observed_issues": [
+    "Hub page reports CastError: inconsistent columns across parquet files.",
+    "Hub page also reports oversized parquet row groups.",
+    "Viewer preview contains scan-test/header debris and non-fiction; some titles are not English.",
+    "Rows API returned HTTP 500; no successful row API extraction or parquet download.",
+    "Dataset size endpoint failed and returned zero counters; these do not establish an empty dataset."
+  ],
+  "base_fields_observed": [
+    "identifier",
+    "title",
+    "publication_date",
+    "word_count",
+    "text"
+  ],
+  "additional_fields_in_some_shards": [
+    "creator",
+    "rights",
+    "language",
+    "lang",
+    "real_lang",
+    "directory",
+    "file",
+    "n",
+    "...1"
+  ],
+  "intended_use": "Candidate original-text corpus for a small curated continued-pretraining pilot; not an instruction/answer dataset.",
+  "next_preparation_steps": [
+    "Inspect bounded shard metadata before downloading content; normalize schemas per shard.",
+    "Select identifiable English fiction editions and retain identifier, title, author/contributor metadata, edition/source evidence and text hashes.",
+    "Check GB/US rights and acquisition terms per selected edition; exclude unresolved items.",
+    "Remove OCR/scanning artifacts conservatively and preserve source spans/transformations.",
+    "Deduplicate and group by author/work before train/evaluation split; protect independent benchmark.",
+    "Export a bounded reviewed raw-text pilot separately from the existing SFT messages pipeline.",
+    "Validate selected model, Unsloth training mode, provider, processing location and budget before any job."
+  ],
+  "human_rights_approval": false,
+  "training_ready": false,
+  "bulk_corpus_downloaded": false,
+  "training_started": false,
+  "app_versions_changed": false,
+  "relationship_to_existing_austen_pack": "No approvals or targets changed. This is a separate dataset candidate and does not clear existing generated-teacher terms."
+}

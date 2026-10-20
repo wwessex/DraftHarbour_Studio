@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "human-consolidated-editorial-approval",
+  "pack_id": "austen-pilot-review-v1",
+  "reviewer": "Human user of Codex conversation 01a14bea-d041-7363-b30b-66b4af6a77bf",
+  "user_statement": "approve",
+  "reviewed_on": "2026-10-18",
+  "recorded_at_utc": "2026-10-17T23:19:55.076639+00:00",
+  "context": "Approval of the delivered consolidated report: eight new editorial keeps and two revision instructions; earlier two keeps preserved.",
+  "reviewed_report": {
+    "path": "docs/austen-consolidated-review-2026-10-18.md",
+    "sha256": "cebeb108a533905e7ca77f1ac44d6ab024e2f5bbf33c6075536c5443e6f8698e"
+  },
+  "reviewed_audit": {
+    "path": "curation/reviews/austen-consolidated-audit-2026-10-18.json",
+    "sha256": "4731142c9c1a2913459095dffcb951e9950da45b8d9f861d44f2966a0deefbde"
+  },
+  "passage_selection": {
+    "path": "rights/approvals/austen-six-passage-selection-2026-10-18.json",
+    "sha256": "6685e4b56173bc476dc6e93f26440d0d6e52e661937ebaedac73c1b365301761"
+  },
+  "decisions": [
+    {
+      "example_id": "austen-dialogue-01",
+      "decision": "keep",
+      "content_hash": "5ceeb283efb14fb9949a8de537b522cff0eee382ed74c87af1c17e822c2f839d"
+    },
+    {
+      "example_id": "austen-editing-01",
+      "decision": "keep",
+      "content_hash": "e34f46725cb2901b1df43f084ddf268654bf7f4b3b2eed5abe4b5b79b60b02bc"
+    },
+    {
+      "example_id": "austen-storytelling-01",
+      "decision": "keep",
+      "content_hash": "342a9741795f421e7bc64c3c625b80f9d1a77c9684af2c5cb7237381f019b36d"
+    },
+    {
+      "example_id": "austen-dialogue-02",
+      "decision": "keep",
+      "content_hash": "ca3ed6d34e683164ec8905835d1a2de0e51b303a085e0714c7fb7a882d77efcd"
+    },
+    {
+      "example_id": "austen-analysis-02",
+      "decision": "keep",
+      "content_hash": "2b06823dd5a004d4d84fb97bdbc79fb257dd79b8a34624777f8de2e370f2710a"
+    },
+    {
+      "example_id": "austen-storytelling-02",
+      "decision": "keep",
+      "content_hash": "b74f74cbced4f98ff98b725116b319877e406d2d0ea2019ed4860934caaf3721"
+    },
+    {
+      "example_id": "austen-fiction-02",
+      "decision": "keep",
+      "content_hash": "2a1707251ff98b63b0a21d97e7a27311c7d6713b52096b4279f33d2742c76d8d"
+    },
+    {
+      "example_id": "austen-editing-02",
+      "decision": "keep",
+      "content_hash": "f225fff44d043c8d0661d1da7ef9a725b09589e72859049d0eb8539713121585"
+    }
+  ],
+  "revision_instructions": [
+    {
+      "example_id": "austen-pacing-01",
+      "decision": "revise",
+      "content_hash_reviewed": "f3d0417968661af3faa3911ba037d29857703750eaddd85b81bdd3e06d9de03d",
+      "approved_revision_instruction": "Remove the added timing claim “soon”. The supplied excerpt establishes that she tells the story, but does not specify how soon. The 70-word limit passes.",
+      "revision_applied": false,
+      "revised_target_review": "not yet available"
+    },
+    {
+      "example_id": "austen-pacing-02",
+      "decision": "revise",
+      "content_hash_reviewed": "4a3712f970ab68709742d072fa831dbeb6383cbeea7d9d41618731b46954700a",
+      "approved_revision_instruction": "The reflective version says “resentment followed”, implying surprise occurs first. The source presents resentment and surprise together. Preserve both without imposing that sequence.",
+      "revision_applied": false,
+      "revised_target_review": "not yet available"
+    }
+  ],
+  "preserved_earlier_decisions": {
+    "path": "curation/reviews/austen-opening-2026-10-18.json",
+    "sha256": "61f1be2fa6a5271bfd02d9fa4f79cdab3843de95c1aad76dde17b3d69a2e98fb",
+    "example_ids": [
+      "austen-fiction-01",
+      "austen-analysis-01"
+    ]
+  },
+  "summary": {
+    "new_editorial_keeps": 8,
+    "earlier_keeps": 2,
+    "total_editorial_keeps": 10,
+    "revisions_requested": 2,
+    "passages_accepted": 6
+  },
+  "scope": "Editorial acceptance and acceptance of the two proposed correction instructions. No new target version is approved implicitly. The contract findings are acknowledged, not resolved by this decision.",
+  "teacher_terms_status": "pending; permission not established",
+  "benchmark_status": "pending; not frozen",
+  "overall_training_ready": false,
+  "excluded_authorizations": [
+    "Synthetic-teacher/output-use permission",
+    "Benchmark approval or freezing",
+    "Dataset release",
+    "Source upload or redistribution",
+    "Paid job or training launch"
+  ]
+}

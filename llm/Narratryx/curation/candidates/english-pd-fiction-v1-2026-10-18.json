@@ -1,0 +1,291 @@
+{
+  "status": "candidate_only_not_release_ledger",
+  "review_date": "2026-10-18",
+  "acquisition_manifest_sha256": "30c69afaa64f21fc1093e259cc8c2984c81154d7085e4989f7666cb8a33ee520",
+  "selection_plan_sha256": "da8c84b95e2f757e24613d547b12c734b3a5c096930bf3bea8a6488b56bb317d",
+  "web_evidence_index": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/web-evidence-index.json",
+  "legal_basis": [
+    {
+      "jurisdiction": "GB",
+      "url": "https://www.gov.uk/copyright/how-long-copyright-lasts",
+      "inference": "Ordinary literary term is life plus 70 years; dates below assume verified author identity and no surviving separately protected additions."
+    },
+    {
+      "jurisdiction": "US",
+      "url": "https://www.copyright.gov/circs/circ38b.pdf",
+      "inference": "Restoration lasts only the remaining applicable US term; circular generally describes 95 years from first publication for pre-1978 works. Candidate dates use the selected old edition as a conservative publication bound; they do not establish publication/contributor facts."
+    }
+  ],
+  "publisher_claim": {
+    "url": "https://huggingface.co/datasets/PleIAs/English-PD",
+    "scope": "Publisher says public domain worldwide and allows model training; not independently adopted as per-work legal clearance."
+  },
+  "records": [
+    {
+      "identifier": "cihm_26142",
+      "author_id": "james-jackson-wray",
+      "work_id": "paul-meggitts-delusion",
+      "catalogue_creator": "Wray, J. Jackson (James Jackson), 1832-1892",
+      "catalogue_title": "Paul Meggitt's delusion [microform] : and other tales",
+      "catalogue_publication_year": "1881",
+      "catalogue_publisher": "Toronto : Methodist Book and Pub. House",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 11,
+      "raw_sha256": "b77ff31683f911e8e1a0a4635511d6d9f7612a3188766a42754b11e641baf300",
+      "split": "train_candidate",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/cihm_26142",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/cihm_26142.archive.json",
+          "sha256": "3751c85c78caf21feb211f6a188fcab706994e717b32ebb3eb2acbee4839fde0"
+        }
+      ],
+      "death_year_candidate": 1892,
+      "uk_ordinary_literary_term_end_candidate": "1962-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1976-12-31",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Human review of edition identity, selected prose scope, source terms and rights evidence pending; no release approval recorded.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "train_candidate",
+        "passages": 5,
+        "words": 330
+      },
+      "biographical_evidence_limit": "Death year currently supported by digitizing library catalogue attribution only; independent authority check pending."
+    },
+    {
+      "identifier": "cihm_11328",
+      "author_id": "eustace-clare-grenville-murray",
+      "work_id": "the-boudoir-cabal",
+      "catalogue_creator": "Murray, E. C. Grenville (Eustace Clare Grenville), 1824-1881",
+      "catalogue_title": "The boudoir cabal [microform] : a novel of society",
+      "catalogue_publication_year": "1875",
+      "catalogue_publisher": "Toronto : Rogers & Larminie",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 154,
+      "raw_sha256": "7ba246007ab1cc5806fdc755dbd94290a6722ea039ee306c0ab546b9d54bee0e",
+      "split": "heldout_candidate",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/cihm_11328",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/cihm_11328.archive.json",
+          "sha256": "3d562b54b0f78ec0650d5f230257ab2603aa80e3d2a55eea84d0931e8773e8df"
+        }
+      ],
+      "death_year_candidate": 1881,
+      "uk_ordinary_literary_term_end_candidate": "1951-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1971-12-31 (using later 1876 OCR title-page year; discrepancy unresolved)",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Archive publication_date is 1875; OCR title page reads 1876. Scan verification required. Heldout only; no training.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "heldout_candidate",
+        "passages": 46,
+        "words": 2913
+      },
+      "title_page_year_ocr": 1876
+    },
+    {
+      "identifier": "threespaniardsro01walk",
+      "author_id": "george-walker-1772",
+      "work_id": "the-three-spaniards",
+      "catalogue_creator": "Walker, George, 1772-1847",
+      "catalogue_title": "The three Spaniards. A romance",
+      "catalogue_publication_year": "1832",
+      "catalogue_publisher": "Exeter, J.C. Gerrish",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 459,
+      "raw_sha256": "377b9f6a467f2a619e220bd71826fdba7eed0b7d2b94d3748ddb00fa7ab55766",
+      "split": "train_candidate",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/threespaniardsro01walk",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/threespaniardsro01walk.archive.json",
+          "sha256": "0a25b58d6914ae878f6df76cb799e8a12489458367363f1bedcae558fa8409c0"
+        }
+      ],
+      "death_year_candidate": 1847,
+      "uk_ordinary_literary_term_end_candidate": "1917-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1927-12-31",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Human review of edition identity, selected prose scope, source terms and rights evidence pending; no release approval recorded.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "train_candidate",
+        "passages": 6,
+        "words": 300
+      }
+    },
+    {
+      "identifier": "mynovelorvarieti02lyttiala",
+      "author_id": "edward-bulwer-lytton",
+      "work_id": "my-novel",
+      "catalogue_creator": "Lytton, Edward Bulwer Lytton, Baron, 1803-1873",
+      "catalogue_title": "\"My novel,\" or, Varieties in English life",
+      "catalogue_publication_year": "1853",
+      "catalogue_publisher": "Edinburgh : W. Blackwood",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 499,
+      "raw_sha256": "da40e02e9efaf0dcb33590f0a3a8dbf8187a5183ddc03919e3caaa4f50f13a39",
+      "split": "train_candidate",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/mynovelorvarieti02lyttiala",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/mynovelorvarieti02lyttiala.archive.json",
+          "sha256": "288606f1fe7b889ad52bbea12364a88396fa385dc52984a059e7b4ccd2ad29d9"
+        }
+      ],
+      "death_year_candidate": 1873,
+      "uk_ordinary_literary_term_end_candidate": "1943-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1948-12-31",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Human review of edition identity, selected prose scope, source terms and rights evidence pending; no release approval recorded.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "train_candidate",
+        "passages": 80,
+        "words": 5430
+      }
+    },
+    {
+      "identifier": "talesofhear01opie",
+      "author_id": "amelia-opie",
+      "work_id": "love-mystery-and-superstition",
+      "catalogue_creator": "Opie, Amelia Alderson, 1769-1853",
+      "catalogue_title": "Tales of the heart",
+      "catalogue_publication_year": "1820",
+      "catalogue_publisher": "London Printed for Longman Hurst",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 597,
+      "raw_sha256": "27395b3e3f19482618fee6bb954bf31fa11e4cbab3a62519fe18b8d3691ac227",
+      "split": "train_candidate",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/talesofhear01opie",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/talesofhear01opie.archive.json",
+          "sha256": "3e0632829ca7ffce9bdd84930458876d9641b574c76269da7290e2675b75a7d0"
+        }
+      ],
+      "death_year_candidate": 1853,
+      "uk_ordinary_literary_term_end_candidate": "1923-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1915-12-31",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Human review of edition identity, selected prose scope, source terms and rights evidence pending; no release approval recorded.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "train_candidate",
+        "passages": 8,
+        "words": 437
+      }
+    },
+    {
+      "identifier": "hiddenperilsano00haygoog",
+      "author_id": "mary-cecil-hay",
+      "work_id": "hidden-perils",
+      "catalogue_creator": "Mary Cecil Hay",
+      "catalogue_title": "Hidden Perils: A Novel",
+      "catalogue_publication_year": "1876",
+      "catalogue_publisher": "Harper",
+      "dataset": "PleIAs/English-PD",
+      "dataset_revision": "0d451478c7d517a72298431f47bf57aa9c4e0e1e",
+      "shard": "english_pd_0.parquet",
+      "row_index": 615,
+      "raw_sha256": "3c9b05a41d2e6594f901810ede82d3577a80b39277b7dedb3921b22c4fd4b356",
+      "split": "quarantine",
+      "review_status": "pending",
+      "approved_by": null,
+      "jurisdictions_under_review": [
+        "GB",
+        "US"
+      ],
+      "evidence": [
+        {
+          "url": "https://archive.org/metadata/hiddenperilsano00haygoog",
+          "snapshot": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-v1/evidence/hiddenperilsano00haygoog.archive.json",
+          "sha256": "a7ade3883de83b868ec24a0e489c369a2531e0a2ac546be70c36c483fd35f5b4"
+        }
+      ],
+      "death_year_candidate": 1886,
+      "uk_ordinary_literary_term_end_candidate": "1956-12-31",
+      "us_maximum_95_year_publication_term_end_candidate": "1971-12-31",
+      "scope": "Selected original-English narrative prose spans only; excludes front/back matter, scan wrappers, illustrations, and unverified modern or quoted contributions.",
+      "unresolved_issues": [
+        "Google wrapper requests noncommercial use and preserved attribution; actual acquisition/reuse terms require review; no prose extracted.",
+        "Archive rights/license fields are absent; missing rights metadata is not a clearance.",
+        "Underlying-work expiry inference is distinct from source access/contract terms. Archive terms fetch returned only a JavaScript shell, not reviewed terms.",
+        "No full facsimile comparison, complete contributor/embedded-quotation audit, worldwide review or human rights approval.",
+        "OCR and editorial review of every retained record remains pending."
+      ],
+      "counts": {
+        "split": "quarantine",
+        "passages": 0,
+        "words": 0
+      }
+    }
+  ]
+}

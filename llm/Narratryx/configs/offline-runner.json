@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "paid_execution_enabled": false,
+  "jurisdictions": [
+    "GB",
+    "US"
+  ],
+  "ledger": "../rights/ledger.jsonl",
+  "dataset": "../artifacts/austen-pilot-review-v1/examples.pending.jsonl",
+  "tasks": "../evaluation/tasks.draft.jsonl",
+  "lock": "../artifacts/benchmark-v1.lock.json",
+  "rubric": "../evaluation/rubric.json",
+  "prepare_austen": {
+    "spec": "../curation/austen-pilot-review-v1.json",
+    "source_manifest": "../rights/evidence/austen-pride-1894-source.json",
+    "approval": "../rights/approvals/austen-pride-2026-10-17.json"
+  },
+  "model": null,
+  "training": {
+    "max_steps": 64,
+    "max_length": 1024,
+    "save_steps": 16,
+    "seed": 42
+  },
+  "baseline": null,
+  "candidate": null
+}

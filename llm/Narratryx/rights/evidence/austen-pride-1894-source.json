@@ -1,0 +1,57 @@
+{
+  "requested_url": "https://www.gutenberg.org/ebooks/1342.txt.utf-8",
+  "resolved_url": "https://www.gutenberg.org/cache/epub/1342/pg1342.txt",
+  "retrieved_at_utc": "2026-10-17T22:48:15.512249+00:00",
+  "http_last_modified": "Thu, 01 Oct 2026 13:21:01 GMT",
+  "http_etag": null,
+  "content_type": "text/plain; charset=utf-8",
+  "path": "raw/austen-pride-1894-pg1342-2026-10-17/pg1342.txt",
+  "bytes": 772386,
+  "sha256": "3f6bb9d6f78e0293b56acd4714dd68cb7d6d1d293402031ce9d5a216bcaf9d75",
+  "purpose": "Single edition evidence snapshot only. Not cleared, transformed, uploaded or included in training.",
+  "edition": {
+    "print_year": 1894,
+    "publisher": "George Allen, London",
+    "source_id": "Project Gutenberg eBook 1342",
+    "novel_first_published": 1813
+  },
+  "observed_update_labels": {
+    "downloaded_text_header": "September 1, 2026",
+    "web_catalogue": "September 29, 2026",
+    "note": "Different labels were observed. Exact content identity is the SHA-256, not either date."
+  },
+  "selection_plan": {
+    "status": "human scope approved; content selection pending; not extracted or training-ready",
+    "scope": "Austen novel text only, Chapters I–LXI",
+    "offset_basis": "Unicode code points in Python Path.read_text(encoding=\"utf-8\") view, which normalizes CRLF to LF; byte snapshot remains unchanged. Offsets are not byte positions.",
+    "outer_start": 35259,
+    "outer_end_exclusive": 729437,
+    "outer_range_sha256_utf8": "2733f817851bed0311c33716fd085976a28cf657e111f769b4138e7af815435f",
+    "warning": "Outer range is NOT clean training text; inline illustrations, captions, copyright lines and page markers must be excluded and reviewed.",
+    "illustration_blocks_in_outer_range": 154,
+    "copyright_1894_mentions_in_outer_range": 35,
+    "illustration_block_breakdown": {
+      "captioned_with_colon": 69,
+      "bare_markers": 85,
+      "previous_count_69_was_captioned_only": true
+    },
+    "chapter_heading_inventory": {
+      "chapters_II_to_LXI": 60,
+      "matching_rule": "case-insensitive CHAPTER + Roman numeral, optional final period; Chapter I heading is in excluded initial artwork",
+      "note": "A strict uppercase/mandatory-period matcher misses some headings."
+    }
+  },
+  "review_audit": {
+    "performed_by": "Codex (AI evidence review; not a human sign-off)",
+    "date": "2026-10-17",
+    "raw_bytes_unchanged": true,
+    "hashes_reverified": true,
+    "correction": "Previous inventory counted only colon-captioned illustration blocks; corrected from 69 to 154 total, including 85 bare markers.",
+    "further_automated_main_site_downloads": "Do not repeat; use documented permitted acquisition routes. This snapshot was retrieved programmatically and is retained as an honest provenance record."
+  },
+  "human_scope_approval": {
+    "record": "approvals/austen-pride-2026-10-17.json",
+    "reviewed_on": "2026-10-17",
+    "raw_artifact_training_ready": false
+  }
+}

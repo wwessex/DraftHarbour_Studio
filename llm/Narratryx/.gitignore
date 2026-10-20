@@ -1,4 +1,10 @@
-.venv/
-artifacts/
+.venv*/
 __pycache__/
 *.pyc
+artifacts/
+# Keep downloaded texts and response/reviewer material out of source control.
+rights/raw/
+evaluation/runs/
+# Retain downloaded third-party evidence locally; publish only its URL/hash metadata.
+rights/evidence/craft-expansion-2026-10-20/*.html
+rights/evidence/craft-expansion-2026-10-20/*.pdf

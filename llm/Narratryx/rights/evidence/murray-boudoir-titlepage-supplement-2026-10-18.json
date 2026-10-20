@@ -1,0 +1,30 @@
+{
+  "status": "evidence_supplement_not_human_approval",
+  "review_date": "2026-10-18",
+  "source_record": "curation/candidates/english-pd-fiction-v1-2026-10-18.json",
+  "identifier": "cihm_11328",
+  "finding": "Original scan title page visibly prints Toronto, Rogers & Larminie, Publishers, 1875. The raw OCR prints 1876. The catalogue and facsimile agree on 1875; date discrepancy is an OCR error.",
+  "confirmed_print_year": 1875,
+  "raw_ocr_year": 1876,
+  "raw_text_modified": false,
+  "closed_issue": "catalogue versus OCR title-page year discrepancy",
+  "evidence": {
+    "local_path": "/Users/williamwessex/Documents/Writer1/llm/Narratryx/artifacts/english-pd-fiction-review-v1/evidence/murray-title-leaf7.jpg",
+    "sha256": "798992510aa925e7d8e5dea5248447761b3bebe916879826aa87ac0dd24d6aff",
+    "scan_leaf": 7,
+    "catalogue_url": "https://archive.org/details/cihm_11328"
+  },
+  "biographical_corroboration": {
+    "url": "https://onlinebooks.library.upenn.edu/webbin/book/lookupname?key=Murray%2C+Eustace+Clare+Grenville%2C+1824-1881",
+    "snapshot_sha256": "f97dc2ef76269282dcf468a21b636d180be43e1bebc66467d85050e4b0dcf4e3",
+    "finding": "University of Pennsylvania Online Books Page identifies Murray as 1824–1881; corroborates original catalogue attribution, not a death-register examination."
+  },
+  "remaining_issues": [
+    "Source access/reuse terms not fully assessed for intended training/deployment use.",
+    "Full contributor and selected-span facsimile checks remain pending.",
+    "No human rights approval or worldwide clearance recorded."
+  ],
+  "rights_status": "pending",
+  "approved_by": null,
+  "training_eligible": false
+}

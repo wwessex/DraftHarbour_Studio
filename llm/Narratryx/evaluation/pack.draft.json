@@ -1,0 +1,10 @@
+{
+  "status": "pending-human-review",
+  "tasks_file": "tasks.draft.jsonl",
+  "task_count": 120,
+  "scenario_count": 20,
+  "tasks_per_skill": 20,
+  "provenance": "Original synthetic scenarios created by Codex for review. No literature downloaded.",
+  "frozen": false,
+  "legal_certification": false
+}

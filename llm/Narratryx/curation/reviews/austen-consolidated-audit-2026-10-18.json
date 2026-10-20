@@ -1,0 +1,139 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "ai-consolidated-editorial-and-readiness-review",
+  "review_date_local": "2026-10-18",
+  "timezone": "Europe/London",
+  "performed_by": "Codex; AI review, not human approval",
+  "pack_id": "austen-pilot-review-v1",
+  "input_hashes": {
+    "excerpts": "2f55f0f5de63f031289ea3a7a8ee52b9c7ec196e5a4ced7b3c6d880a71310262",
+    "examples": "cb668ea4c2f07e7000174e8bc77f1a382bc090058604dc067e99ca8bf2137df2",
+    "manifest": "f3dcdc7e60231def8bfdef34cc3aa1ecf3992b72c11868923141ebcd484639a1",
+    "spec": "1eb0a57f9ecbaa19bd883f851f6b776c0b9140b9f9104fe9439e89cb6ce4ce14",
+    "editorial_decision": "61f1be2fa6a5271bfd02d9fa4f79cdab3843de95c1aad76dde17b3d69a2e98fb",
+    "approval": "dea52bb76eb2bdfa0c433402eb7f50db21bc037d45766c7017a02cbba0d8f623",
+    "ledger": "04dc6f9c026ac9cab03b1c576d0b91bf8bbb08d0e38fab0aeeaebcd3108abca8",
+    "tasks": "d9ab80342ca8f4d17b8ec3cca59919a8d298db39a5cb7dbea562dcccf079d91f",
+    "rubric": "3bca91489c35d163a2f5e49be505ff31f67dd468394db69914c1cd67c748192d"
+  },
+  "raw_source_sha256": "3f6bb9d6f78e0293b56acd4714dd68cb7d6d1d293402031ce9d5a216bcaf9d75",
+  "human_decisions_preserved": [
+    "austen-fiction-01",
+    "austen-analysis-01"
+  ],
+  "findings": [
+    {
+      "example_id": "austen-fiction-01",
+      "recommendation": "already-kept",
+      "reason": "Your earlier editorial keep is preserved; technique transfer is clear and characters are new.",
+      "content_hash": "46d021aa31cf2a4271e8bbd7c0730bbb74d21ce5feb25c7e03d31485ea5c1716"
+    },
+    {
+      "example_id": "austen-analysis-01",
+      "recommendation": "already-kept",
+      "reason": "Your earlier editorial keep is preserved; two exact quotations and a grounded explanation.",
+      "content_hash": "04e605e641d4579e59ce1c50d8411466d2e14a8d2896b89c45e711f6ed4bb5bf"
+    },
+    {
+      "example_id": "austen-dialogue-01",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Dialogue only; the joke masks hurt without forcing reconciliation. The invented exchange is explicitly noncanonical.",
+      "content_hash": "5ceeb283efb14fb9949a8de537b522cff0eee382ed74c87af1c17e822c2f839d"
+    },
+    {
+      "example_id": "austen-pacing-01",
+      "recommendation": "revise-before-editorial-acceptance",
+      "reason": "Remove the added timing claim “soon”. The supplied excerpt establishes that she tells the story, but does not specify how soon. The 70-word limit passes.",
+      "content_hash": "f3d0417968661af3faa3911ba037d29857703750eaddd85b81bdd3e06d9de03d"
+    },
+    {
+      "example_id": "austen-editing-01",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Exactly the requested one-word replacement; remaining wording, punctuation and paragraph breaks match.",
+      "content_hash": "e34f46725cb2901b1df43f084ddf268654bf7f4b3b2eed5abe4b5b79b60b02bc"
+    },
+    {
+      "example_id": "austen-storytelling-01",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Both options are labelled proposals, with choices and consequences; neither pretends to be Austen’s continuation.",
+      "content_hash": "342a9741795f421e7bc64c3c625b80f9d1a77c9684af2c5cb7237381f019b36d"
+    },
+    {
+      "example_id": "austen-dialogue-02",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Four dialogue lines; Darcy’s questions undermine his claimed detachment and the rejection remains unresolved.",
+      "content_hash": "ca3ed6d34e683164ec8905835d1a2de0e51b303a085e0714c7fb7a882d77efcd"
+    },
+    {
+      "example_id": "austen-pacing-02",
+      "recommendation": "revise-before-editorial-acceptance",
+      "reason": "The reflective version says “resentment followed”, implying surprise occurs first. The source presents resentment and surprise together. Preserve both without imposing that sequence.",
+      "content_hash": "4a3712f970ab68709742d072fa831dbeb6383cbeea7d9d41618731b46954700a"
+    },
+    {
+      "example_id": "austen-analysis-02",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Two exact quotations; does not identify the unnamed woman or treat her self-accusation as proof about the men.",
+      "content_hash": "2b06823dd5a004d4d84fb97bdbc79fb257dd79b8a34624777f8de2e370f2710a"
+    },
+    {
+      "example_id": "austen-storytelling-02",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Separates supplied facts from proposed motives/events and connects a personal cost to a later payoff.",
+      "content_hash": "b74f74cbced4f98ff98b725116b319877e406d2d0ea2019ed4860934caaf3721"
+    },
+    {
+      "example_id": "austen-fiction-02",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Original contemporary action expresses gratitude without matchmaking; this is a technique exercise, not historical reconstruction.",
+      "content_hash": "2a1707251ff98b63b0a21d97e7a27311c7d6713b52096b4279f33d2742c76d8d"
+    },
+    {
+      "example_id": "austen-editing-02",
+      "recommendation": "keep-as-editorial-draft",
+      "reason": "Correctly permits no change, reproduces the source exactly and adds no unnecessary explanation.",
+      "content_hash": "f225fff44d043c8d0661d1da7ef9a725b09589e72859049d0eb8539713121585"
+    }
+  ],
+  "checks": {
+    "exact_source_spans_and_transformations": 6,
+    "reproduced_examples": 12,
+    "exact_analytical_quotes": "passed",
+    "one_word_edit": "passed",
+    "no_change_edit": "passed",
+    "four_line_dialogue": "passed",
+    "condensation_upper_limit": "passed",
+    "lexical_benchmark_screen": "passed; not semantic/pretraining clearance",
+    "editing_benchmark_minimum": 0
+  },
+  "benchmark": {
+    "tasks": 120,
+    "scenarios": 20,
+    "task_counts": {
+      "fiction": 20,
+      "editing": 20,
+      "analysis": 20,
+      "dialogue": 20,
+      "pacing": 20,
+      "storytelling": 20
+    },
+    "review_status": "pending",
+    "frozen": false,
+    "scope": "short-scene pilot only; not evidence of general novel-writing quality"
+  },
+  "teacher_terms": {
+    "status": "unresolved-substantive-contract-restriction",
+    "account_agreement_known": false,
+    "official_pages_checked": [
+      "https://openai.com/policies/eu-terms-of-use/",
+      "https://openai.com/policies/services-agreement/",
+      "https://openai.com/policies/terms-of-use/"
+    ],
+    "finding": "Published agreements restrict using Output to develop competing models. No conclusion that this project is permitted; editorial approval cannot settle contract applicability."
+  },
+  "training_ready": false,
+  "legal_certification": false,
+  "approvals_changed": false,
+  "training_started": false,
+  "report_sha256": "cebeb108a533905e7ca77f1ac44d6ab024e2f5bbf33c6075536c5443e6f8698e"
+}

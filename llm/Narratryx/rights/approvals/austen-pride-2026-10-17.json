@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "record_id": "austen-pride-scope-approval-2026-10-17",
+  "rights_record_id": "austen-pride-candidate",
+  "decision": "approved-with-scope-conditions",
+  "approved_by": "Human user of Codex conversation 01a14bea-d041-7363-b30b-66b4af6a77bf",
+  "identity_note": "Attribution is to the human user in this conversation; no legal name or professional legal qualification was supplied or inferred.",
+  "user_statement": "i approve",
+  "recorded_by": "Codex, recording the user’s explicit decision; not acting as the approving human",
+  "recorded_at_utc": "2026-10-17T22:55:06.543852+00:00",
+  "reviewed_on": "2026-10-17",
+  "approval_context": "User explicitly approved immediately after the corrected evidence/scope review.",
+  "reviewed_documents": {
+    "dossier": {
+      "path": "dossiers/austen-pride-1894.md",
+      "sha256_at_approval": "0da37c147a41a1b268c4139141acb6f88556ba309352126b25a015f0ea4d9071",
+      "snapshot_path": "approvals/austen-pride-2026-10-17/dossier.reviewed.md"
+    },
+    "evidence_review": {
+      "path": "dossiers/austen-pride-1894.review.md",
+      "sha256_at_approval": "b6ea60a84c65cedd8e5146cf12376b5842cf1ba86874c3fa47a41251de9883fa",
+      "snapshot_path": "approvals/austen-pride-2026-10-17/evidence_review.reviewed.md"
+    }
+  },
+  "source_sha256": "3f6bb9d6f78e0293b56acd4714dd68cb7d6d1d293402031ce9d5a216bcaf9d75",
+  "jurisdictions": [
+    "GB",
+    "US"
+  ],
+  "intended_uses": [
+    "training",
+    "evaluation"
+  ],
+  "included_scope": "Small, inspected selections of Austen’s own novel prose from the pinned 1894-edition PG #1342 transcription; eventual training only after sample/example review.",
+  "conditions": [
+    "Exclude the preface, all 154 illustration blocks (69 captioned, 85 bare), captions, non-novel front/back matter, modern additions, historical copyright lines and PG wrappers from model inputs.",
+    "Preserve raw evidence and notices; document source spans and transformations; preserve genuine emphasis and meaning.",
+    "Review each selected passage and constructed example before training. The full raw file and uncleaned outer range are not approved datasets.",
+    "Follow permitted human-download or mirror acquisition rules. The prior programmatic retrieval stays disclosed; this approval does not establish past access compliance.",
+    "Check any cloud-processing country outside GB/US and any later distribution scope separately."
+  ],
+  "excluded_authorizations": [
+    "No approval of the other three rights records",
+    "No approval of the draft benchmark or editorial rubric",
+    "No dataset/model redistribution approval",
+    "No source upload, paid cloud job or training launch"
+  ],
+  "raw_artifact_training_ready": false,
+  "legal_certification": false
+}

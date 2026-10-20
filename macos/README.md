@@ -1,68 +1,60 @@
-# DraftHarbour Native macOS
+# DraftHarbour — native macOS
 
-This is the real native macOS implementation of DraftHarbour Studio. It is a SwiftUI/AppKit document app, not a Tauri/WebView wrapper.
+Reviewed 20 October 2026. The supported macOS desktop implementation is a **SwiftUI/AppKit document application**, independent of the React/Tauri renderer. The Swift 6 package declares macOS 14 as its minimum. Some optional features require a newer OS/framework and runtime capability checks.
 
-## Status
+## Structure and workflows
 
-This SwiftUI/AppKit app is now the supported macOS desktop application. The existing web app remains available as the PWA/iOS renderer, and Tauri is retained only for Windows/Linux desktop builds.
+- `Sources/DraftHarbourNative/`: application, document lifecycle, commands and native views; AppKit `NSTextView` editing bridge.
+- `Sources/DraftHarbourNativeCore/`: portable project models/codec, store, import/export, manuscript safety, analysis, AI, sync and integration services.
+- `Tests/DraftHarbourNativeCoreTests/`: Swift core/provider/codec/safety regressions.
+- `Resources/` and `DraftHarbourNative.entitlements`: app resources and release entitlements.
 
-- SwiftUI `DocumentGroup` app for `.dhproj` documents.
-- Swift `Codable` schema for the current `.dhproj` v1 format.
-- Document-owned project state through `ProjectStore`.
-- Native macOS sidebar, editor, inspector, settings, tool panels, and commands.
-- AppKit `NSTextView` bridge for native text editing.
-- Import/export for TXT, Markdown, Fountain, RTF, DOCX, PDF, screenplay PDF, and publishing bundles.
-- Session recovery with active section and recent project metadata.
-- Native AI provider configuration with Keychain-backed tokens, workflow stages, translation, insertion modes, and revision logging.
-- Generic REST sync with connect/test, push, pull, revisions, conflict display, and keep-local/use-remote/keep-both resolution.
-- Native Dropbox and Google Drive sync with PKCE OAuth, Keychain-backed access/refresh tokens, provider revisions, refresh-on-401, and conflict-aware pulls.
-- Scrivener local package bridge for plain-text package import/export.
-- Native menus for file, view, insert, format, tools, help, and project workflows.
+The app supports `.dhproj` documents, native writing/planning/review UI, import/export including text-only EPUB, snapshots, recoverable sections, verified backups, project context, provider-configured AI, generic REST sync, Dropbox/Google Drive sync and a bounded Scrivener package bridge. Implemented capabilities do not imply all credentials/backends are configured or that every workflow has current device/GUI validation.
 
-Dropbox requires a registered app key with the `draftharbour://oauth/dropbox` redirect. Google Drive requires a desktop OAuth client; the app uses Google's loopback redirect flow and the `https://www.googleapis.com/auth/drive.file` scope.
+[The portable contract](../docs/contracts/dhproj-v1.md) defines JSON/ZIP imports, known extension preservation, ID remapping and credential exclusion. Native exports are JSON; web exports use ZIP. Document-owned state, native recovery/backup behavior and OS Trash are not identical to browser IndexedDB/project trash.
 
-## Build And Run
+## Build and run
 
 From the repository root:
 
 ```bash
-./script/build_and_run.sh
+swift test --package-path macos
+npm run macos:build
+npm run macos:run
 ```
 
-The script builds the SwiftPM app in `macos/`, stages `dist/DraftHarbour.app`, and launches the bundle.
-
-For build-only verification:
+The npm scripts call `script/build_and_run.sh`; `macos:build` passes `--no-launch`. The script builds SwiftPM, stages a local ad-hoc signed app, and exposes it at `dist/DraftHarbour.app`; the physical bundle normally lives under `~/Library/Caches/DraftHarbour/BuildProducts/`.
 
 ```bash
 ./script/build_and_run.sh --no-launch
 ./script/build_and_run.sh --verify
 ```
 
-If the repository is stored in a cloud-synchronised folder or its Swift build
-cache is locked, use a local scratch directory without changing the project:
+`--verify` launches/verifies the staged app; it is **not** build-only. Open `macos/Package.swift` in full Xcode for IDE, XCTest and GUI workflows. Command Line Tools alone may lack XCTest or compatible SwiftUI macro support; report the actual installed toolchain's failure rather than marking tests passed.
+
+For cloud-synchronized source folders, locked caches or SDK issues, the build script supports `DRAFTHARBOUR_SWIFT_SCRATCH_PATH`, `DRAFTHARBOUR_MACOS_PACKAGE_DIR` and `DRAFTHARBOUR_MACOS_SDK`. Choose installed, compatible paths rather than copying an SDK version from an old report:
 
 ```bash
-DRAFTHARBOUR_SWIFT_SCRATCH_PATH=/tmp/draftharbour-swift-build ./script/build_and_run.sh
+DRAFTHARBOUR_SWIFT_SCRATCH_PATH=/tmp/draftharbour-swift-build ./script/build_and_run.sh --no-launch
 ```
 
-For workspaces whose source files are also managed by a cloud file provider,
-the package can be copied to local storage and selected with
-`DRAFTHARBOUR_MACOS_PACKAGE_DIR`.
+## AI and integrations
 
-## Xcode
+Native providers/factory are in `AIProvider.swift`, `AIWorkflowServices.swift` and `AppleFoundationModelsProvider.swift`. The HTTP client expects a **full completion endpoint**, such as `http://127.0.0.1:8888/v1/chat/completions`, plus the served model ID and suitable authentication. Provider secrets use Keychain-backed accounts. The factory enforces managed policy and local-only controls.
 
-Open `macos/Package.swift` in Xcode. Xcode treats this as a native macOS package project with the `DraftHarbourNative` executable and `DraftHarbourNativeCoreTests`.
+Apple Foundation Models is conditional on framework/macro availability and macOS 26+ runtime eligibility; the app's macOS 14 minimum does not make that provider universally available. Native prompts and pipeline stage lists differ from the shared frontend; test behavior rather than assuming exact parity.
 
-## Tests
+The [Narratryx craft adapter](../llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) is not a promoted model and is not configured by this documentation update. An optional endpoint-based trial is feasible, subject to [service/authentication and app smoke checks](../docs/narratryx-integration-readiness-2026-10-20.md). Local training libraries are not an application dependency.
+
+Dropbox needs a registered app key/redirect configuration; Google Drive needs a desktop OAuth client and uses the native loopback flow. Implementations include PKCE, Keychain-backed tokens and revision/conflict handling. Test credential-backed flows with the intended accounts; source presence is not evidence of configured production sync.
+
+## Validation and release
+
+Run `swift test --package-path macos`, build the app, and separately verify native GUI/editor behavior, import/export round trips, recovery, credentials and configured providers. Frontend tests do not validate this independent implementation. See the dated [parity report](../docs/reviews/platform-parity-2026-10-17.md) for historical results and limits, not today's test status.
 
 ```bash
-swift test --package-path macos
+npm run macos:package
+./script/package_macos.sh --distribution --channel stable
 ```
 
-## Release Notes
-
-`script/build_and_run.sh` stages the native app bundle, copies the app icon from `macos/Resources`, and ad-hoc signs the local bundle. `script/package_macos.sh` signs the release copy ad hoc by default, creates and verifies `dist/release/DraftHarbour.dmg`, and writes `dist/release/checksums.txt`.
-
-Gatekeeper rejection is expected for ad-hoc local beta builds when `APPLE_SIGNING_IDENTITY` is not set. Developer ID signing and notarization remain environment-driven through `APPLE_SIGNING_IDENTITY` and `APPLE_NOTARY_KEYCHAIN_PROFILE`.
-
-`DraftHarbourNative.entitlements` defines the initial release entitlement policy. A notarized release pipeline should archive and sign the staged app bundle or an Xcode-managed archive with the same bundle identifier, document type, hardened runtime, and entitlements.
+The packaging script creates/verifies `dist/release/DraftHarbour.dmg`, checksums and update metadata. Local ad-hoc packages are not notarized distribution builds. Distribution requires Developer ID signing, notarization credentials and a release signing key (`APPLE_SIGNING_IDENTITY`, `APPLE_NOTARY_KEYCHAIN_PROFILE`, `RELEASE_SIGNING_KEY` or its path variant). Inspect the script and [release checklist](../docs/releases/release-checklist.md) before publishing. Packaging does not itself publish a release.

@@ -1,46 +1,90 @@
 # AGENTS.md — DraftHarbour Studio
 
-## Overview
+Repository guidance reviewed against source on 20 October 2026. Manifests, lockfiles and workflow files remain authoritative for executable commands and dependency versions. `CLAUDE.md` provides a source navigation guide; `README.md` documents setup and product/model status.
 
-DraftHarbour Studio is an offline-first writing app built with React 19, TypeScript, and Vite. The repo also ships a Tauri desktop app under `desktop/` and a Capacitor iOS wrapper under `ios/`.
+## Standing preference: all maintained applications
 
-## Standing user preference: all versions
+- Inspect, implement and validate every applicable version by default: **web/PWA**, **Windows/Linux Tauri**, **Capacitor iOS**, and the **independent SwiftUI/AppKit macOS app**.
+- `src/` is shared by web/PWA, the Tauri renderer and Capacitor. It does not implement native macOS behavior; inspect `macos/` separately.
+- Preserve portable project/data compatibility. Synchronize native web assets when shared runtime code changes, and check platform-specific networking, credentials, files and UI behavior.
+- Report exactly which versions received source changes, build/test checks and actual runtime/device checks. Disclose blockers. A configured CI job or historical report is not a fresh successful run.
+- Respect an explicitly narrower user scope. Model research under `llm/Narratryx/` stays independent of application functionality unless integration is requested.
 
-- Every requested fix, feature, review and validation applies to **all applicable versions** by default: web/PWA, Windows/Linux Tauri desktop, Capacitor iOS, and the separate SwiftUI/AppKit macOS app in `macos/`.
-- Inspect both shared code and platform-specific implementations. Shared React changes do not by themselves update native macOS behavior.
-- Implement equivalent behavior in each maintained runtime, preserve portable project data and keep native assets/dependencies synchronized where relevant.
-- Run appropriate checks for every version. Clearly distinguish source/build checks from runtime/device checks, and report platform/toolchain blockers rather than claiming unperformed tests passed.
-- Include cross-platform parity and regression checks in completion reports. Do not leave a platform behind silently or assume a web-only scope unless the user explicitly requests one.
+## Repository map
 
-## Core workflows
+| Path | Responsibility |
+|---|---|
+| `src/` | React 19 / TypeScript / Vite; CodeMirror 6; Dexie persistence |
+| `src/context/` | App context, reducer, settings and workspace services |
+| `src/lib/storage.ts` | Actual IndexedDB implementation/migrations; `src/lib/storage/` includes facade entry points |
+| `src/lib/ai/` | Provider interfaces/factories, custom endpoints, availability, pipelines and story context |
+| `src/components/Windows/SettingsWindow.tsx` | Shared settings UI, including AI configuration |
+| `src/server/integrationBroker.ts` | Vite development middleware backend handlers |
+| `api/` | Separately deployed PHP proxy, not a server bundled into a static site |
+| `desktop/src-tauri/` | Tauri 2 Windows/Linux shell, Rust writing engine, keyring and updater |
+| `ios/` | Capacitor 8 wrapper/Xcode project; shares the built web application |
+| `macos/` | Swift 6 package: independent native app and core |
+| `script/` / `scripts/` | Native macOS build/release scripts / JavaScript quality and smoke checks |
+| `fixtures/`, `docs/contracts/` | Portable `.dhproj` fixtures and compatibility contract |
+| `llm/Narratryx/` | Isolated rights, curation, evaluation and experimental models |
 
-- Install dependencies with `npm ci`.
-- Start web development with `npm run dev`.
-- Build the web app with `npm run build`.
-- Preview the production web build with `npm run preview`.
-- Run the fast validation loop with `npm run lint` and `npm run typecheck`.
-- Run tests with `npm run test` or `npm run test:coverage`.
-- Run the full repo validation with `npm run ci`.
+Do not edit another checkout under `.claude/worktrees/` as this checkout. Capacitor-generated SPM files are CLI-managed; authored iOS guidance belongs in `ios/README.md`.
 
-## Repo-specific checks
+## Commands and validation
 
-- Verify Vite config loads in CI-like conditions with `npm run verify:vite-config`.
-- Check changed-file coverage gates with `npm run coverage:changed`.
-- Check bundle size budgets with `npm run bundle:check`.
-- Check duplicate asset payloads with `npm run assets:check`.
-- Review available test coverage inventory with `npm run test:inventory`.
+Install root dependencies with `npm ci`; install the desktop CLI package with `npm --prefix desktop ci` when needed.
 
-## Native workflows
+| Purpose | Command |
+|---|---|
+| Web development / production / preview | `npm run dev` / `npm run build` / `npm run preview` |
+| Fast source checks | `npm run lint`, `npm run typecheck` |
+| Tests / coverage | `npm run test`, `npm run test:coverage` |
+| Vite config / changed coverage | `npm run verify:vite-config`, `npm run coverage:changed` |
+| Bundle / assets / inventory | `npm run bundle:check`, `npm run assets:check`, `npm run test:inventory` |
+| Frontend CI chain | `npm run ci` |
+| Tauri development / build / debug | `npm run desktop:dev`, `npm run desktop:build`, `npm run desktop:build:debug` |
+| Tauri Rust checks | `cargo test --locked --no-default-features --manifest-path desktop/src-tauri/Cargo.toml` |
+| Build and synchronize Capacitor | `npm run build:native` |
+| Capacitor sync / health / Xcode | `npm run cap:sync`, `npm run cap:doctor`, `npm run cap:open:ios` |
+| Native macOS tests | `swift test --package-path macos` |
+| Native macOS run / build | `npm run macos:run`, `npm run macos:build` |
+| Provider smoke checks | `npm run smoke:providers` (contacts configured services) |
 
-- Sync web assets into native projects with `npm run build:native`.
-- Re-sync Capacitor without rebuilding via `npm run cap:sync`.
-- Open the iOS project in Xcode with `npm run cap:open:ios`.
-- Check Capacitor environment health with `npm run cap:doctor`.
-- Start the Tauri desktop shell with `npm run desktop:dev`.
-- Build desktop artifacts with `npm run desktop:build`.
-- Build debug desktop artifacts with `npm run desktop:build:debug`.
+`npm run ci` runs lint → typecheck → Vite config → coverage tests → web build → bundle budgets → duplicate assets. It does **not** include `coverage:changed`, Python foundation tests, native tests or iOS compilation. The PR workflow additionally runs changed coverage, Narratryx CPU foundation tests, macOS tests/app build, Windows/Linux shell tests and iOS simulator compilation. Inspect `.github/workflows/pr-check.yml` before describing current jobs.
 
-## CI notes
+With full Xcode, the configured iOS simulator compile is:
 
-- PR checks run `npm run lint`, `npm run assets:check`, `npm run typecheck`, `npm run verify:vite-config`, `npm run test:coverage`, `npm run coverage:changed`, `npm run build`, and `npm run bundle:check`.
-- GitHub Pages and static-site packaging workflows install with `npm ci` and build with `npm run build`.
+```bash
+xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+```
+
+Use checks proportionate to the change. Documentation-only work needs source/command/link consistency checks, not regenerated native assets. Runtime changes require relevant tests and platform checks. Never count skipped checks as passes.
+
+## Implementation and data rules
+
+- Read existing implementations/tests first. Use strict TypeScript, `@/` imports, existing context/reducer/service boundaries and the command registry in `src/lib/commands.ts`. Shared domain types live in `src/types/`; provider-specific types also live near their implementation.
+- Follow established component patterns, CSS Modules, Tailwind and theme tokens. Retain lazy loading of heavy dependencies and offline drafting when providers fail or are unavailable.
+- Add meaningful regression coverage for behavior changes. Obtain test counts from current execution/inventory rather than stale prose.
+- Preserve user changes/manuscripts. Avoid unrelated fixes, repository-wide formatting, generated-file churn and changes in other worktrees.
+- Follow `docs/contracts/dhproj-v1.md` and shared fixtures. Web exports are ZIP with `project.json`; native macOS exports JSON; importers accept both. Preserve/remap known IDs and passive native extensions according to the contract.
+- The web database currently has v5 backup/trash additions. Add migrations for new persisted schema and keep old projects readable. IndexedDB and localStorage are not one crash-atomic transaction.
+- Preserve backups, trash, snapshots and recovery. Imports/restores must not silently overwrite the current manuscript or activate imported credentials.
+- Browser storage is not an OS secret vault. Inspect actual persistence: Tauri keyring handling covers specific secret paths, not every possible configuration field. Native macOS uses Keychain-backed accounts. Never print credentials.
+- Respect managed policy, local-only operation and explicit provider configuration. Remote AI/sync requests can transmit project context; do not activate them silently.
+
+## Narratryx and experimental AI
+
+- Read `llm/Narratryx/README.md` and its latest linked report before model work. Training completion, structural validation and literary improvement are different claims.
+- Current adapters remain experimental. The latest craft pilot has mixed mechanical results and no completed blinded human quality ratings. Placeholder names such as `narratryx:latest` do not prove a model is installed or released.
+- Use only sources, jurisdictions, uses and spans supported by exact rights records. Dataset-wide public-domain metadata is not per-edition clearance. Attribute AI evidence reviews accurately; never invent human approval or legal certification.
+- The user's current training scope excludes generated literary teaching targets. Keep unresolved teacher-output candidates and unreviewed bulk corpus rows out of training. Distinguish task instructions from source-derived answer provenance.
+- Preserve held-out authors/works, benchmark hashes and independent evaluation. Editing tests must not gain a minimum length that encourages explanation. Exact canonical continuation is not a fiction-quality metric.
+- Keep data preparation/training out of app startup, installers and manuscript storage. Integrate through the existing provider abstraction and a separate, replaceable inference service. Ordinary users must not need local training or an expensive GPU.
+- Loopback URLs refer to the client device: a Mac Studio URL cannot serve a Windows PC or iPhone through that device's own `127.0.0.1`.
+- Documentation work does not authorize paid jobs, corpus uploads, model publication/promotion or changes to app defaults. Follow the user's execution scope.
+
+## Releases and reporting
+
+Use `codex/` for new Codex branches. Preserve hooks and repository PR conventions. Local ad-hoc macOS signing is not a notarized distribution; follow platform/release guides for distribution signing and artifact checks. Packaging alone does not publish a release.
+
+Completion reports state changes, actual checks, limits and parity across applicable versions. Keep historical validation dates distinct from current results.
