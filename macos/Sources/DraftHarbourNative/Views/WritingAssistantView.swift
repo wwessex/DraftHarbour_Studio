@@ -77,6 +77,14 @@ struct WritingAssistantView: View {
     }
     .padding(10)
     .background(.quaternary.opacity(0.35))
+    .onChange(of: store.activeSectionID) { _, _ in
+      task?.cancel()
+      draft = nil
+      result = ""
+      direction = ""
+      undo = nil
+      error = nil
+    }
     .onDisappear { task?.cancel() }
   }
 

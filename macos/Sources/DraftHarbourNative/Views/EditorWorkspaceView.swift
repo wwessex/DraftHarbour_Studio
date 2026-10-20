@@ -30,7 +30,6 @@ struct EditorWorkspaceView: View {
       if let section = store.activeSection {
         header(section: section)
         WritingAssistantView(store: store, editorSelection: { selectedRange }, configure: configureAI)
-          .id(section.id)
         Divider()
         HStack(spacing: 0) {
           if pageView {
