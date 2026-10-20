@@ -73,6 +73,8 @@ class InferenceServer(ThreadingHTTPServer):
             raise ValueError('A private access token is required')
         if '*' in origins:
             raise ValueError('List explicit allowed origins instead of a wildcard')
+        if any(not isinstance(origin, str) or any(ord(c) < 32 or ord(c) == 127 for c in origin) for origin in origins):
+            raise ValueError('Allowed origins must not contain header control characters')
         self.engine, self.pin, self.token = engine, pin, token
         self.origins = frozenset(origins)
         self.deadline = deadline
@@ -98,9 +100,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', str(len(encoded)))
         self.send_header('Cache-Control', 'no-store')
         self.send_header('Connection', 'close')
-        origin = self.headers.get('Origin')
-        if origin in self.server.origins:
-            self.send_header('Access-Control-Allow-Origin', origin)
+        # Emit only a configured, validated value, never a reflected request
+        # header. Exact membership alone is insufficient for header safety.
+        allowed_origin = next((configured for configured in self.server.origins
+                               if configured == self.headers.get('Origin')), None)
+        if allowed_origin is not None:
+            self.send_header('Access-Control-Allow-Origin', allowed_origin)
             self.send_header('Vary', 'Origin')
             self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Headers', 'Authorization, Content-Type')

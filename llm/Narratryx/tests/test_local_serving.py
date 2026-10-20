@@ -121,6 +121,9 @@ class LocalServingTests(unittest.TestCase):
             self.assertIn('Authorization', headers['Access-Control-Allow-Headers'])
         with self.assertRaises(ValueError):
             InferenceServer(('127.0.0.1', 0), self.engine, PIN, TOKEN, ['*'])
+        for origin in ['https://example.test\r\nX-Injected: yes', 'https://example.test\x00']:
+            with self.assertRaises(ValueError):
+                InferenceServer(('127.0.0.1', 0), self.engine, PIN, TOKEN, [origin])
 
     def test_stream_tools_and_invalid_payloads_fail_without_execution(self):
         for payload in [self.payload(stream=True), self.payload(tools=[{'name': 'execute'}]),
