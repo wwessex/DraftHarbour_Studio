@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 
 from runtime.local.server import InferenceServer, access_token
-from runtime.local.engine import ContextTooLong, verify_files
+from runtime.local.engine import ContextTooLong, MLXEngine, verify_files
 
 ROOT = Path(__file__).resolve().parents[1]
 PIN = json.loads((ROOT / 'configs/narratryx-craft-v1.json').read_text())
@@ -140,6 +140,18 @@ class LocalServingTests(unittest.TestCase):
         self.assertEqual(status, 413)
         self.assertIn('nothing was truncated', data['error']['message'])
         self.assertEqual(before, json.dumps(payload))
+
+    def test_engine_counts_token_sequence_not_tokenizer_mapping_fields(self):
+        class Tokenizer:
+            def apply_chat_template(inner, messages, **options):
+                self.assertTrue(options['return_dict'])
+                return {'input_ids': [1] * PIN['context_limit'], 'attention_mask': [1] * PIN['context_limit']}
+        engine = object.__new__(MLXEngine)
+        engine.pin = PIN
+        engine.tokenizer = Tokenizer()
+        # No backend is attached: rejection must occur before model access.
+        with self.assertRaises(ContextTooLong):
+            engine._generate(self.payload()['messages'], PIN['model_id'], 1, 0, threading.Event())
 
     def test_deadline_cancels_generation_and_releases_busy_state(self):
         self.engine.block = True

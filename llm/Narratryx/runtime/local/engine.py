@@ -82,7 +82,11 @@ class MLXEngine:
         return self.executor.submit(self._generate, messages, model, max_tokens, temperature, cancel).result()
 
     def _generate(self, messages, model, max_tokens, temperature, cancel):
-        ids = self.tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, enable_thinking=False)
+        encoded = self.tokenizer.apply_chat_template(messages, tokenize=True, return_dict=True,
+                                                     add_generation_prompt=True, enable_thinking=False)
+        # Transformers 5 returns BatchEncoding by default; its len() counts
+        # fields rather than tokens. Count the explicit token sequence.
+        ids = encoded['input_ids']
         if len(ids) + max_tokens > self.pin['context_limit']:
             raise ContextTooLong('This experimental model needs a shorter passage or less project context. Nothing was truncated or changed.')
         if self.backend._prompt_cache() is not None:
