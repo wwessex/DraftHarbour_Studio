@@ -50,7 +50,7 @@ Install root dependencies with `npm ci`; install the desktop CLI package with `n
 | Native macOS run / build | `npm run macos:run`, `npm run macos:build` |
 | Provider smoke checks | `npm run smoke:providers` (contacts configured services) |
 
-`npm run ci` runs lint → typecheck → Vite config → coverage tests → web build → bundle budgets → duplicate assets. It does **not** include `coverage:changed`, native tests or iOS compilation. The PR workflow additionally runs changed coverage, macOS tests/app build, Windows/Linux shell tests and iOS simulator compilation. Inspect `.github/workflows/pr-check.yml` before describing current jobs.
+`npm run ci` runs lint → typecheck → Vite config → coverage tests → web build → bundle budgets → duplicate assets. It does **not** include `coverage:changed`, Python foundation tests, native tests or iOS compilation. The PR workflow additionally runs changed coverage, Narratryx CPU foundation tests, macOS tests/app build, Windows/Linux shell tests and iOS simulator compilation. Inspect `.github/workflows/pr-check.yml` before describing current jobs.
 
 With full Xcode, the configured iOS simulator compile is:
 
