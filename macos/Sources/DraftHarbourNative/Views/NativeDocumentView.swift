@@ -258,7 +258,6 @@ struct NativeDocumentView: View {
       }
     }
     .onChange(of: store.activeSectionID) { _, newValue in
-      selectedRange = NSRange(location: 0, length: 0)
       recoveryService.recordActiveSectionID(newValue, projectId: store.envelope.project.id)
     }
     .onChange(of: spotlightIndexingLevelRaw) { _, _ in
