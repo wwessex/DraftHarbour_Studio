@@ -50,7 +50,7 @@ Setup does not carry another provider's secret into the new endpoint. Shared set
 
 ## Write, Rewrite and Continue
 
-Open **Tools → AI Writing Tools** in web/PWA, Tauri or iOS. Native macOS exposes the same buttons in **AI Writing** and **AI Suggestions**. They use the configured provider, including the experimental Narratryx service; they require no retraining.
+**Write**, **Rewrite** and **Continue** are always visible in the main manuscript workspace in web/PWA, Tauri, iOS and native macOS. Write opens inline instructions; Rewrite and Continue generate into an inline preview beside the manuscript. No menu or Settings navigation is needed for everyday writing. Settings/Connect AI model is only for one-time provider configuration. Advanced AI panels remain available. The actions use the configured provider, including the experimental Narratryx service, and require no retraining.
 
 - **Write:** enter instructions, then generate a new passage to append. It can start an empty chapter.
 - **Rewrite:** select a passage in the editor before opening the tools. With no selection, it targets the final paragraph. Optional instructions can request a change in voice, clarity or pace. It returns one replacement, without a required minimum length.

@@ -1329,4 +1329,24 @@ describe('AIWritingModal', () => {
     expect(mockExecute).toHaveBeenCalled();
   });
 
+  it('runs Continue once from the workspace entry point and previews without a dialog', async () => {
+    const request = { id: 1, action: 'continue' as const };
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={request} onClose={onCloseMock} />));
+    expect(container.querySelector('[data-testid="dialog"]')).toBeNull();
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toContain('AI response text');
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={request} onClose={onCloseMock} />));
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Append to Chapter')!.click());
+    expect(mockUpdateChapter).toHaveBeenCalledWith('ch-1', { content: 'Hello world\n\nAI response text' });
+  });
+
+  it('opens Write instructions without generating or opening settings', async () => {
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={{ id: 2, action: 'write' }} onClose={onCloseMock} />));
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(container.querySelector('textarea#workspace-writing-instructions')).toBeTruthy();
+    expect(container.textContent).toContain('Your manuscript stays unchanged');
+  });
+
 });

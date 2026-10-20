@@ -36,6 +36,7 @@ import {
 import type { AIProviderConfig, AvailabilityStatus, CustomLlmConfig, EvalSuiteResult } from '@/lib/ai';
 import type { ProjectType, StoryBlueprint } from '@/types';
 import styles from '../Modals.module.css';
+import workspaceStyles from '@/components/AI/WritingWorkspace.module.css';
 import { useCurrentEditor } from '@/lib/editor/EditorContext';
 import { prepareWritingAction, writingReplacement, type WritingAction, type WritingPlan } from '@/lib/ai/writingActions';
 
@@ -46,6 +47,9 @@ import { prepareWritingAction, writingReplacement, type WritingAction, type Writ
 interface AIWritingModalProps {
   open: boolean;
   onClose: () => void;
+  presentation?: 'modal' | 'workspace';
+  actionRequest?: { id: number; action: WritingAction };
+  onConfigure?: () => void;
 }
 
 interface PresetPrompt {
@@ -187,7 +191,7 @@ function getPresetPrompts(projectType: ProjectType): PresetPrompt[] {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
+export function AIWritingModal({ open, onClose, presentation = 'modal', actionRequest, onConfigure }: AIWritingModalProps) {
   const { activeChapter, state, updateChapter } = useApp();
   const { showToast } = useToast();
   const { editor } = useCurrentEditor();
@@ -234,6 +238,8 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
   // Ref for aborting in-flight requests
   const abortRef = useRef<AbortController | null>(null);
   const responseRef = useRef<HTMLDivElement>(null);
+  const handledRequest = useRef<number | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   // Persist config changes
   const updateConfig = useCallback((updates: Partial<AIProviderConfig>) => {
@@ -536,7 +542,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     sendPrompt(prompt);
   };
 
-  const handleWritingAction = (action: WritingAction) => {
+  const handleWritingAction = useCallback((action: WritingAction) => {
     if (!activeChapter) return;
     try {
       const source = editor?.getContent() ?? editorToPlainText(activeChapter.content);
@@ -545,7 +551,13 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Choose a passage first.');
     }
-  };
+  }, [activeChapter, editor, prompt, sendPrompt]);
+
+  useEffect(() => {
+    if (!open || !actionRequest || handledRequest.current === actionRequest.id) return;
+    handledRequest.current = actionRequest.id;
+    if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action);
+  }, [actionRequest, handleWritingAction, open]);
 
   const handlePreset = (preset: PresetPrompt) => {
     if (preset.id === 'continue') { handleWritingAction('continue'); return; }
@@ -825,6 +837,35 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     : 'cloud';
 
   /* ----- Render ----------------------------------------------------- */
+
+  if (presentation === 'workspace') {
+    if (!open) return null;
+    return <section aria-label="Writing assistant">
+      <div className={workspaceStyles.bar}>
+        <span className={workspaceStyles.label}>AI writing</span>
+        {(['write', 'rewrite', 'continue'] as const).map(action => <button type="button" key={action} className={workspaceStyles.action} disabled={loading || !activeChapter} onClick={() => handleWritingAction(action)}>
+          {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
+        </button>)}
+        <button type="button" className={workspaceStyles.action} onClick={onClose} aria-label="Close writing assistant">Close</button>
+      </div>
+      <div className={workspaceStyles.panel}>
+        <p className={workspaceStyles.hint}>{isConfigured ? providerModeLabel : 'Connect a model once in Settings to start writing with AI.'} · Rewrite selected text or the final paragraph; Continue adds after the ending.</p>
+        {!isConfigured && onConfigure && <Button onClick={onConfigure}>Connect AI model</Button>}
+        <label htmlFor="workspace-writing-instructions">Instructions (required for Write)</label>
+        <textarea autoFocus={actionRequest?.action === 'write'} id="workspace-writing-instructions" className={workspaceStyles.instructions} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="What happens next? Or describe how to rewrite the passage…" />
+        {loading && <div role="status">Generating… <Button onClick={() => abortRef.current?.abort()}>Stop</Button></div>}
+        {error && <p className={workspaceStyles.error} role="alert">{error}</p>}
+        {(response || isStreaming) && <>
+          <div className={workspaceStyles.result} aria-label="AI draft preview">{isStreaming ? streamingText : response}</div>
+          <div className={workspaceStyles.bar}>
+            <Button onClick={handleInsertResponse} disabled={loading}>{writingPlan?.action === 'rewrite' ? 'Replace Passage' : 'Append to Chapter'}</Button>
+            <Button onClick={() => { setResponse(''); setWritingPlan(null); }}>Discard</Button>
+          </div>
+        </>}
+        <p className={workspaceStyles.hint}>Your manuscript stays unchanged until you accept a draft.</p>
+      </div>
+    </section>;
+  }
 
   return (
     <Dialog

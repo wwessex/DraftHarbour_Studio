@@ -1,4 +1,5 @@
 import { useMemo, useCallback, type ReactNode } from 'react';
+import { WritingWorkspace } from '@/components/AI/WritingWorkspace';
 import { useApp } from '@/context/AppContext';
 import { countWords, editorToPlainText, formatReadingTime } from '@/lib/utils';
 import type { ChapterStatus } from '@/types';
@@ -79,6 +80,7 @@ export function EditorPane({ children }: EditorPaneProps) {
         </div>
       </div>
 
+      <WritingWorkspace key={activeChapter.id} />
       {/* Editor Scroll Region */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="px-6 pb-24">
