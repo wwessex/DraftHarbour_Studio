@@ -1,0 +1,2 @@
+# CPU-only Phase 1 tooling. No training/serving dependencies.
+jsonschema==4.23.0

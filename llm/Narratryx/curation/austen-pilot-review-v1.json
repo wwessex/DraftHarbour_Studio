@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "austen-pilot-review-v1",
+  "rights_record_id": "austen-pride-candidate",
+  "source_work_id": "austen-pride",
+  "split_group": "author-austen",
+  "split": "train",
+  "expected_source_sha256": "3f6bb9d6f78e0293b56acd4714dd68cb7d6d1d293402031ce9d5a216bcaf9d75",
+  "expected_outer_range": [
+    35259,
+    729437
+  ],
+  "selections": [
+    {
+      "id": "austen-opening",
+      "chapter": 1,
+      "start": "It is a truth universally acknowledged, that a single man in possession",
+      "end": "property of some one or other of their daughters.",
+      "focus": "Narratorial irony and the difference between a social assumption and a fact."
+    },
+    {
+      "id": "austen-ball",
+      "chapter": 3,
+      "start": "“Which do you mean?” and turning round, he looked for a moment at",
+      "end": "playful disposition, which delighted in anything ridiculous.",
+      "focus": "Public insult, character reaction and comic reframing."
+    },
+    {
+      "id": "austen-charlotte",
+      "chapter": 6,
+      "start": "“Well,” said Charlotte, “I wish Jane success with all my heart; and if",
+      "end": "sound, and that you would never act in this way yourself.”",
+      "focus": "Conflicting views of marriage; restrained, instruction-specific editing."
+    },
+    {
+      "id": "austen-pause",
+      "chapter": 34,
+      "start": "Mr. Darcy, who was leaning against the mantel-piece with his eyes fixed",
+      "end": "But it is of small importance.”",
+      "focus": "An emotionally charged pause and a mismatch between speech and behavior."
+    },
+    {
+      "id": "austen-self-judgment",
+      "chapter": 36,
+      "start": "She grew absolutely ashamed of herself. Of neither Darcy nor Wickham",
+      "end": "prejudiced, absurd.",
+      "focus": "A concise internal turn; distinguishing supplied evidence from outside plot knowledge."
+    },
+    {
+      "id": "austen-gratitude",
+      "chapter": 61,
+      "start": "With the Gardiners they were always on the most intimate terms. Darcy,",
+      "end": "had been the means of uniting them.",
+      "focus": "Gratitude conveyed in summary; recognizing when no correction is necessary."
+    }
+  ],
+  "examples": [
+    {
+      "id": "austen-fiction-01",
+      "task": "fiction",
+      "excerpt_id": "austen-opening",
+      "instruction": "Write a short original scene in a contemporary setting that uses the excerpt’s technique: contrast a community’s confident assumption with an individual’s different priorities. Use new characters and third-person past tense. Do not continue or reproduce Austen’s story. Output the scene only.",
+      "target": "By the time the removal van stopped outside number twelve, the street had agreed that its new resident would take over the residents’ association. Anyone who owned that many labelled boxes must be a person who enjoyed minutes.\n\nOn her first morning, Meera found a clipboard waiting beside the milk. Someone had already printed her name at the top.\n\nShe carried it next door.\n\n“How kind of you to volunteer,” said the chairman.\n\n“I haven’t.”\n\n“No need to be modest. We saw how efficiently you unpacked.”\n\nMeera looked past him at the six unopened cartons in his hall.\n\n“I moved here,” she said, “because the advertisement promised a quiet street.”",
+      "rubric": [
+        "Contrasts a social assumption with the individual’s actual aim.",
+        "Uses new contemporary characters and third-person past tense.",
+        "Advances a small conflict without copying Austen’s continuation."
+      ]
+    },
+    {
+      "id": "austen-analysis-01",
+      "task": "analysis",
+      "excerpt_id": "austen-opening",
+      "instruction": "Explain the irony in this excerpt. Quote two short exact phrases from the supplied text. Distinguish the narrator’s presentation of a social assumption from a factual claim about every wealthy man. Do not draw on later chapters.",
+      "target": "The opening presents a local expectation as if it were an unquestionable law. “universally acknowledged” gives the statement exaggerated authority. The next paragraph shifts attention away from what the man actually wants to what the surrounding families assume: he becomes “the rightful property” of a daughter.\n\nThat shift makes the confidence comic and exposes the families’ interests. The excerpt does not establish the wishes of any particular wealthy man. Its irony comes from the gap between the certainty of the social rule and the absence of evidence about the individual.",
+      "rubric": [
+        "Quotes only text present in the excerpt.",
+        "Explains how the second paragraph changes the reading of the first.",
+        "Does not endorse the social assumption as a universal fact."
+      ]
+    },
+    {
+      "id": "austen-dialogue-01",
+      "task": "dialogue",
+      "excerpt_id": "austen-ball",
+      "instruction": "Invent a brief, noncanonical exchange after this incident between Elizabeth and an unnamed friend. Let Elizabeth make a joke that protects her dignity while allowing a trace of hurt to show. Use dialogue only; do not introduce a reconciliation or claim this is Austen’s next scene.",
+      "target": "“You are laughing very heartily.”\n“Then I have saved you the trouble of pitying me.”\n“I was going to ask you to dance.”\n“How fortunate. I had feared the room was reserving all its charity for gentlemen.”\n“Shall I ask somebody else?”\n“No. Stay a moment.”\n“I thought you wished to dance.”\n“I do. I should merely like to choose the direction in which I am seen enjoying myself.”",
+      "rubric": [
+        "Uses dialogue to conceal and partially reveal hurt.",
+        "Keeps the insult’s emotional effect without resolving it.",
+        "Adds only a clearly requested fictional friend and noncanonical conversation."
+      ]
+    },
+    {
+      "id": "austen-pacing-01",
+      "task": "pacing",
+      "excerpt_id": "austen-ball",
+      "instruction": "Condense the supplied incident to no more than 70 words. Preserve the sequence: Darcy sees Elizabeth, withdraws his gaze and insults her; Bingley returns to his partner; Darcy leaves; Elizabeth feels displeasure but tells her friends the story spiritedly. Output prose only.",
+      "target": "Darcy caught Elizabeth’s eye, looked away, and called her tolerable but insufficiently handsome to tempt him. He told Bingley to return to his partner. Bingley did; Darcy walked off. Elizabeth remained displeased, but soon told the story among her friends with the lively spirit she brought to anything ridiculous.",
+      "rubric": [
+        "Preserves each specified beat and their order.",
+        "Does not recast Elizabeth’s humor as absence of hurt.",
+        "Meets the upper word limit without inventing new events."
+      ]
+    },
+    {
+      "id": "austen-editing-01",
+      "task": "editing",
+      "excerpt_id": "austen-charlotte",
+      "instruction": "Make exactly one accessibility edit: replace “felicity” with “happiness”. Preserve every other word, the emphasis, punctuation and paragraph breaks. The supplied context has already had print line wrapping removed. Output only the revised passage.",
+      "target_mode": "replace_once",
+      "old": "felicity",
+      "new": "happiness",
+      "rubric": [
+        "Changes the one requested word only.",
+        "Preserves paragraph breaks, punctuation and all remaining wording.",
+        "Does not impose additional modernization or style preferences."
+      ]
+    },
+    {
+      "id": "austen-storytelling-01",
+      "task": "storytelling",
+      "excerpt_id": "austen-charlotte",
+      "instruction": "Propose two alternative future scenes that test the disagreement in this excerpt. For each, identify a choice, a consequence and a possible payoff. Label everything as a proposal; do not claim knowledge of what happens later in the novel.",
+      "target": "Proposal A — test the value of knowledge.\nChoice: Charlotte must decide whether to ask a prospective partner an awkward question about an ordinary household responsibility.\nConsequence: asking reveals a disagreement she could otherwise have overlooked.\nPossible payoff: a later shared decision shows whether knowing the difference helped them negotiate it.\n\nProposal B — test the limits of knowledge.\nChoice: Charlotte’s interlocutor encourages someone to delay a commitment until they understand a partner better.\nConsequence: an unforeseen change of circumstances creates a difficulty that further acquaintance would not have predicted.\nPossible payoff: that speaker must distinguish useful understanding from the impossible demand for certainty.\n\nNeither proposal proves one speaker entirely right. Both give the disagreement consequences through character choices.",
+      "rubric": [
+        "Clearly distinguishes invented proposals from source facts.",
+        "Makes each payoff follow from a choice and consequence.",
+        "Tests both positions without manufacturing a simple moral winner."
+      ]
+    },
+    {
+      "id": "austen-dialogue-02",
+      "task": "dialogue",
+      "excerpt_id": "austen-pause",
+      "instruction": "Write an alternative four-line exchange between Darcy and Elizabeth at this moment. Darcy should try to minimize the importance of the rejection while betraying that it matters. Elizabeth should challenge that mismatch. Dialogue only; preserve the rejection and do not resolve it. This is a new alternative, not a quotation from the novel.",
+      "target": "“You need not explain yourself. I had hoped only to understand you.”\n“Then you must allow my answer to mean what I said.”\n“It is not an answer I shall trouble you about again. Was it always your intention?”\n“You have asked me to explain myself twice while assuring me that you do not wish it.”",
+      "rubric": [
+        "Makes Darcy’s repeated questioning contradict his claimed detachment.",
+        "Keeps Elizabeth’s refusal intact.",
+        "Uses exactly four dialogue lines and no invented reconciliation."
+      ]
+    },
+    {
+      "id": "austen-pacing-02",
+      "task": "pacing",
+      "excerpt_id": "austen-pause",
+      "instruction": "Create an urgent and a reflective version of this beat. In both, preserve Darcy at the mantelpiece looking at Elizabeth, his anger and surprise, his attempt to appear composed, her distress during the pause, and his eventual demand for a reason followed by a claim that it is unimportant. Add no new event. Label the versions Urgent: and Reflective:.",
+      "target": "Urgent:\nDarcy stared at Elizabeth from the mantelpiece. He went pale with anger and surprise. He held his tongue until he could force it into calmness; the silence was dreadful to her. At last he demanded to know why she rejected him, then declared the answer of little importance.\n\nReflective:\nDarcy remained against the mantelpiece, his eyes on Elizabeth’s face. Her words had surprised him; resentment followed, showing through the composure he was struggling to recover. He would not speak until he believed he could sound calm. For Elizabeth, the effort prolonged a dreadful pause. When his question finally came, it asked for the reason for her rejection. His dismissal of its importance followed only after he had asked.",
+      "rubric": [
+        "Preserves all requested facts in both versions.",
+        "Changes the allocation of attention and sentence rhythm rather than inventing action.",
+        "Does not equate urgency with shouting or reflection with decorative description."
+      ]
+    },
+    {
+      "id": "austen-analysis-02",
+      "task": "analysis",
+      "excerpt_id": "austen-self-judgment",
+      "instruction": "Identify the internal change conveyed by this passage. Use two short exact quotations as evidence. State one thing the excerpt does not establish. Do not supply the unnamed woman’s identity or import facts from the rest of the novel.",
+      "target": "The internal turn is toward self-criticism. “ashamed of herself” places the emotional emphasis on her own conduct, while “blind, partial, prejudiced, absurd” makes the judgment severe and specific. Thinking about either Darcy or Wickham now brings that judgment with it.\n\nThe passage does not establish which particular actions led her to this conclusion, or whether every part of her self-accusation is fair. It gives us the force of her changed self-assessment, rather than enough evidence to adjudicate the two men’s behavior.",
+      "rubric": [
+        "Grounds the interpretation in two exact source phrases.",
+        "Does not name the woman or assert outside plot facts.",
+        "Separates intense self-judgment from independently established culpability."
+      ]
+    },
+    {
+      "id": "austen-storytelling-02",
+      "task": "storytelling",
+      "excerpt_id": "austen-self-judgment",
+      "instruction": "Suggest one possible next scene that turns this internal change into a consequential action. Separate established facts from your proposed inventions. Include a choice, a cost and a later payoff. Do not retell the novel’s actual continuation.",
+      "target": "Established: a woman feels ashamed of her judgment concerning Darcy and Wickham. The passage does not tell us the particular mistake or what practical remedy is available.\n\nProposed scene: she reviews an account she previously dismissed, marking what she directly knows and what she merely repeated.\nChoice: she decides to tell a friend that her earlier confident version may have been wrong.\nCost: admitting the uncertainty damages the reputation for discernment she wants that friend to respect. This desire for respect is a proposed addition, not a supplied fact.\nLater payoff: when new information appears, the friend asks what has actually been verified. Her willingness to answer honestly makes the earlier admission matter beyond a moment of private shame.",
+      "rubric": [
+        "Separates supplied facts from new character motives and events.",
+        "Makes the action incur a specific interpersonal cost.",
+        "Connects the later payoff to the decision rather than rewarding shame by itself."
+      ]
+    },
+    {
+      "id": "austen-fiction-02",
+      "task": "fiction",
+      "excerpt_id": "austen-gratitude",
+      "instruction": "Write a new contemporary scene that turns the excerpt’s idea of lasting gratitude into a small observable action. Use new characters, third-person past tense, and no wedding or matchmaking plot. Do not continue the source story. Output the scene only.",
+      "target": "The office had moved twice since the flood, but Farah still kept a spare key for Mr Patel.\n\nOn Thursday he arrived carrying a printer under one arm.\n\n“Could I leave this here until the repair shop opens?”\n\nShe cleared a chair. The others were already crowding into the lift for lunch.\n\n“You don’t have to wait,” he said.\n\nFarah found the cable caught beneath the printer and worked it free before he could lift it again. Years earlier, when her stock had been floating in the street, he had opened his storeroom without asking what it was worth.\n\n“I know,” she said, and put the kettle on.",
+      "rubric": [
+        "Expresses lasting gratitude through a small present action.",
+        "Uses new contemporary characters and avoids the source’s romantic plot.",
+        "Provides a clear causal link between earlier help and present hospitality."
+      ]
+    },
+    {
+      "id": "austen-editing-02",
+      "task": "editing",
+      "excerpt_id": "austen-gratitude",
+      "instruction": "Review this passage for a clear grammatical error. Preserve historical diction and the narrator’s voice. If no correction is necessary, say “No changes needed.” and reproduce the passage unchanged. Do not invent an error or add an explanation solely to make the answer longer.",
+      "target_mode": "no_change",
+      "rubric": [
+        "Recognizes that historical diction is not a grammatical error.",
+        "Reproduces the supplied text exactly after the requested decision.",
+        "Does not expand the answer with unnecessary explanation."
+      ]
+    }
+  ]
+}

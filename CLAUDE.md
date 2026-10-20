@@ -1,170 +1,70 @@
 # CLAUDE.md — DraftHarbour Studio
 
-## Project Overview
+Source guide reviewed 20 October 2026. Read [AGENTS.md](AGENTS.md) first: its standing all-version scope, data-protection, validation and model-development rules also apply to Claude. [README.md](README.md) is the setup/product entry point. Manifests and lockfiles take precedence over dependency versions mentioned in prose.
 
-Offline-first PWA for writing novels and screenplays. React 19 + TypeScript + Vite, with CodeMirror 6 editor, IndexedDB persistence (Dexie), multi-format export, AI writing assistance, and optional cloud sync. Also ships as Tauri 2 desktop app and Capacitor 8 iOS app.
+## Architecture
 
-Two project modes: **Book** (chapters with prose) and **Screenplay** (Fountain format scenes).
+DraftHarbour is an offline-first novel/screenplay application with four maintained runtime families:
 
-## Stack
+| Runtime | Implementation |
+|---|---|
+| Web/PWA | React/TypeScript in `src/`; CodeMirror 6; Dexie/IndexedDB and auxiliary browser storage |
+| Windows/Linux | Shared frontend in Tauri 2 under `desktop/`; Rust native services and credential-vault integration |
+| iOS | Shared built frontend in Capacitor 8 under `ios/`; Xcode/Swift Package Manager project |
+| macOS | Independent SwiftUI/AppKit document app under `macos/`; `.dhproj` documents, native services and Keychain |
 
-| Layer | Tech |
-|-------|------|
-| UI | React 19, TypeScript ~5.6, Vite 6 |
-| Editor | CodeMirror 6 (`@codemirror/*`) — Markdown content storage |
-| Database | Dexie 4 (IndexedDB) |
-| Styling | CSS Modules + Tailwind CSS 4 |
-| Testing | Vitest 4, jsdom, @vitest/coverage-v8 |
-| Linting | ESLint 9 (flat config) + typescript-eslint, Husky + lint-staged |
-| Export | docx, pdfmake, built-in RTF/Fountain |
-| Desktop | Tauri 2 |
-| Mobile | Capacitor 8 (iOS) |
-| PWA | vite-plugin-pwa + Workbox |
+Shared React edits do not update native macOS editor/settings/provider/import/export behavior. Inspect corresponding Swift implementations and tests. The runtimes do not necessarily use identical prompts, configuration, networking or UI.
 
-## Key Directories
+The root package declares React 19, TypeScript 5.6, Vite 6, CodeMirror 6, Dexie 4, Tailwind 4, Vitest 4 and ESLint 9. Native macOS uses Swift tools 6.0 with a macOS 14 package minimum. Capacitor's generated SPM package declares iOS 15; check the Xcode project and dependencies for the effective deployment target.
 
-```
-src/
-├── types/index.ts          # All TypeScript interfaces
-├── context/                # AppContext (React Context + useReducer)
-│   ├── AppContext.tsx       # Provider: state, dispatch, action methods
-│   ├── state/appReducer.ts # Pure reducer
-│   └── services/           # Side-effect services (storage, workspace)
-├── components/             # UI — each in own dir with .tsx + .module.css + index.ts
-│   ├── Editor/             # CodeMirror wrapper
-│   ├── Modals/             # Modal dialogs (export, settings, AI, etc.)
-│   ├── Sidebar/            # Chapter list, outline, scene planner
-│   ├── Inspector/          # Right panel: chapter metadata, stats
-│   └── UI/                 # Shared primitives (Button, Dialog, Input, Toast)
-├── lib/
-│   ├── commands.ts         # Typed command registry (COMMAND_IDS + handlers)
-│   ├── utils.ts            # Text analysis, word count, IDs, debounce
-│   ├── editor/             # CodeMirror adapter, extensions, markdown parsing
-│   ├── storage/            # Dexie DB: db.ts, novels.ts, chapters.ts, snapshots.ts, migrations.ts
-│   ├── export/             # Per-format modules: manuscriptDocx, pdf, rtf, fountain
-│   ├── ai/                 # AI providers: chromeAI, openai, serverProxy, customLlm, fallback
-│   └── integrations/       # Cloud sync: Dropbox, Google Drive, Scrivener
-├── hooks/                  # ~15 custom hooks (modals, keyboard, panels, etc.)
-└── App.tsx                 # Root component: editor init, keyboard shortcuts, layout
-api/                        # PHP server proxy for AI/integrations
-desktop/                    # Tauri desktop wrapper
-ios/                        # Capacitor iOS project
-scripts/                    # QA scripts (bundle size, coverage, test inventory)
-```
+## Source navigation
 
-## Commands
+| Concern | Start here |
+|---|---|
+| App composition | `src/App.tsx`, `src/context/AppContext.tsx` |
+| Reducer/settings/services | `src/context/state/appReducer.ts`, `src/context/appSettings.ts`, `src/context/services/` |
+| Commands | `src/lib/commands.ts` |
+| Editor/Markdown | `src/components/Editor/`, `src/lib/editor/` |
+| Shared settings | `src/components/Windows/SettingsWindow.tsx` |
+| Domain types | `src/types/index.ts`; local types also exist in domain modules |
+| IndexedDB/migrations | `src/lib/storage.ts`; `src/lib/storage/` contains facade modules |
+| Persistence keys | `src/lib/storageKeys.ts` |
+| Recovery/backups | `src/lib/recoveryJournal.ts`, `src/lib/recoverDraft.ts`, `src/hooks/useAutomaticBackups.ts`, storage safety functions |
+| AI | `src/lib/ai/types.ts`, `providerManager.ts`, `customLlmProvider.ts`, `openaiProvider.ts`, `pipelines.ts`, `storyBible.ts` |
+| AI configuration | `src/lib/ai/configUi.ts`, `src/lib/validation/settingsValidation.ts` |
+| Integrations | `src/lib/integrations/` — generic sync, Dropbox, Google Drive and Scrivener |
+| Backend | `src/server/integrationBroker.ts` for Vite dev; `api/index.php` for separate PHP deployment |
+| Export | `src/lib/export/` — manuscript/screenplay formats including text-only EPUB |
+| Tauri | `desktop/src-tauri/src/main.rs`, `writing_engine.rs`, `tauri.conf.json` |
+| Native macOS UI | `macos/Sources/DraftHarbourNative/` — app, document, views |
+| Native macOS logic | `macos/Sources/DraftHarbourNativeCore/` — models, providers, codecs, safety, sync, analysis |
+| Native tests | `macos/Tests/DraftHarbourNativeCoreTests/` |
+| Model research | `llm/Narratryx/` — independent of application runtime |
 
-```bash
-# Development
-npm run dev              # Vite dev server
-npm run build            # tsc + vite build → dist/
-npm run preview          # Preview production build
+## Change workflows
 
-# Quality checks
-npm run lint             # ESLint (--max-warnings 0)
-npm run typecheck        # tsc --noEmit
-npm run test             # Vitest single run
-npm run test:coverage    # Vitest with coverage
+For a command/panel, inspect command registration, current window/modal state and app composition. Equivalent native behavior may require `DraftHarbourCommands.swift`, native views and core services. Use established CSS Modules/Tailwind/theme conventions; native appearance is separate.
 
-# Full CI (runs everything)
-npm run ci               # lint → typecheck → verify:vite-config → test:coverage → build → bundle:check → assets:check
+For a persisted field, inspect TypeScript and Swift Codable models, IndexedDB migrations, settings defaults, backups/exports/imports and shared fixtures. Follow [the portable project contract](docs/contracts/dhproj-v1.md) for known extensions, ID remapping and JSON/ZIP compatibility. An interface edit alone is not a migration. Do not assert all domain types must live in a single file or that facade modules are the actual database implementation.
 
-# Quick validation (use during development)
-npm run lint && npm run typecheck    # Fast feedback loop
-```
+For AI, trace provider configuration through the factory and request/result UI. The shared frontend supports Chrome on-device AI, managed cloud, OpenAI-compatible endpoints, server proxy and custom LLM backends. Native macOS has its own HTTP provider/factory plus a conditional Apple Foundation Models implementation. On-device availability depends on installed framework/OS/browser/device capability.
 
-## Path Alias
+Shared **Local LLM** configuration accepts a server base URL, appending `/v1/chat/completions` for generic-openai/vLLM/llama.cpp or `/api/chat` for Ollama. Native macOS HTTP configuration expects the **full endpoint URL**. Shared **Custom Endpoint** uses another code path with endpoint/key validation; keyless local service behavior is not identical across these options.
 
-`@/*` → `src/*` in both TypeScript and Vite:
-```typescript
-import { useApp } from '@/context/AppContext';
-import type { Chapter } from '@/types';
-```
+For networking, inspect managed policy, client transport, timeouts, cancellation, response parsing and browser/native restrictions. Vite middleware is a development backend. Static hosting and `vite preview` do not run it. PHP has separate route/authentication coverage and is not an identical Node broker deployment.
 
-## Coding Conventions
+## Narratryx status
 
-### TypeScript
-- Strict mode enabled, `noUnusedLocals` and `noUnusedParameters` enforced
-- All types/interfaces go in `src/types/index.ts`
-- Prefix unused function params with `_` (ESLint rule: `argsIgnorePattern: '^_'`)
-- Target ES2022; build target es2020 + safari14
+Narratryx is model development, not an established released specialist model. The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) trained twenty source-only answers for five updates and completed sixteen matched before/after tasks. Results are mixed and blinded human quality ratings remain absent.
 
-### Components
-- One component per directory: `ComponentName.tsx` + `ComponentName.module.css` + `index.ts` barrel
-- Styles via CSS Modules imported as `styles`: `<div className={styles.editor}>`
-- Tailwind available for utility classes; design tokens as CSS custom properties in `src/styles/index.css`
-- Appearance preference supports `auto`, `light`, and `dark`; resolved `light`/`dark` is applied via `data-theme` on `<html>`
+An opt-in app trial is technically feasible through existing providers, but still needs a reachable authenticated service with the exact model/adapter identified, suitable limits and end-to-end validation. The running Studio advertises `/v1` routes; an unauthenticated model-list request returned 401. No app-to-candidate completion pass has been established. See [the readiness assessment](docs/narratryx-integration-readiness-2026-10-20.md).
 
-### State
-- App state via `useApp()` hook from `src/context/AppContext.tsx`
-- All UI actions route through command registry (`src/lib/commands.ts`)
-- Modals use `useModalState` hook (reducer-based)
+Keep model versions replaceable and model serving/training outside the application. Do not enable experimental adapters by default, embed Studio credentials, require ordinary users to train locally, or silently alter manuscripts. Existing Narratryx branding/default model strings are not evidence those models are installed.
 
-### Data Storage
-- **IndexedDB** (Dexie): novels, chapters, snapshots
-- **localStorage**: app settings (`draftharbour_settings_v1`), comment threads
-- **Tauri keychain** (desktop only): sensitive credentials
-- Chapter content stored as Markdown strings (migrated from Tiptap JSON in DB v4)
-- Autosave: debounced 800ms writes to IndexedDB
+## Checks and reporting
 
-### Performance
-- Heavy export libs lazy-loaded: `const docx = await import('docx')`
-- Vite manual chunks: `export`, `ai`, `integrations`, `codemirror`
+Use [AGENTS.md](AGENTS.md) and platform guides for commands. `npm run ci` is a frontend chain, not all native or changed-coverage jobs. Co-located Vitest tests and native core tests validate different implementations.
 
-## Testing
+For docs-only edits, check paths, commands, links and factual consistency. For runtime work, run meaningful regressions and required platform checks; synchronize Capacitor assets when shared runtime changes warrant it. Report Windows/Linux builds, iOS simulator/device checks and native GUI checks separately.
 
-- ~105 test files co-located with source (`*.test.ts` / `*.test.tsx`)
-- Test setup: `src/test/setup.ts` (stubs `window.matchMedia`)
-- Environment: jsdom + fake-indexeddb
-- Run `npm run test` before pushing; `npm run test:coverage` for coverage gate
-
-## Adding Things
-
-### New modal
-1. Add key to `ModalKey` in `src/hooks/useModalState.ts` + `false` default
-2. Create component in `src/components/Modals/`
-3. Add command ID in `src/lib/commands.ts` if menu-accessible
-4. Render in `App.tsx`
-
-### New command
-1. Add to `COMMAND_IDS` in `src/lib/commands.ts`
-2. Add handler to `COMMAND_HANDLERS`
-
-### New storage field
-1. Add to type in `src/types/index.ts`
-2. Update relevant module in `src/lib/storage/`
-3. Add migration in `src/lib/storage/migrations.ts` if schema change needed
-
-### New export format
-1. Add to `ExportFormat` in `src/types/index.ts`
-2. Create module in `src/lib/export/` (lazy-load heavy deps)
-3. Add option in `src/components/Modals/ExportModal.tsx`
-
-## Git & PR Conventions
-
-- Branch naming: `claude/feature-name-sessionId` or `codex/feature-name`
-- Commit messages: short, present tense ("Add feature", "Fix bug")
-- Pre-commit hook: Husky + lint-staged runs ESLint on staged `.ts/.tsx` files
-- PR checks: `.github/workflows/pr-check.yml` runs lint, typecheck, tests, build
-
-## Do's
-
-- Read files before modifying them
-- Run `npm run lint && npm run typecheck` after changes for fast feedback
-- Run `npm run test` before pushing
-- Co-locate tests next to source files
-- Use `@/*` path aliases for all imports from `src/`
-- Use CSS Modules for component styles
-- Lazy-load heavy libraries in export/AI code paths
-- Add types to `src/types/index.ts`
-- Use the command registry for new UI actions
-
-## Don'ts
-
-- Don't add new top-level state management — use AppContext
-- Don't import export/AI libraries at top level (they're code-split)
-- Don't store sensitive data in localStorage — use Tauri keychain on desktop
-- Don't skip the pre-commit hook (`--no-verify`)
-- Don't create standalone CSS files — use CSS Modules or Tailwind
-- Don't add unused exports or dead code
-- Don't modify DB schema without adding a migration
+Historical `docs/reviews/` results retain their dates and limitations. Avoid stale test counts, universal parity claims and treating configured CI jobs as completed runs. Preserve unrelated local changes and other `.claude/worktrees/` checkouts.

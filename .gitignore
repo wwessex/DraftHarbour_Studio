@@ -32,6 +32,10 @@ yarn-error.log*
 # TypeScript cache
 *.tsbuildinfo
 
+# Generated Tauri schemas and duplicate Capacitor synchronization output
+desktop/src-tauri/gen/
+ios/App/App/config 2.xml
+
 # Testing
 coverage/
 

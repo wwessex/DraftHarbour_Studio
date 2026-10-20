@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "review-ballot",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "choice": {
+      "enum": [
+        "A",
+        "B",
+        "tie"
+      ]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "ratings": {
+      "type": "object",
+      "properties": {
+        "A": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "B": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        }
+      },
+      "required": [
+        "A",
+        "B"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "task_id",
+    "reviewer",
+    "choice",
+    "rationale",
+    "ratings"
+  ],
+  "additionalProperties": false
+}

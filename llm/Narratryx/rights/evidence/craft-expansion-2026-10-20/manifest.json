@@ -1,0 +1,110 @@
+[
+  {
+    "name": "gb-term",
+    "url": "https://www.gov.uk/copyright/how-long-copyright-lasts",
+    "final_url": "https://www.gov.uk/copyright/how-long-copyright-lasts",
+    "path": "gb-term.html",
+    "bytes": 70854,
+    "sha256": "3d4415d1fc664fd7387dc8777721b816292ee315a5cfbe2cca4816491b909248",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "us-term",
+    "url": "https://www.copyright.gov/circs/circ15a.pdf",
+    "final_url": "https://www.copyright.gov/circs/circ15a.pdf",
+    "path": "us-term.pdf",
+    "bytes": 273867,
+    "sha256": "6ff3c5612e1cd56469b3eb7d35eba7fd3374843d82744c63ab909225f53b7aef",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "pg-permission",
+    "url": "https://www.gutenberg.org/policy/permission.html",
+    "final_url": "https://www.gutenberg.org/policy/permission.html",
+    "path": "pg-permission.html",
+    "bytes": 18907,
+    "sha256": "c6df9d5913daf11aab5638744adaae02e2af0b27135a614e02f66260b2fcd8a7",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "pg-license",
+    "url": "https://www.gutenberg.org/policy/license.html",
+    "final_url": "https://www.gutenberg.org/policy/license.html",
+    "path": "pg-license.html",
+    "bytes": 32478,
+    "sha256": "8a5137aecb0911dc0700e4ff636834326f6eade4beb997229269658a5ccd82f7",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "pg-terms",
+    "url": "https://www.gutenberg.org/policy/terms_of_use.html",
+    "final_url": "https://www.gutenberg.org/policy/terms_of_use.html",
+    "path": "pg-terms.html",
+    "bytes": 12086,
+    "sha256": "38e45e0cbc6a3f903ef019b3bcbcbce9c3190f9f68f73bf31d2ef58a8ceb679b",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "pg-mirror",
+    "url": "https://www.gutenberg.org/MIRRORS.ALL",
+    "final_url": "https://www.gutenberg.org/MIRRORS.ALL",
+    "path": "pg-mirror.html",
+    "bytes": 2922,
+    "sha256": "7b95f4425d801cac620aa046a1bc1e739c5b76cba6d764d02729deaf1f275f0e",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "wharton-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/72446",
+    "final_url": "https://www.gutenberg.org/ebooks/72446",
+    "path": "wharton-catalogue.html",
+    "bytes": 24623,
+    "sha256": "924c69d1c1576fcdf0ab362ae32f4ad40042ea1b69e265f6b784e43f3bb81fe7",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "hamilton-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/30183",
+    "final_url": "https://www.gutenberg.org/ebooks/30183",
+    "path": "hamilton-catalogue.html",
+    "bytes": 24324,
+    "sha256": "01fbcad016628d4a2c03f581ecc6165c588b6a25a6649d82f6344bcdd88826f6",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "mansfield-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/1429",
+    "final_url": "https://www.gutenberg.org/ebooks/1429",
+    "path": "mansfield-catalogue.html",
+    "bytes": 24865,
+    "sha256": "ec2d35dd73cc5a1350bcf35a14453ebc6a08157325690b3e26f5e3ade2beee77",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "chesnutt-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/11666",
+    "final_url": "https://www.gutenberg.org/ebooks/11666",
+    "path": "chesnutt-catalogue.html",
+    "bytes": 24123,
+    "sha256": "e021c30ca9f17ce1baf277b0e5fa90a396971c94af9a1e5ecf506cd063f80ab7",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "wharton-life",
+    "url": "https://archives.nypl.org/mss/4675",
+    "final_url": "https://archives.nypl.org/mss/4675",
+    "path": "wharton-life.html",
+    "bytes": 212,
+    "sha256": "d02032286070b4dd9d8fbd985a7bdca8af8edf52b89ff177db3bfcb2c8a9c43d",
+    "retrieved_on": "2026-10-20"
+  },
+  {
+    "name": "chesnutt-life",
+    "url": "https://www.fisk.edu/wp-content/uploads/2020/06/chesnutt-charlesw.collectionsupplement11898-1942.pdf",
+    "final_url": "https://www.fisk.edu/wp-content/uploads/2020/06/chesnutt-charlesw.collectionsupplement11898-1942.pdf",
+    "path": "chesnutt-life.pdf",
+    "bytes": 463039,
+    "sha256": "b157432d61be9468f0149f59995623385869757be70de2fb584b2786dcd9f89a",
+    "retrieved_on": "2026-10-20"
+  }
+]

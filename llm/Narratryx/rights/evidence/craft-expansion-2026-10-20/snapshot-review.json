@@ -1,0 +1,74 @@
+[
+  {
+    "name": "gb-term",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "us-term",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "pg-permission",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "pg-license",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "pg-terms",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "pg-mirror",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "wharton-catalogue",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "hamilton-catalogue",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "mansfield-catalogue",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "chesnutt-catalogue",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  },
+  {
+    "name": "wharton-life",
+    "hash_verified": true,
+    "usable": false,
+    "reason": "Access challenge, not evidence; use retained item catalogue and browser-accessible NYPL text."
+  },
+  {
+    "name": "chesnutt-life",
+    "hash_verified": true,
+    "usable": true,
+    "reason": "Expected catalogue, policy page or PDF signature verified; factual evidence discussed in dossier."
+  }
+]

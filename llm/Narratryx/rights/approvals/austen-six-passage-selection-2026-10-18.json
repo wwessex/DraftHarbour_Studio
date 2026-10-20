@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "record_id": "austen-six-passage-selection-2026-10-18",
+  "review_kind": "human-exact-passage-selection",
+  "decision": "approved-selection-only",
+  "approved_by": "Human user of Codex conversation 01a14bea-d041-7363-b30b-66b4af6a77bf",
+  "user_statement": "approve",
+  "recorded_by": "Codex, recording the human decision",
+  "reviewed_on": "2026-10-18",
+  "recorded_at_utc": "2026-10-17T23:19:55.076639+00:00",
+  "context": "User approved immediately after delivery of the consolidated report containing all six exact passages and the editorial recommendations.",
+  "report": {
+    "path": "docs/austen-consolidated-review-2026-10-18.md",
+    "sha256": "cebeb108a533905e7ca77f1ac44d6ab024e2f5bbf33c6075536c5443e6f8698e"
+  },
+  "rights_record_id": "austen-pride-candidate",
+  "source_scope_approval": "austen-pride-scope-approval-2026-10-17",
+  "source_sha256": "3f6bb9d6f78e0293b56acd4714dd68cb7d6d1d293402031ce9d5a216bcaf9d75",
+  "jurisdictions": [
+    "GB",
+    "US"
+  ],
+  "coordinate_basis": "Unicode code points in UTF-8 source read with universal-newline normalization; end exclusive",
+  "passages": [
+    {
+      "excerpt_id": "austen-opening",
+      "start": 35259,
+      "end": 35637,
+      "raw_span_sha256": "b28520c9434c3df6c387126c062773fee92874431de50b1013bd1bdef00ddf10",
+      "text_sha256": "731973b231efb7da50b4d199d3e7dad5c17a0eb68add2a5f6720817eb1bf5522",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    },
+    {
+      "excerpt_id": "austen-ball",
+      "start": 50380,
+      "end": 51047,
+      "raw_span_sha256": "d213ba3afc9b9c89cd1251bb2efa55c06cca3582e2a0a810615d9667cb83c1a5",
+      "text_sha256": "272291704c7706090f8413ad922356d20189089316cf3c9e3195f692a1f60033",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    },
+    {
+      "excerpt_id": "austen-charlotte",
+      "start": 69628,
+      "end": 70394,
+      "raw_span_sha256": "1c044cb405db138c8815c6898a44a25bd12bc576e1ae2bacdf2f3457d816f331",
+      "text_sha256": "b31025b1c5f98aa0f00ad42be90669abee3993269db6ff76f24bbf380b114dee",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    },
+    {
+      "excerpt_id": "austen-pause",
+      "start": 372119,
+      "end": 372802,
+      "raw_span_sha256": "54a63d767ce515587200e471f41f1dd7cff111e55a646472e1a286ee4a21b875",
+      "text_sha256": "718741f1f594b74ee8836e6a050bc49e3d1ccf60c0cfccaf6839a629bb3cc1c9",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    },
+    {
+      "excerpt_id": "austen-self-judgment",
+      "start": 405142,
+      "end": 405297,
+      "raw_span_sha256": "d431780f6ea82f7015eac16fdda84252ca4004f3b726a7eb8dda076ac1c4799a",
+      "text_sha256": "3db2b7225b8eed2066db79dfaef9168c701c0931e01366ccbbc8c34430b00dca",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    },
+    {
+      "excerpt_id": "austen-gratitude",
+      "start": 729174,
+      "end": 729437,
+      "raw_span_sha256": "95609552ec11d6c2e155d26fcdc0e178106565c6f58cad86cfcbb0e40903b1f1",
+      "text_sha256": "ce692b73bc1dfc12caf48a99221ef63019681b1d2b3e110fb6e85162081dd844",
+      "transformation_id": "join-soft-wraps-v1",
+      "decision": "approved-selection"
+    }
+  ],
+  "scope": "Acceptance of these exact Austen-only passages and their recorded whitespace transformation under the prior limited source scope. Does not approve the full raw source or outer range.",
+  "excluded_authorizations": [
+    "Synthetic-teacher/output-use permission",
+    "Benchmark approval or freezing",
+    "Dataset release",
+    "Source upload or redistribution",
+    "Paid job or training launch"
+  ],
+  "release_status": "selection evidence recorded separately; existing ledger/dataset release gates not changed",
+  "training_ready": false,
+  "legal_certification": false
+}

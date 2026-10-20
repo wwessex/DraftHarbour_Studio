@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "editorial-example-selection",
+  "pack_id": "austen-pilot-review-v1",
+  "reviewed_on": "2026-10-18",
+  "recorded_at_utc": "2026-10-17T23:06:20.970236+00:00",
+  "reviewer": "Human user of Codex conversation 01a14bea-d041-7363-b30b-66b4af6a77bf",
+  "user_statement": "keep",
+  "context": "User was shown austen-opening and asked keep/revise/reject for each of its two draft examples. Keep applies to both.",
+  "excerpt_id": "austen-opening",
+  "excerpt_text_sha256": "731973b231efb7da50b4d199d3e7dad5c17a0eb68add2a5f6720817eb1bf5522",
+  "decisions": [
+    {
+      "example_id": "austen-fiction-01",
+      "decision": "keep",
+      "content_hash": "46d021aa31cf2a4271e8bbd7c0730bbb74d21ce5feb25c7e03d31485ea5c1716"
+    },
+    {
+      "example_id": "austen-analysis-01",
+      "decision": "keep",
+      "content_hash": "04e605e641d4579e59ce1c50d8411466d2e14a8d2896b89c45e711f6ed4bb5bf"
+    }
+  ],
+  "scope": "Editorial acceptance of the displayed instructions and draft targets only. Does not independently approve synthetic-output terms, broader source selection, other examples, upload, dataset release or training.",
+  "overall_training_ready": false,
+  "remaining_example_ids": [
+    "austen-dialogue-01",
+    "austen-pacing-01",
+    "austen-editing-01",
+    "austen-storytelling-01",
+    "austen-dialogue-02",
+    "austen-pacing-02",
+    "austen-analysis-02",
+    "austen-storytelling-02",
+    "austen-fiction-02",
+    "austen-editing-02"
+  ]
+}
