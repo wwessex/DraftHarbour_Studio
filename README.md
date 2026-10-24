@@ -82,7 +82,7 @@ Existing providers support capable on-device facilities, a configured managed br
 
 The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) completed five local updates on twenty source-only craft answers and sixteen matched before/after tasks. Results are mixed; better literary quality is unproven. The adapter is not a promoted production model. Human quality review and substantive author-revision training pairs remain outstanding.
 
-**An opt-in in-app experiment is feasible now through existing providers.** End-to-end app-to-candidate serving still needs validation. Read the [readiness and test plan](docs/narratryx-integration-readiness-2026-10-20.md). The Studio page at `http://127.0.0.1:8888/chat` is a UI; its advertised API includes `/v1/chat/completions` and requires authentication. An advertised route does not prove the desired adapter is loaded.
+**An opt-in experimental integration is implemented across all maintained apps.** The main manuscript interface includes visible **Write**, **Rewrite** and **Continue** buttons with inline instructions, preview and passage-scoped acceptance. Settings only configures the connection. Use **Set up Narratryx (experimental)** in the shared Local AI settings or native macOS AI provider tools. A separate authenticated service pins the exact craft adapter; live base/candidate HTTP requests and the actual shared provider path passed locally. See the [setup and validation guide](docs/narratryx-app-trial.md) for limits, token handling, rollback and platform test boundaries. Literary improvement remains unproven.
 
 For ordinary Windows/Mac users, the intended accessible deployment is an optional hosted inference service behind a stable, replaceable-model API. Users need connectivity/service access, not training or an expensive GPU. Local inference remains an optional developer/power-user route. Hosting, costs, authentication and deployment are not established by the pilot.
 
@@ -90,10 +90,10 @@ For ordinary Windows/Mac users, the intended accessible deployment is an optiona
 
 | Provider/client | Configure |
 |---|---|
-| Shared app: Local LLM → Custom Endpoint (`generic-openai`) | Server **base URL**, e.g. `http://127.0.0.1:8888`; app appends `/v1/chat/completions` |
+| Shared app: Local LLM → Custom Endpoint (`generic-openai`) | Server **base URL**, e.g. `http://127.0.0.1:8890`; app appends `/v1/chat/completions` |
 | Shared app: Ollama | Ollama base URL; app appends `/api/chat` |
 | Shared app: Custom Endpoint (`openai-compatible`) | **Full** completion URL, subject to endpoint/key validation |
-| Native macOS: compatible/custom HTTP provider | **Full** completion URL, e.g. `http://127.0.0.1:8888/v1/chat/completions` |
+| Native macOS: compatible/custom HTTP provider | **Full** completion URL, e.g. `http://127.0.0.1:8890/v1/chat/completions` |
 
 Use the exact served model ID, not placeholder defaults such as `narratryx:latest`. Credentials must match the service. Browser CORS/mixed-content/private-network rules and native transport policy can affect access. On an iPhone or another computer, `127.0.0.1` refers to that device, not the Mac.
 

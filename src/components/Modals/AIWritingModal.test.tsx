@@ -83,7 +83,7 @@ describe('AIWritingModal action handling', () => {
       root.render(<AIWritingModal open onClose={() => undefined} />);
     });
 
-    const presetButton = Array.from(container.querySelectorAll('button')).find(node => node.textContent?.includes('Continue Writing'));
+    const presetButton = Array.from(container.querySelectorAll('button')).find(node => node.textContent?.includes('Continue'));
     expect(presetButton).toBeTruthy();
 
     await act(async () => {

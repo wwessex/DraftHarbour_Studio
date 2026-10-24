@@ -1,0 +1,54 @@
+[
+  {
+    "id": "continue-ending",
+    "action": "continue",
+    "source": "Opening.\n\nThe latch moved.",
+    "output": "She held her breath.",
+    "expected": "Opening.\n\nThe latch moved.\n\nShe held her breath.",
+    "target": "The latch moved."
+  },
+  {
+    "id": "rewrite-selection-unicode",
+    "action": "rewrite",
+    "source": "First paragraph.\n\n😀 A rough line.\n\nLast paragraph.",
+    "from": 21,
+    "to": 34,
+    "output": "A cleaner line.",
+    "expected": "First paragraph.\n\n😀 A cleaner line.\n\nLast paragraph.",
+    "target": "A rough line."
+  },
+  {
+    "id": "rewrite-final-paragraph",
+    "action": "rewrite",
+    "source": "First.\r\n\r\nLast.  \r\n",
+    "output": "Revised.",
+    "expected": "First.\r\n\r\nRevised.  \r\n",
+    "target": "Last."
+  },
+  {
+    "id": "write-empty-chapter",
+    "action": "write",
+    "source": "",
+    "direction": "Open on an abandoned pier.",
+    "output": "A bell rang.",
+    "expected": "A bell rang."
+  },
+  {
+    "id": "write-append",
+    "action": "write",
+    "source": "Existing.\n\n",
+    "direction": "Introduce the stranger.",
+    "output": "A stranger arrived.",
+    "expected": "Existing.\n\nA stranger arrived."
+  },
+  {
+    "id": "rewrite-selection-keeps-line-boundary",
+    "action": "rewrite",
+    "source": "First.\nSecond.\nThird.",
+    "from": 7,
+    "to": 15,
+    "output": "Improved.",
+    "expected": "First.\nImproved.\nThird.",
+    "target": "Second."
+  }
+]

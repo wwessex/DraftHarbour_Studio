@@ -75,6 +75,7 @@ Use checks proportionate to the change. Documentation-only work needs source/com
 ## Narratryx and experimental AI
 
 - Read `llm/Narratryx/README.md` and its latest linked report before model work. Training completion, structural validation and literary improvement are different claims.
+- Experimental app setup uses existing providers (`src/lib/ai/narratryx.ts`, native `NarratryxProfile.swift`); the separate authenticated service is `llm/Narratryx/runtime/local/`. See [the integration guide](docs/narratryx-app-trial.md). Keep service token files and model artifacts out of Git.
 - Current adapters remain experimental. The latest craft pilot has mixed mechanical results and no completed blinded human quality ratings. Placeholder names such as `narratryx:latest` do not prove a model is installed or released.
 - Use only sources, jurisdictions, uses and spans supported by exact rights records. Dataset-wide public-domain metadata is not per-edition clearance. Attribute AI evidence reviews accurately; never invent human approval or legal certification.
 - The user's current training scope excludes generated literary teaching targets. Keep unresolved teacher-output candidates and unreviewed bulk corpus rows out of training. Distinguish task instructions from source-derived answer provenance.

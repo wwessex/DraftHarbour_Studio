@@ -9,7 +9,7 @@ Status reviewed **20 October 2026**. This workspace contains source-rights evide
 - The latest craft pilot uses **20 source-only Wharton/Hamilton answers**, 2,443 answer words and 2,850 supervised tokens. Five updates completed in about 30 seconds at reported peak 6.34 GB. Its 16 before/after cases produced 32 complete responses without errors/truncation.
 - Mechanical results are mixed. Exact minimal-edit matches remain 2/4; compression word limits improve from 3/4 to 4/4 while continuation word limits fall from 2/4 to 1/4. These are not literary-quality ratings. No blinded human quality ballots have been completed; no adapter has been promoted.
 - Substantive verified author-revision pairs remain unfinished. Hamilton edition comparison found publication-reference updates, not useful fiction-editing demonstrations.
-- An opt-in app integration trial is feasible through existing providers, but exact-model serving/authentication and end-to-end application checks remain unvalidated. No app startup imports this training workspace.
+- Opt-in experimental setup is implemented in every maintained application. The separate local service verified exact model/adapter hashes, authenticated base/candidate completions and the actual shared provider path. Target-device acceptance and hosted deployment remain separate. No app startup imports this training workspace.
 
 Start with the [latest pilot report](docs/craft-source-pilot-2026-10-20.md), [scoped rights dossier](rights/dossiers/craft-expansion-2026-10-20.md), [integration readiness assessment](../../docs/narratryx-integration-readiness-2026-10-20.md) and [original feasibility assessment](docs/feasibility-and-implementation-plan-2026-10-17.md).
 
@@ -96,7 +96,7 @@ The completed local experiments used a separately installed Unsloth MLX environm
 
 ## Application integration
 
-Use a separately served OpenAI-compatible model through existing app providers, with explicit model/version identity and rollback. Keep model development, storage and upgrades outside manuscript formats/app core. The running Studio advertises compatible routes but requires authentication; no app-to-candidate completion has been verified. See the [cross-platform test plan](../../docs/narratryx-integration-readiness-2026-10-20.md).
+Use the separate `runtime/local/` service through existing app providers, with explicit `narratryx-craft-v1` / `narratryx-base` selection and rollback. See the [current app trial guide](../../docs/narratryx-app-trial.md) for the exact manifest, installed inference environment, startup, token handling and validation limits. Foundation requirements do not install serving dependencies. The authenticated local service is separate from Studio's UI on port 8888 and defaults to port 8890. Keep model development/storage outside manuscript formats and app startup.
 
 An optional hosted inference service is the intended accessible path for ordinary Windows/Mac users. They must not need training libraries, a local GPU or an MLX-compatible computer. Local inference is optional. No paid hosting, model publication, app-default change or promotion has been performed by the current pilot or documentation update.
 
@@ -106,5 +106,6 @@ An optional hosted inference service is the intended accessible path for ordinar
 - `rights/`: ledgers, dossiers, approvals, retained raw material and evidence; statuses are scoped.
 - `curation/`, `evaluation/`, `training/`: dataset/task preparation and supporting workflows.
 - `artifacts/`: ignored local checkpoints, inputs, reports, protocols and response/review packs; not shipped app assets.
-- `configs/`, `scripts/`, `runtime/cloud/`: historical/configured workflows requiring their own validation.
+- `runtime/local/`, `configs/narratryx-craft-v1.json`: optional authenticated, pinned MLX developer serving; separate from CPU tooling/apps.
+- Other `configs/`, `scripts/`, `runtime/cloud/`: historical/configured workflows requiring their own validation.
 - `docs/`: dated findings and guides. Historical pending states must be read alongside newer scoped decisions, not rewritten as if earlier review had happened.

@@ -12,6 +12,7 @@ struct EditorWorkspaceView: View {
   var translateSelection: () -> Void = {}
   var shareSelection: () -> Void = {}
   var copyMarkdown: () -> Void = {}
+  var configureAI: () -> Void = {}
   @AppStorage("DraftHarbour.editor.fontSize") private var fontSize = 15.0
   @AppStorage("DraftHarbour.editor.fontFamily") private var fontFamily = "System"
   @AppStorage("DraftHarbour.editor.lineHeight") private var lineHeight = 1.5
@@ -28,6 +29,7 @@ struct EditorWorkspaceView: View {
       }
       if let section = store.activeSection {
         header(section: section)
+        WritingAssistantView(store: store, editorSelection: { selectedRange }, configure: configureAI)
         Divider()
         HStack(spacing: 0) {
           if pageView {

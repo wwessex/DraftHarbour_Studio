@@ -190,7 +190,7 @@ describe('SettingsWindow', () => {
     });
 
     const text = rendered.container.textContent ?? '';
-    expect(text).toContain('Connect to a local or self-hosted LLM server');
+    expect(text).toContain('Connect to a compatible inference service');
     expect(text).toContain('Base URL');
     expect(text).toContain('Test Connection');
     rendered.unmount();
@@ -230,7 +230,7 @@ describe('SettingsWindow', () => {
       sectionToggle!.click();
     });
     const text = rendered.container.textContent ?? '';
-    expect(text).toContain('Connect to a local or self-hosted LLM server');
+    expect(text).toContain('Connect to a compatible inference service');
     expect(text).toContain('Backend');
     expect(text).toContain('Base URL');
     expect(text).toContain('Test Connection');

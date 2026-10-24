@@ -3,6 +3,7 @@ import { useCurrentEditor } from '@/lib/editor';
 import { useApp } from '@/context/AppContext';
 import { Input, IconButton, useToast } from '@/components/UI';
 import { countWords, editorToPlainText } from '@/lib/utils';
+import { WritingWorkspace } from '@/components/AI/WritingWorkspace';
 import { WritingProgress } from './WritingProgress';
 import type { ScreenplayBlockType } from '@/types';
 import styles from './Editor.module.css';
@@ -28,9 +29,10 @@ const SCREENPLAY_CONTROLS: { label: string; type: ScreenplayBlockType }[] = [
 interface EditorProps {
   screenplayMode: boolean;
   onToggleScreenplayMode: () => void;
+  onConfigureAI?: () => void;
 }
 
-export function Editor({ screenplayMode, onToggleScreenplayMode }: EditorProps) {
+export function Editor({ screenplayMode, onToggleScreenplayMode, onConfigureAI }: EditorProps) {
   const { state, activeChapter, updateChapterImmediate, deleteChapter, dispatch, splitActiveChapter, mergeActiveChapter } = useApp();
   const { editor } = useCurrentEditor();
   const { showToast } = useToast();
@@ -181,6 +183,7 @@ export function Editor({ screenplayMode, onToggleScreenplayMode }: EditorProps) 
           </div>
         </div>
       )}
+      <WritingWorkspace key={activeChapter.id} onConfigure={onConfigureAI} />
       {screenplayMode && (
         <div className={styles.screenplayToolbar}>
           {SCREENPLAY_CONTROLS.map(control => (

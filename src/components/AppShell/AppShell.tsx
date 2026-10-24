@@ -8,6 +8,7 @@ import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
 import { AISuggestionsPanel } from '@/components/Panels';
 import { Tooltip } from '@/components/UI/Tooltip';
 import type { VoiceSimilarityAlert } from '@/lib/voiceFingerprint';
+import { COMMAND_IDS } from '@/lib/commands';
 import type { CommandId } from '@/lib/commands';
 import type { AppState } from '@/types';
 import styles from '@/App.module.css';
@@ -84,7 +85,7 @@ export function AppShell({
           />
         </PanelErrorBoundary>
         <PanelErrorBoundary panel="editor">
-          <Editor screenplayMode={screenplayMode} onToggleScreenplayMode={onToggleScreenplayMode} />
+          <Editor screenplayMode={screenplayMode} onToggleScreenplayMode={onToggleScreenplayMode} onConfigureAI={() => onAction(COMMAND_IDS.SETTINGS)} />
         </PanelErrorBoundary>
         {!inspectorOpen && (
           <Tooltip content="Expand inspector (Ctrl+Shift+I)" position="left">

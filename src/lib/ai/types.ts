@@ -31,6 +31,8 @@ export interface ServerProxyConfig {
 }
 
 export interface CustomLlmConfig {
+  /** Optional setup profile; inference remains model-neutral. */
+  profile?: 'narratryx';
   /** Inference backend type */
   backend: CustomLlmBackend;
   /** Base URL for the inference endpoint (e.g. http://localhost:11434 for Ollama) */

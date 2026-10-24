@@ -60,6 +60,7 @@ struct ToolPanelView: View {
   var runCommand: (NativeCommandID) -> Void = { _ in }
   var selectionChanged: (String) -> Void = { _ in }
   var focusEditProposal: (AIEditProposal) -> Void = { _ in }
+  var editorSelection: () -> NSRange = { NSRange(location: 0, length: 0) }
   var closeAction: (() -> Void)?
   @Environment(\.dismiss) private var dismiss
 
@@ -1813,6 +1814,23 @@ struct ToolPanelView: View {
     VStack(alignment: .leading, spacing: 14) {
       GroupBox("Provider") {
         VStack(alignment: .leading, spacing: 10) {
+          Button("Set up Narratryx (experimental)") {
+            let config = NarratryxProfile.configuration()
+            selectedAIProviderID = nil
+            aiProviderType = config.provider
+            aiProviderLabel = config.label
+            aiEndpoint = config.endpoint
+            aiModel = config.model
+            aiAPIKey = ""
+          }
+          if NarratryxProfile.recognizes(aiModel) {
+            Text(NarratryxProfile.help)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+            Text("Enter the full service URL ending in /v1/chat/completions and its access token, then Save Provider. Use narratryx-base as the model to compare with the unchanged base. A hosted service works without local training.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
           Picker("Type", selection: $aiProviderType) {
             ForEach(AIProviderType.allCases, id: \.self) { providerType in
               Text(aiProviderTypeTitle(providerType)).tag(providerType)
@@ -1865,6 +1883,8 @@ struct ToolPanelView: View {
         }
         .padding(.vertical, 4)
       }
+
+      writingActionsContent
 
       GroupBox("Workflow") {
         VStack(alignment: .leading, spacing: 10) {
@@ -1928,9 +1948,10 @@ struct ToolPanelView: View {
 
   private var aiSuggestionsContent: some View {
     VStack(alignment: .leading, spacing: 14) {
+      writingActionsContent
+
       GroupBox("Quick Actions") {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
-          aiSuggestionButton("Continue", systemImage: "square.and.pencil", stageID: "continue")
           aiSuggestionButton("Revise", systemImage: "wand.and.stars", stageID: "revise")
           aiSuggestionButton("Strengthen", systemImage: "bolt", stageID: "revise", prompt: "Make the current section more vivid with stronger verbs, sensory details, and clearer stakes.")
           aiSuggestionButton("Shorten", systemImage: "arrow.down.forward.and.arrow.up.backward", stageID: "revise", prompt: "Tighten the current section to half its length without losing meaning.")
@@ -1972,6 +1993,11 @@ struct ToolPanelView: View {
           .foregroundStyle(.red)
       }
     }
+  }
+
+  private var writingActionsContent: some View {
+    WritingAssistantView(store: store, editorSelection: editorSelection,
+      configuredProvider: { try saveAIProviderConfig() })
   }
 
   private func aiSuggestionButton(_ title: String, systemImage: String, stageID: String, prompt: String = "") -> some View {

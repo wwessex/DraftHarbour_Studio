@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "model_id": "narratryx-craft-v1",
+  "base_model_id": "narratryx-base",
+  "label": "Narratryx (experimental)",
+  "experimental": true,
+  "base_repo": "mlx-community/Qwen3.5-4B-MLX-8bit",
+  "base_revision": "5319bbbe4f1cbe6c0b3c80f4f7de4f0338c3906d",
+  "base_weights_sha256": "87c362fdb36bdee8e32ff5961bdceca58d26c2d9b00738543cc0e17e985b46ce",
+  "base_metadata": {
+    "config.json": "bf914114dbc055c4355acadea0304ee2cc86e9c1f3ddfe51677c524f22c9d132",
+    "tokenizer.json": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+    "tokenizer_config.json": "e98f1901ac6f0adff67b1d540bfa0c36ac1a0cf59eb72ed78146ef89aafa1182"
+  },
+  "adapter_path": "artifacts/craft-training-v2/adapter",
+  "adapter_sha256": "09f950e0954105b4b5bf1cdd5c7a4ee882d617742aadad6ec33c1dda5af84688",
+  "adapter_config_sha256": "5a91c4ac9fb321a147835fa27b8155e0e9ce53e5e5335dd7da636288483502ff",
+  "context_limit": 4096,
+  "max_output_tokens": 512
+}

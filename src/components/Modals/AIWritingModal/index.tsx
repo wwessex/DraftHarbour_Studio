@@ -36,6 +36,9 @@ import {
 import type { AIProviderConfig, AvailabilityStatus, CustomLlmConfig, EvalSuiteResult } from '@/lib/ai';
 import type { ProjectType, StoryBlueprint } from '@/types';
 import styles from '../Modals.module.css';
+import workspaceStyles from '@/components/AI/WritingWorkspace.module.css';
+import { useCurrentEditor } from '@/lib/editor/EditorContext';
+import { prepareWritingAction, writingReplacement, type WritingAction, type WritingPlan } from '@/lib/ai/writingActions';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -44,6 +47,9 @@ import styles from '../Modals.module.css';
 interface AIWritingModalProps {
   open: boolean;
   onClose: () => void;
+  presentation?: 'modal' | 'workspace';
+  actionRequest?: { id: number; action: WritingAction };
+  onConfigure?: () => void;
 }
 
 interface PresetPrompt {
@@ -62,7 +68,7 @@ const AI_ADVANCED_SETTINGS_EXPANDED_KEY = 'draftharbour_ai_advanced_settings_exp
 const BOOK_PRESET_PROMPTS: PresetPrompt[] = [
   {
     id: 'continue',
-    label: 'Continue Writing',
+    label: 'Continue',
     icon: 'edit_note',
     prompt:
       'Continue writing from where the text left off. Match the tone, style, and pacing of the existing prose. Write the next few paragraphs.'
@@ -185,9 +191,11 @@ function getPresetPrompts(projectType: ProjectType): PresetPrompt[] {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
+export function AIWritingModal({ open, onClose, presentation = 'modal', actionRequest, onConfigure }: AIWritingModalProps) {
   const { activeChapter, state, updateChapter } = useApp();
   const { showToast } = useToast();
+  const { editor } = useCurrentEditor();
+  const [writingPlan, setWritingPlan] = useState<(WritingPlan & { chapterId: string }) | null>(null);
   const isScreenplay = state.projectType === 'screenplay';
   const presetPrompts = useMemo(() => getPresetPrompts(state.projectType), [state.projectType]);
 
@@ -230,6 +238,8 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
   // Ref for aborting in-flight requests
   const abortRef = useRef<AbortController | null>(null);
   const responseRef = useRef<HTMLDivElement>(null);
+  const handledRequest = useRef<number | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   // Persist config changes
   const updateConfig = useCallback((updates: Partial<AIProviderConfig>) => {
@@ -298,6 +308,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
       const freshConfig = loadAIConfig();
       setConfig(freshConfig);
       setResponse('');
+      setWritingPlan(null);
       setError(null);
       setPrompt('');
       setLoading(false);
@@ -313,7 +324,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
 
 
   useEffect(() => {
-    if (config.provider === 'openai-compatible' || config.provider === 'server-proxy') {
+    if (config.provider === 'openai-compatible' || config.provider === 'server-proxy' || config.provider === 'custom-llm') {
       return;
     }
 
@@ -325,7 +336,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
         : null;
 
       setConfig(prev => {
-        if (prev.provider === 'openai-compatible' || prev.provider === 'server-proxy' || prev.provider === bestProvider) {
+        if (prev.provider === 'openai-compatible' || prev.provider === 'server-proxy' || prev.provider === 'custom-llm' || prev.provider === bestProvider) {
           // Even if provider already matches, populate customLlm if it's missing
           if (bestProvider === 'custom-llm' && localConfig?.customLlm && !prev.customLlm?.baseUrl?.trim()) {
             const next = { ...prev, customLlm: localConfig.customLlm };
@@ -353,7 +364,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
   }, [response]);
 
   const sendPrompt = useCallback(
-    async (promptText: string, presetId?: string) => {
+    async (promptText: string, presetId?: string, plan?: WritingPlan & { chapterId: string }) => {
       if (!promptText.trim()) return;
 
       if (!isConfigured) {
@@ -368,9 +379,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
         return;
       }
 
-      const chapterText = activeChapter
-        ? editorToPlainText(activeChapter.content)
-        : '';
+      const chapterText = plan?.source ?? (activeChapter ? editorToPlainText(activeChapter.content) : '');
       const continuitySnapshot = getContinuityMemorySnapshot(state.novelId, state.chapters);
       const continuityContext = formatContinuityContext(continuitySnapshot);
       const blueprintContext = formatStoryBlueprintContext(state.storyBlueprint);
@@ -391,6 +400,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
       abortRef.current = controller;
 
       setLoading(true);
+      setWritingPlan(null);
       setError(null);
       setResponse('');
       setStreamingText('');
@@ -415,11 +425,13 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
             : undefined,
         });
 
+        if (controller.signal.aborted) return;
         setIsStreaming(false);
         setStreamingText('');
+        setWritingPlan(plan ?? null);
 
         let responseText = result.text;
-        if (result.provider !== config.provider) {
+        if (result.provider !== config.provider && !plan) {
           responseText += `\n\n(Note: Response generated by ${result.provider} — configured provider was unavailable)`;
         }
         setResponse(responseText);
@@ -431,8 +443,10 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
           err instanceof Error ? err.message : 'An unexpected error occurred.';
         setError(message);
       } finally {
-        setLoading(false);
-        setIsStreaming(false);
+        if (abortRef.current === controller) {
+          setLoading(false);
+          setIsStreaming(false);
+        }
         provider.destroy();
       }
     },
@@ -465,6 +479,7 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     setLoading(true);
     setError(null);
     setResponse('');
+    setWritingPlan(null);
 
     const provider = createProvider(config);
     const stages = AI_WRITING_PIPELINE_STAGES.filter(stage => includeToneMatchPass || !stage.optional);
@@ -527,7 +542,25 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
     sendPrompt(prompt);
   };
 
+  const handleWritingAction = useCallback((action: WritingAction) => {
+    if (!activeChapter) return;
+    try {
+      const source = editor?.getContent() ?? editorToPlainText(activeChapter.content);
+      const plan = { ...prepareWritingAction(action, source, editor?.getSelection(), prompt), chapterId: activeChapter.id };
+      void sendPrompt(plan.prompt, action, plan);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Choose a passage first.');
+    }
+  }, [activeChapter, editor, prompt, sendPrompt]);
+
+  useEffect(() => {
+    if (!open || !actionRequest || handledRequest.current === actionRequest.id) return;
+    handledRequest.current = actionRequest.id;
+    if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action);
+  }, [actionRequest, handleWritingAction, open]);
+
   const handlePreset = (preset: PresetPrompt) => {
+    if (preset.id === 'continue') { handleWritingAction('continue'); return; }
     setPrompt(preset.prompt);
     sendPrompt(preset.prompt, preset.id);
   };
@@ -544,17 +577,33 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
 
   const handleInsertResponse = () => {
     if (!activeChapter || !response.trim()) return;
-    const chapterText = editorToPlainText(activeChapter.content);
-    updateChapter(activeChapter.id, { content: response });
+    const chapterText = editor?.getContent() ?? editorToPlainText(activeChapter.content);
+    let afterText = response;
+    if (writingPlan) {
+      try {
+        if (activeChapter.id !== writingPlan.chapterId) throw new Error('The active chapter changed. Generate again before applying.');
+        const result = writingReplacement(writingPlan, chapterText, response);
+        afterText = result.text;
+        if (editor) editor.replaceRange(writingPlan.from, writingPlan.to, result.replacement);
+        else updateChapter(activeChapter.id, { content: afterText });
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'This suggestion can no longer be applied.');
+        return;
+      }
+    } else {
+      updateChapter(activeChapter.id, { content: response });
+    }
     recordAIRevision({
       novelId: state.novelId,
       chapterId: activeChapter.id,
       chapterTitle: activeChapter.title,
       pipelineLabel: 'AI Insert Response',
       beforeText: chapterText,
-      afterText: response,
+      afterText,
       stages: [],
     });
+    setResponse('');
+    setWritingPlan(null);
     showToast('AI output inserted into chapter', 'success', 'check');
   };
 
@@ -789,6 +838,35 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
 
   /* ----- Render ----------------------------------------------------- */
 
+  if (presentation === 'workspace') {
+    if (!open) return null;
+    return <section aria-label="Writing assistant">
+      <div className={workspaceStyles.bar}>
+        <span className={workspaceStyles.label}>AI writing</span>
+        {(['write', 'rewrite', 'continue'] as const).map(action => <button type="button" key={action} className={workspaceStyles.action} disabled={loading || !activeChapter} onClick={() => handleWritingAction(action)}>
+          {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
+        </button>)}
+        <button type="button" className={workspaceStyles.action} onClick={onClose} aria-label="Close writing assistant">Close</button>
+      </div>
+      <div className={workspaceStyles.panel}>
+        <p className={workspaceStyles.hint}>{isConfigured ? providerModeLabel : 'Connect a model once in Settings to start writing with AI.'} · Rewrite selected text or the final paragraph; Continue adds after the ending.</p>
+        {!isConfigured && onConfigure && <Button onClick={onConfigure}>Connect AI model</Button>}
+        <label htmlFor="workspace-writing-instructions">Instructions (required for Write)</label>
+        <textarea autoFocus={actionRequest?.action === 'write'} id="workspace-writing-instructions" className={workspaceStyles.instructions} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="What happens next? Or describe how to rewrite the passage…" />
+        {loading && <div role="status">Generating… <Button onClick={() => abortRef.current?.abort()}>Stop</Button></div>}
+        {error && <p className={workspaceStyles.error} role="alert">{error}</p>}
+        {(response || isStreaming) && <>
+          <div className={workspaceStyles.result} aria-label="AI draft preview">{isStreaming ? streamingText : response}</div>
+          <div className={workspaceStyles.bar}>
+            <Button onClick={handleInsertResponse} disabled={loading}>{writingPlan?.action === 'rewrite' ? 'Replace Passage' : 'Append to Chapter'}</Button>
+            <Button onClick={() => { setResponse(''); setWritingPlan(null); }}>Discard</Button>
+          </div>
+        </>}
+        <p className={workspaceStyles.hint}>Your manuscript stays unchanged until you accept a draft.</p>
+      </div>
+    </section>;
+  }
+
   return (
     <Dialog
       open={open}
@@ -811,15 +889,16 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
             </span>
           </div>
           <div className={styles.aiFooterRight}>
+            {loading && <Button variant="ghost" onClick={() => abortRef.current?.abort()}>Stop</Button>}
             {response && (
               <>
                 <Button variant="ghost" onClick={handleCopyResponse}>
                   <span className="material-symbols-rounded">content_copy</span>
                   Copy
                 </Button>
-                <Button variant="ghost" onClick={handleInsertResponse}>
+                <Button variant="ghost" onClick={handleInsertResponse} disabled={loading}>
                   <span className="material-symbols-rounded">edit_document</span>
-                  Insert to Chapter
+                  {writingPlan ? writingPlan.action === 'rewrite' ? 'Replace Passage' : 'Append to Chapter' : 'Insert to Chapter'}
                 </Button>
               </>
             )}
@@ -1178,9 +1257,18 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
         </div>
       )}
 
+      <div className={styles.aiPresets} role="group" aria-label="Writing actions">
+        {(['write', 'rewrite', 'continue'] as const).map(action => (
+          <Button key={action} onClick={() => handleWritingAction(action)} disabled={loading || !isConfigured || !activeChapter}>
+            {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
+          </Button>
+        ))}
+      </div>
+      <p className={styles.aiContextHint}>Write uses your instructions below. Rewrite uses selected text, or the final paragraph. Continue adds after your final paragraph. Review the result before applying.</p>
+
       {/* Preset prompts */}
       <div className={styles.aiPresets}>
-        {presetPrompts.map(preset => (
+        {presetPrompts.filter(preset => preset.id !== 'continue').map(preset => (
           <button
             key={preset.id}
             className={styles.aiPresetBtn}
@@ -1195,7 +1283,9 @@ export function AIWritingModal({ open, onClose }: AIWritingModalProps) {
 
       {/* Custom prompt input */}
       <div className={styles.aiPromptArea}>
+        <label htmlFor="ai-writing-instructions">Instructions (required for Write)</label>
         <Textarea
+          id="ai-writing-instructions"
           placeholder={
             isScreenplay
               ? "Enter a custom prompt... (e.g. 'Punch up the subtext in this exchange')"

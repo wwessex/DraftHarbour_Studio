@@ -2,6 +2,8 @@
 
 Assessment date: **20 October 2026**. This is a source/API-readiness assessment and implementation/test plan. It does not record an app integration, authenticated generation request, model promotion or current platform build/device pass.
 
+Subsequent implementation: see the [app trial guide](narratryx-app-trial.md). This assessment retains its original pre-implementation findings.
+
 ## Decision
 
 **There is enough infrastructure and experimental model material to begin an opt-in developer trial in the applications. There is not enough evidence to make the trained adapter the default model or advertise better literary quality.** An integration trial can establish usability, request/response behavior and operational limits while model development continues independently.

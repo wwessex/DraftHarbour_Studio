@@ -18,5 +18,5 @@ export const AI_MODE_DATA_DESTINATION_TEXT: Record<AIConfigMode, string> = {
   automatic: 'Where your data goes: Writer first tries on-device processing, then uses a hosted provider when needed.',
   'server-provider': 'Where your data goes: Writer sends requests to the hosted provider you selected.',
   'custom-endpoint': 'Where your data goes: Writer sends requests directly to your configured endpoint.',
-  'local-llm': 'Where your data goes: Writer sends requests to your local model endpoint.',
+  'local-llm': 'Where your data goes: Writer sends requests to the model server you configure. Processing stays on this device only if the server runs here.',
 };

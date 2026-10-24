@@ -343,7 +343,8 @@ struct NativeDocumentView: View {
             reviseSelection: { runSelectionAI(stageID: "revise") },
             translateSelection: { runSelectionAI(stageID: "translate") },
             shareSelection: { runCommand(.shareSelection) },
-            copyMarkdown: copySelectionMarkdown
+            copyMarkdown: copySelectionMarkdown,
+            configureAI: { showToolPanel(.ai) }
           )
             .frame(minWidth: 520, maxWidth: .infinity)
 
@@ -560,7 +561,8 @@ struct NativeDocumentView: View {
         selectedToolPanel = rawValue
         persistToolPanelSelection(rawValue)
       },
-      focusEditProposal: focusAIEditProposal(_:)
+      focusEditProposal: focusAIEditProposal(_:),
+      editorSelection: { selectedRange }
     )
   }
 
