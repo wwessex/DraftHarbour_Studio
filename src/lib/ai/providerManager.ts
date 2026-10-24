@@ -13,6 +13,7 @@ import { ChromeAIProvider } from './chromeAI';
 import { OpenAIProvider } from './openaiProvider';
 import { ServerProxyProvider } from './serverProxyProvider';
 import { CustomLlmProvider } from './customLlmProvider';
+import { DesktopLocalProvider } from './desktopLocalProvider';
 import { FallbackProvider, buildFallbackChain } from './fallbackProvider';
 import { isChromeAIAvailable, isChromeBrowser, detectLocalLlmServer } from './availability';
 import { deleteSecret, getSecret, isDesktop, setSecret } from '@/lib/desktopSecrets';
@@ -99,6 +100,7 @@ export function saveAIConfig(config: AIProviderConfig): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ provider: 'managed-cloud' }));
     return;
   }
+  localStorage.setItem('draftharbour_ai_setup_mode_v1', config.customLlm?.managedRuntime ? 'local' : 'existing');
 
   if (isDesktop()) {
     if (config.sessionToken) {
@@ -136,6 +138,7 @@ export function saveAIConfig(config: AIProviderConfig): void {
  * deliberately scrubbed from localStorage.
  */
 export async function hydrateDesktopSecrets(config: AIProviderConfig): Promise<AIProviderConfig> {
+  if (config.customLlm?.managedRuntime) return config;
   if (!isDesktop()) return config;
 
   const [sessionToken, customLlmKey] = await Promise.all([
@@ -159,8 +162,13 @@ export async function hydrateDesktopSecrets(config: AIProviderConfig): Promise<A
 
 /** Create the appropriate AIProvider instance from a config. */
 export function createProvider(config: AIProviderConfig): AIProvider {
+  if (localStorage.getItem('draftharbour_ai_setup_mode_v1') === 'later') {
+    return { type: config.provider, isAvailable: () => false, destroy: () => {},
+      execute: async () => { throw new Error('AI is off. Choose AI setup when you are ready.'); } };
+  }
   switch (config.provider) {
     case 'custom-llm': {
+      if (config.customLlm?.managedRuntime) return new DesktopLocalProvider();
       // If a fallback is configured, wrap in FallbackProvider
       const fallbackConfig = buildFallbackChain(config);
       if (fallbackConfig) {

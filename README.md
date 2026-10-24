@@ -86,6 +86,8 @@ The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) co
 
 The accepted [setup plan](docs/ai-local-and-online-setup-plan.md) offers **On this computer**, **Online AI** and **Decide later**, with offline drafting available throughout. The intended desktop local mode manages its own runtime and credentials; online mode uses app sign-in and server-held service keys. Neither requires end-user training. A [2.71 GB portable development export](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) now runs on the development Mac. Automatic installation/setup, Windows runtime validation, hosted accounts and deployment remain unfinished; the current app trial still uses a manually configured service.
 
+The [app-managed local trial](docs/managed-local-ai-trial.md) now implements native Rust/Swift process ownership and AI setup beside the writing controls. A staged Mac ARM64 bundle works in the native app without endpoint/key entry; the existing manual service remains available. Windows/Linux package availability, automatic downloads, complete onboarding and online sign-in remain release work. Browser/iOS setup does not install a desktop model.
+
 ### Endpoint configuration
 
 | Provider/client | Configure |

@@ -131,6 +131,9 @@ public struct NativeAIProviderFactory {
   }
 
   public func provider(from config: AIProviderConfig) throws -> AIProvider {
+    if UserDefaults.standard.string(forKey: "DraftHarbour.aiSetup.mode") == "later" {
+      throw LocalRuntimeFailure.unavailable("AI is off. Choose AI setup when you are ready.")
+    }
     guard config.enabled else {
       throw DraftHarbourError.providerNotConfigured(config.label)
     }
@@ -147,6 +150,9 @@ public struct NativeAIProviderFactory {
     if config.provider == .appleFoundation {
       return AppleFoundationModelsProvider(id: config.id, displayName: config.label)
     }
+    if config.provider == .customLLM, config.endpoint == NativeLocalModelRuntime.endpoint {
+      return ManagedLocalAIProvider(id: config.id)
+    }
     guard let endpoint = URL(string: config.endpoint) else {
       throw DraftHarbourError.providerNotConfigured("\(config.label) endpoint")
     }
@@ -161,6 +167,7 @@ public struct NativeAIProviderFactory {
   }
 
   private static func isLocalProvider(_ config: AIProviderConfig) -> Bool {
+    if config.provider == .customLLM, config.endpoint == NativeLocalModelRuntime.endpoint { return true }
     if config.provider == .appleFoundation || config.provider == .localOpenAI {
       return true
     }

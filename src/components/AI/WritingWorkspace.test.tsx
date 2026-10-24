@@ -12,13 +12,13 @@ vi.mock('@/components/Modals/AIWritingModal', () => ({
 }));
 let root: ReturnType<typeof createRoot> | undefined;
 let container: HTMLDivElement;
-afterEach(() => { act(() => root?.unmount()); container?.remove(); });
+afterEach(() => { act(() => root?.unmount()); container?.remove(); localStorage.clear(); });
 
 describe('main manuscript writing bar', () => {
   it('exposes all three actions immediately and opens a non-modal composer', async () => {
     container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
     await act(async () => root!.render(<WritingWorkspace />));
-    expect([...container.querySelectorAll('button')].map(button => button.textContent)).toEqual(['Write', 'Rewrite', 'Continue']);
+    expect([...container.querySelectorAll('button')].map(button => button.textContent)).toEqual(['AI setup', 'Write', 'Rewrite', 'Continue']);
     expect(container.querySelector('[aria-label="Writing assistant"]')).toBeNull();
     await act(async () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Continue')!.click());
     expect(container.textContent).toContain('continue preview');

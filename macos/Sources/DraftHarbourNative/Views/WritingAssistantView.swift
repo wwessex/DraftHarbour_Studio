@@ -16,6 +16,10 @@ struct WritingAssistantView: View {
   @State private var result = ""
   @State private var draft: (plan: WritingPlan, sectionID: String, providerID: String)?
   @State private var undo: (sectionID: String, before: String, after: String)?
+  @AppStorage("DraftHarbour.aiSetup.mode") private var aiMode = "existing"
+  @State private var showSetup = false
+  @State private var localStatus = "Local model package has not been checked."
+  @State private var checkingLocal = false
 
   private var providers: [AIProviderConfig] { store.envelope.aiProviders.filter(\.enabled) }
   private var selectedProviderID: String { providerID.isEmpty ? providers.first?.id ?? "" : providerID }
@@ -31,20 +35,51 @@ struct WritingAssistantView: View {
               task = Task { await generate(action) }
             }
           }
-          .disabled(generating || store.activeSection == nil)
+          .disabled(generating || showSetup || store.activeSection == nil)
         }
         Spacer(minLength: 0)
+        if configuredProvider == nil {
+          Button("AI setup") { task?.cancel(); showSetup.toggle() }
+        }
         if expanded {
           Button("Close") { task?.cancel(); expanded = false; draft = nil; result = "" }
         }
       }
-      if !expanded, configuredProvider == nil, let chosen = providers.first(where: { $0.id == selectedProviderID }) {
+      if showSetup, configuredProvider == nil {
+        VStack(alignment: .leading, spacing: 8) {
+          Text("Choose how AI runs. Your writing stays on this computer unless you explicitly use an online connection.").font(.caption)
+          HStack {
+            Button("On this computer") {
+              task?.cancel(); aiMode = "local"; checkingLocal = true
+              Task {
+                do {
+                  let model = try await NativeLocalModelRuntime.shared.inspect()
+                  localStatus = "Verified \(model). Starts when you request a draft."
+                } catch { localStatus = "Local AI unavailable: \(error.localizedDescription) No text was sent online." }
+                checkingLocal = false
+              }
+            }.disabled(checkingLocal)
+            Button("Online AI — coming soon") {}.disabled(true)
+            Button("Decide later") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "later" }
+          }
+          if aiMode == "local" { Text(checkingLocal ? "Checking local package…" : localStatus).font(.caption) }
+          if aiMode == "later" { Text("AI is off. You can keep writing and return to setup at any time.").font(.caption) }
+          Text("Local package installation and online sign-in are still in development. No training or user-entered key is required by the managed local runtime.").font(.caption).foregroundStyle(.secondary)
+          if let configure {
+            Button("Use an existing connection…") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "existing"; configure() }
+          }
+        }
+      }
+      if !expanded, configuredProvider == nil, aiMode == "existing", let chosen = providers.first(where: { $0.id == selectedProviderID }) {
         Text("Model: \(chosen.label)").font(.caption).foregroundStyle(.secondary)
+      }
+      if configuredProvider == nil, aiMode == "local" {
+        Text("On this computer · verifies and starts when you request a draft").font(.caption).foregroundStyle(.secondary)
       }
       if expanded {
         ScrollView {
           VStack(alignment: .leading, spacing: 8) {
-            if configuredProvider == nil {
+            if configuredProvider == nil, aiMode == "existing" {
               if !providers.isEmpty {
                 Picker("AI model", selection: Binding(get: { selectedProviderID }, set: { providerID = $0 })) {
                   ForEach(providers) { provider in Text(provider.label).tag(provider.id) }
@@ -100,6 +135,11 @@ struct WritingAssistantView: View {
       let plan = try WritingActions.prepare(action, source: section.content ?? "", selection: editorSelection(), direction: direction)
       let config: AIProviderConfig
       if let configuredProvider { config = try configuredProvider() }
+      else if aiMode == "local" {
+        config = AIProviderConfig(id: "managed-local", provider: .customLLM, label: "On this computer (experimental)",
+          endpoint: NativeLocalModelRuntime.endpoint, model: NativeLocalModelRuntime.modelID)
+      }
+      else if aiMode == "later" { throw LocalRuntimeFailure.unavailable("AI is off. Choose AI setup when you are ready.") }
       else if let selected = providers.first(where: { $0.id == selectedProviderID }) { config = selected }
       else { throw DraftHarbourError.providerNotConfigured("Connect an AI model first.") }
       let provider = try NativeAIProviderFactory().provider(from: config)

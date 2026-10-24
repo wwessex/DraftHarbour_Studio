@@ -65,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   func applicationWillTerminate(_ notification: Notification) {
+    NativeLocalModelRuntime.shared.stopNow()
     NotificationCenter.default.removeObserver(self)
     NSAppleEventManager.shared().removeEventHandler(
       forEventClass: AEEventClass(kInternetEventClass),

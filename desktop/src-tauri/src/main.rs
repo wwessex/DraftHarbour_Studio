@@ -16,7 +16,44 @@ use tauri::{
     AppHandle, Emitter, Manager, WindowEvent,
 };
 
+mod local_runtime;
 mod writing_engine;
+
+static LOCAL_RUNTIME: OnceLock<local_runtime::LocalRuntime> = OnceLock::new();
+fn local_ai() -> &'static local_runtime::LocalRuntime {
+    LOCAL_RUNTIME.get_or_init(Default::default)
+}
+fn local_ai_path(app: &AppHandle) -> Result<PathBuf, String> {
+    Ok(app
+        .path()
+        .app_data_dir()
+        .map_err(|_| "Local application storage is unavailable.")?
+        .join("LocalAI")
+        .join("bundle"))
+}
+#[tauri::command]
+async fn local_ai_inspect(app: AppHandle) -> Result<String, String> {
+    let root = local_ai_path(&app)?;
+    tauri::async_runtime::spawn_blocking(move || local_ai().inspect(&root))
+        .await
+        .map_err(|_| "Unable to inspect Local AI.")?
+}
+#[tauri::command]
+async fn local_ai_generate(
+    app: AppHandle,
+    prompt: String,
+) -> Result<local_runtime::RuntimeReply, String> {
+    let root = local_ai_path(&app)?;
+    tauri::async_runtime::spawn_blocking(move || local_ai().generate(&root, &prompt))
+        .await
+        .map_err(|_| "Local AI request failed.")?
+}
+#[tauri::command]
+async fn local_ai_stop() -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(|| local_ai().stop())
+        .await
+        .map_err(|_| "Unable to stop Local AI.".to_string())
+}
 
 use writing_engine::{ManuscriptDocument, ManuscriptSearchResult, ManuscriptStatistics};
 
@@ -58,6 +95,7 @@ fn set_unsaved_edits(value: bool) {
 
 #[tauri::command]
 fn quit_app(app: AppHandle) {
+    local_ai().stop();
     app.exit(0);
 }
 
@@ -219,7 +257,11 @@ fn apply_native_role<R: tauri::Runtime, M: Manager<R>>(
 }
 
 #[tauri::command]
-fn set_native_menu(app: AppHandle, menu: Vec<NativeMenuTemplate>, _platform: String) -> Result<(), String> {
+fn set_native_menu(
+    app: AppHandle,
+    menu: Vec<NativeMenuTemplate>,
+    _platform: String,
+) -> Result<(), String> {
     let mut menu_builder = MenuBuilder::new(&app);
 
     for section in menu {
@@ -345,6 +387,9 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            local_ai_inspect,
+            local_ai_generate,
+            local_ai_stop,
             set_unsaved_edits,
             quit_app,
             read_project_file,
@@ -358,8 +403,13 @@ fn main() {
             get_secure_secret,
             delete_secure_secret
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_, event| {
+            if let tauri::RunEvent::Exit = event {
+                local_ai().stop();
+            }
+        });
 }
 
 #[cfg(test)]

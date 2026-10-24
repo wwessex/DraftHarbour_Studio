@@ -6,6 +6,8 @@ Decision recorded 24 October 2026. The owner has a website/domain, no app user-a
 
 Artifact milestone, 24 October: a [verified macOS ARM64 development package](../llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) now exports and runs the craft adapter as a 2.71 GB text-only GGUF, with private runtime authentication managed by the developer harness. Native application lifecycle/setup, downloads and Windows/other-device runtime checks remain outstanding. This evidence advances step 1 without claiming that steps 2–5 are delivered.
 
+Native integration milestone, 24 October: [the app-managed trial](managed-local-ai-trial.md) adds Rust and Swift process managers and main-interface setup controls. Actual Mac native and Rust manager generation passed with internal credentials; the native app generated a preview without key entry. Automatic installation/downloads, target Windows/Linux runtime testing, complete first-run onboarding and hosted accounts remain unfinished. The artifact milestone above describes its earlier scope.
+
 ## User experience
 
 Setup offers **On this computer**, **Online AI** and **Decide later**. Ordinary drafting, files, backups and exports work locally without signing in, downloading a model or enabling AI. The choice remains editable beside the main writing controls.
