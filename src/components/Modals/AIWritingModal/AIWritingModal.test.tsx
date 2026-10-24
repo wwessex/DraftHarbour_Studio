@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { act } from 'react';
+import { act, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -1347,6 +1347,15 @@ describe('AIWritingModal', () => {
     expect(mockExecute).not.toHaveBeenCalled();
     expect(container.querySelector('textarea#workspace-writing-instructions')).toBeTruthy();
     expect(container.textContent).toContain('Your manuscript stays unchanged');
+  });
+
+  it('keeps the first workspace Continue click alive under the app root’s StrictMode', async () => {
+    await act(async () => root.render(<StrictMode><AIWritingModal open presentation="workspace" actionRequest={{ id: 99, action: 'continue' }} onClose={onCloseMock} /></StrictMode>));
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+    expect(mockExecute.mock.calls[0][0].signal.aborted).toBe(false);
+    expect(container.textContent).toContain('AI response text');
+    expect(container.textContent).toContain('Append to Chapter');
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
   });
 
 });
