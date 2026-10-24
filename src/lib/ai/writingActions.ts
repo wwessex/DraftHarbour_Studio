@@ -1,5 +1,9 @@
 /** Passage-scoped writing plans, independent of any model or editor engine. */
 export type WritingAction = 'write' | 'rewrite' | 'continue';
+export interface WritingSelectionSnapshot {
+  source: string;
+  selection: { from: number; to: number };
+}
 export interface WritingPlan {
   action: WritingAction;
   source: string;
@@ -26,10 +30,13 @@ export function prepareWritingAction(action: WritingAction, source: string, sele
     if (!source.trim()) throw new Error('Select a passage or write a paragraph to rewrite first.');
     const selected = selection && Number.isInteger(selection.from) && Number.isInteger(selection.to)
       && selection.from >= 0 && selection.to <= source.length && selection.to > selection.from;
+    if (selection && selection.to !== selection.from && !selected) {
+      throw new Error('The selected passage is no longer valid. Select it again before rewriting.');
+    }
     from = selected ? selection.from : paragraphStart;
     to = selected ? selection.to : end;
     if (!source.slice(from, to).trim()) throw new Error('Select a passage containing text to rewrite.');
-    task = `Rewrite only the target passage below. Preserve meaning, point of view, tense, format and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation.\n\nTARGET PASSAGE:\n${source.slice(from, to)}`;
+    task = `Rewrite only the target passage below. Preserve meaning, point of view, tense, format and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation. Do not continue the story or expand this target into a scene unless the author explicitly requests it.\n\nTARGET PASSAGE:\n${source.slice(from, to)}`;
   }
   return { action, source, from, to, prompt: [task, direction.trim() ? `AUTHOR INSTRUCTIONS:\n${direction.trim()}` : ''].filter(Boolean).join('\n\n') };
 }

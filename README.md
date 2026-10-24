@@ -88,6 +88,8 @@ The accepted [setup plan](docs/ai-local-and-online-setup-plan.md) offers **On th
 
 Desktop setup can also select, verify and install an already obtained local package, with resource checks, a native confirmation and restore of the previous verified copy. It does not download or publicly distribute the experimental weights, accept arbitrary models or activate AI merely by installing a package.
 
+The [writing selection/submission fix](docs/reviews/ai-writing-selection-submit-2026-10-24.md) preserves highlighted rewrite spans, shows the original target, sends only that target for rewriting, and adds a visible **Generate draft** control after Write instructions in both the shared interface and native macOS app. Acceptance remains explicit.
+
 ### Endpoint configuration
 
 | Provider/client | Configure |

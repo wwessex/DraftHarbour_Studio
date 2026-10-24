@@ -35,4 +35,18 @@ final class WritingActionsTests: XCTestCase {
     XCTAssertThrowsError(try WritingActions.applying(plan, current: "Edited meanwhile.", output: "Replacement."))
     XCTAssertThrowsError(try WritingActions.applying(plan, current: plan.source, output: " "))
   }
+  func testInvalidHighlightedRangeDoesNotFallBackToWholeParagraph() throws {
+    for range in [NSRange(location: 1, length: 999), NSRange(location: -1, length: 3)] {
+      XCTAssertThrowsError(try WritingActions.prepare(.rewrite, source: "A short paragraph.", selection: range))
+    }
+  }
+  func testCapturedRangeSurvivesMovingTheCaretAndOnlyReplacesHighlightedWords() throws {
+    let source = "Before 😀, the rough phrase stays here. After.\n\nKeep this paragraph."
+    var selection = (source as NSString).range(of: "rough phrase")
+    let plan = try WritingActions.prepare(.rewrite, source: source, selection: selection)
+    selection = NSRange(location: (source as NSString).length, length: 0)
+    XCTAssertNotEqual(plan.range, selection)
+    XCTAssertEqual(try WritingActions.applying(plan, current: source, output: "polished phrase"),
+      "Before 😀, the polished phrase stays here. After.\n\nKeep this paragraph.")
+  }
 }

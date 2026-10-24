@@ -41,11 +41,14 @@ public enum WritingActions {
         Range(selection, in: source) != nil {
         range = selection
       } else {
+        if let selection, selection.length != 0 {
+          throw failure("The selected passage is no longer valid. Select it again before rewriting.")
+        }
         range = NSRange(location: start, length: end - start)
       }
       let target = ns.substring(with: range)
       guard !target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw failure("Select a passage containing text to rewrite.") }
-      task = "Rewrite only the target passage below. Preserve meaning, point of view, tense, format and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation.\n\nTARGET PASSAGE:\n" + target
+      task = "Rewrite only the target passage below. Preserve meaning, point of view, tense, format and the author’s voice unless instructed otherwise. Return one replacement passage only, without headings, alternatives or explanation. Do not continue the story or expand this target into a scene unless the author explicitly requests it.\n\nTARGET PASSAGE:\n" + target
     }
     return WritingPlan(action: action, source: source, range: range,
       prompt: task + (instructions.isEmpty ? "" : "\n\nAUTHOR INSTRUCTIONS:\n" + instructions))

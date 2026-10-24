@@ -257,7 +257,10 @@ struct DraftEditorView: NSViewRepresentable {
     }
 
     func textViewDidChangeSelection(_ notification: Notification) {
-      guard let textView = notification.object as? NSTextView else { return }
+      // Resigning focus to writing controls must not replace the manuscript's
+      // highlighted range with a field-editor caret or a focus-loss collapse.
+      guard let textView = notification.object as? NSTextView,
+            textView.window?.firstResponder === textView else { return }
       parent.selectedRange = textView.selectedRange()
     }
   }

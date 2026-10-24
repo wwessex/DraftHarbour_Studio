@@ -20,9 +20,16 @@ struct WritingAssistantView: View {
   @State private var showSetup = false
   @State private var localStatus = "Local model package has not been checked."
   @State private var checkingLocal = false
+  @State private var selectedAction: WritingAction = .write
+  @State private var rewriteTarget: (source: String, range: NSRange)?
+  @FocusState private var instructionsFocused: Bool
 
   private var providers: [AIProviderConfig] { store.envelope.aiProviders.filter(\.enabled) }
   private var selectedProviderID: String { providerID.isEmpty ? providers.first?.id ?? "" : providerID }
+  private var originalSelectedPassage: String? {
+    guard let target = rewriteTarget, let range = Range(target.range, in: target.source) else { return nil }
+    return String(target.source[range])
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -30,10 +37,9 @@ struct WritingAssistantView: View {
         Label("AI writing", systemImage: "sparkles").font(.headline)
         ForEach(WritingAction.allCases, id: \.rawValue) { action in
           Button(action.title) {
-            expanded = true
-            if action != .write || !direction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-              task = Task { await generate(action) }
-            }
+            if action == .write {
+              captureSelection(); selectedAction = .write; draft = nil; result = ""; error = nil; expanded = true; instructionsFocused = true
+            } else { beginAction(action) }
           }
           .disabled(generating || showSetup || store.activeSection == nil)
         }
@@ -96,7 +102,11 @@ struct WritingAssistantView: View {
               }
             }
             TextField("Instructions (required for Write)", text: $direction, axis: .vertical)
-              .textFieldStyle(.roundedBorder).lineLimit(2...4)
+              .textFieldStyle(.roundedBorder).lineLimit(2...4).focused($instructionsFocused)
+            if selectedAction == .rewrite {
+              Text(rewriteTarget == nil ? "Rewrite target: final paragraph (no text selected)." : "Rewrite target: selected text only.").font(.caption)
+              if let originalSelectedPassage { Text(originalSelectedPassage).font(.callout).textSelection(.enabled) }
+            }
             Text("Rewrite selected text or the final paragraph. Continue adds after the ending. Review before applying.")
               .font(.caption).foregroundStyle(.secondary)
             if generating {
@@ -114,6 +124,12 @@ struct WritingAssistantView: View {
             if undo != nil { Button("Undo AI Change", action: undoChange) }
           }
         }.frame(maxHeight: 220)
+        HStack {
+          Button("Generate draft") { beginAction(selectedAction, useCapturedTarget: true) }
+            .buttonStyle(.borderedProminent)
+            .disabled(generating || showSetup || checkingLocal || (selectedAction == .write && direction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
+          Text("Action: \(selectedAction.title)").font(.caption).foregroundStyle(.secondary)
+        }
       }
     }
     .padding(10)
@@ -125,6 +141,8 @@ struct WritingAssistantView: View {
       direction = ""
       undo = nil
       error = nil
+      rewriteTarget = nil
+      selectedAction = .write
     }
     .onDisappear { task?.cancel() }
   }
@@ -172,15 +190,42 @@ struct WritingAssistantView: View {
   }
 
   @MainActor
-  private func generate(_ action: WritingAction) async {
+  private func captureSelection(clearIfEmpty: Bool = false) {
+    guard let source = store.activeSection?.content else { return }
+    let range = editorSelection()
+    if range.length > 0 { rewriteTarget = (source, range) }
+    else if clearIfEmpty { rewriteTarget = nil }
+  }
+
+  @MainActor
+  private func beginAction(_ action: WritingAction, useCapturedTarget: Bool = false) {
+    guard !generating, task == nil else { return }
     guard let section = store.activeSection else { return }
+    do {
+      if !useCapturedTarget { captureSelection(clearIfEmpty: true) }
+      let source = section.content ?? ""
+      if action == .rewrite, let target = rewriteTarget, target.source != source {
+        throw LocalRuntimeFailure.unavailable("The chapter changed. Select the passage again before rewriting.")
+      }
+      // Freeze the plan before expanding controls or scheduling an async task.
+      let plan = try WritingActions.prepare(action, source: source,
+        selection: action == .rewrite ? rewriteTarget?.range : nil, direction: direction)
+      selectedAction = action; expanded = true
+      task = Task { await generate(plan, sectionID: section.id) }
+    } catch { expanded = true; self.error = error.localizedDescription }
+  }
+
+  @MainActor
+  private func generate(_ plan: WritingPlan, sectionID: String) async {
+    guard let section = store.activeSection, section.id == sectionID, (section.content ?? "") == plan.source else {
+      error = "The chapter changed. Generate again before applying a suggestion."; task = nil; return
+    }
     generating = true
     error = nil
     draft = nil
     result = ""
     defer { generating = false; task = nil }
     do {
-      let plan = try WritingActions.prepare(action, source: section.content ?? "", selection: editorSelection(), direction: direction)
       let config: AIProviderConfig
       if let configuredProvider { config = try configuredProvider() }
       else if aiMode == "local" {
@@ -192,7 +237,7 @@ struct WritingAssistantView: View {
       else { throw DraftHarbourError.providerNotConfigured("Connect an AI model first.") }
       let provider = try NativeAIProviderFactory().provider(from: config)
       let response = try await provider.generate(AIRequest(prompt: plan.prompt,
-        context: AIWorkflowServices.buildStoryContext(envelope: store.envelope, section: section),
+        context: plan.action == .rewrite ? nil : AIWorkflowServices.buildStoryContext(envelope: store.envelope, section: section),
         projectType: store.projectType, sectionTitle: section.title, model: config.model))
       guard !Task.isCancelled else { return }
       guard !response.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

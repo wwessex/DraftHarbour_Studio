@@ -6,6 +6,11 @@ type Case = { id: string; action: WritingAction; source: string; from?: number; 
 const cases: Case[] = JSON.parse(readFileSync('fixtures/writing-actions.json', 'utf8'));
 
 describe('passage-scoped writing actions', () => {
+  it('refuses invalid highlighted ranges instead of rewriting a whole paragraph', () => {
+    for (const selection of [{ from: -1, to: 4 }, { from: 1, to: 999 }, { from: 5, to: 2 }]) {
+      expect(() => prepareWritingAction('rewrite', 'A short paragraph.', selection)).toThrow('Select it again');
+    }
+  });
   for (const item of cases) it(item.id, () => {
     const plan = prepareWritingAction(item.action, item.source, item.from === undefined ? undefined : { from: item.from, to: item.to! }, item.direction);
     expect(writingReplacement(plan, item.source, item.output).text).toBe(item.expected);

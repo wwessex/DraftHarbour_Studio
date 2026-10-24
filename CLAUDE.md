@@ -55,6 +55,8 @@ For networking, inspect managed policy, client transport, timeouts, cancellation
 
 ## Narratryx status
 
+Writing controls freeze the highlighted source/range before focus changes. Rewrite sends only its target and instructions; Write/Continue retain story context. Both interfaces expose a pinned Generate draft action. See [the selection/submission regression report](docs/reviews/ai-writing-selection-submit-2026-10-24.md); do not restore late selection reads or full-chapter Rewrite requests.
+
 App-owned inference uses `desktop/src-tauri/src/local_runtime.rs` with the renderer's `DesktopLocalProvider`, and independent native `LocalModelRuntime.swift`/`ManagedLocalAIProvider`. Both own the child and internal authentication. Main writing UI exposes AI setup. Read [the managed local trial](docs/managed-local-ai-trial.md) for Mac-only artifact availability, tests and release gaps; no hosted sign-in or automatic model installer exists yet.
 
 Offline package selection/replacement/restore is implemented in `desktop/src-tauri/src/local_install.rs` and native `LocalModelInstaller.swift`. The native picker and confirmation precede staged copying/verification; prior verified files are retained. No remote download or arbitrary catalog/executable input is accepted from the renderer. See the trial guide for resource floors and failure-recovery limits.

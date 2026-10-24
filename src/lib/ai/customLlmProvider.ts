@@ -57,6 +57,10 @@ function buildSystemPrompt(projectType: 'book' | 'screenplay', sectionTitle?: st
   const sectionLabel = projectType === 'screenplay' ? 'scene' : 'chapter';
   const titleNote = sectionTitle ? ` The current ${sectionLabel} is titled "${sectionTitle}".` : '';
 
+  if (action === 'rewrite') {
+    return `You are a careful fiction editor. Rewrite only the words marked TARGET PASSAGE, following the author’s instructions. Return only their replacement, preserving voice and meaning. Do not include surrounding prose, continue the story, or add explanations.`;
+  }
+
   if (action === 'grammar' || action === 'pipeline-grammar') {
     return `You are Narratryx, a meticulous proofreader and copy-editor for ${docType} manuscripts.${titleNote} Your task is to fix every grammar, spelling, and punctuation error while preserving the author's voice, style, and intent. Never add new content or change meaning. Output only the corrected text.`;
   }

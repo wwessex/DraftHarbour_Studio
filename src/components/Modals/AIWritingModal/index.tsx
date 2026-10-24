@@ -38,7 +38,7 @@ import type { ProjectType, StoryBlueprint } from '@/types';
 import styles from '../Modals.module.css';
 import workspaceStyles from '@/components/AI/WritingWorkspace.module.css';
 import { useCurrentEditor } from '@/lib/editor/EditorContext';
-import { prepareWritingAction, writingReplacement, type WritingAction, type WritingPlan } from '@/lib/ai/writingActions';
+import { prepareWritingAction, writingReplacement, type WritingAction, type WritingPlan, type WritingSelectionSnapshot } from '@/lib/ai/writingActions';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -48,7 +48,7 @@ interface AIWritingModalProps {
   open: boolean;
   onClose: () => void;
   presentation?: 'modal' | 'workspace';
-  actionRequest?: { id: number; action: WritingAction };
+  actionRequest?: { id: number; action: WritingAction; target?: WritingSelectionSnapshot };
   onConfigure?: () => void;
 }
 
@@ -239,6 +239,12 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
   const abortRef = useRef<AbortController | null>(null);
   const responseRef = useRef<HTMLDivElement>(null);
   const handledRequest = useRef<number | null>(null);
+  const [workspaceAction, setWorkspaceAction] = useState<WritingAction>(actionRequest?.action ?? 'write');
+  const rewriteTarget = useRef<WritingSelectionSnapshot | undefined>(actionRequest?.target);
+  const pendingTarget = useRef<WritingSelectionSnapshot | undefined>(undefined);
+  const instructionsRef = useRef<HTMLTextAreaElement>(null);
+  const captureTarget = () => editor ? { source: editor.getContent(), selection: editor.getSelection() } : undefined;
+  useEffect(() => { rewriteTarget.current = actionRequest?.target; }, [activeChapter?.id, actionRequest?.id, actionRequest?.target, open]);
   useEffect(() => () => abortRef.current?.abort(), []);
 
   // Persist config changes
@@ -392,7 +398,9 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
         continuitySnapshot,
       );
       const storyBibleText = formatStoryBibleForPrompt(storyBibleContext);
-      const enrichedContext = [blueprintContext, continuityContext, storyBibleText, chapterText].filter(Boolean).join('\n\n');
+      // A rewrite must not invite the model to reproduce the surrounding chapter.
+      // Its complete editable input is already bounded by TARGET PASSAGE in the plan.
+      const enrichedContext = plan?.action === 'rewrite' ? '' : [blueprintContext, continuityContext, storyBibleText, chapterText].filter(Boolean).join('\n\n');
 
       // Abort any previous request
       abortRef.current?.abort();
@@ -542,11 +550,23 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
     sendPrompt(prompt);
   };
 
-  const handleWritingAction = useCallback((action: WritingAction) => {
+  const handleWritingAction = useCallback((action: WritingAction, target?: WritingSelectionSnapshot) => {
     if (!activeChapter) return;
     try {
       const source = editor?.getContent() ?? editorToPlainText(activeChapter.content);
-      const plan = { ...prepareWritingAction(action, source, editor?.getSelection(), prompt), chapterId: activeChapter.id };
+      let selection = target?.selection ?? editor?.getSelection();
+      if (action === 'rewrite') {
+        if (target && target.source !== source) throw new Error('The chapter changed. Select the passage again before rewriting.');
+        if (target) rewriteTarget.current = selection && selection.to !== selection.from ? target : undefined;
+        else if (selection && selection.to !== selection.from) rewriteTarget.current = { source, selection };
+        const frozen = rewriteTarget.current;
+        if (frozen && frozen.selection.to !== frozen.selection.from) {
+          if (frozen.source !== source) throw new Error('The chapter changed. Select the passage again before rewriting.');
+          selection = frozen.selection;
+        }
+      }
+      setWorkspaceAction(action);
+      const plan = { ...prepareWritingAction(action, source, selection, prompt), chapterId: activeChapter.id };
       void sendPrompt(plan.prompt, action, plan);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Choose a passage first.');
@@ -561,7 +581,7 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
     queueMicrotask(() => {
       if (cancelled || handledRequest.current === actionRequest.id) return;
       handledRequest.current = actionRequest.id;
-      if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action);
+      if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action, actionRequest.target);
     });
     return () => { cancelled = true; };
   }, [actionRequest, handleWritingAction, open]);
@@ -852,7 +872,16 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
     return <section aria-label="Writing assistant">
       <div className={workspaceStyles.bar}>
         <span className={workspaceStyles.label}>AI writing</span>
-        {(['write', 'rewrite', 'continue'] as const).map(action => <button type="button" key={action} className={workspaceStyles.action} disabled={loading || !activeChapter} onClick={() => handleWritingAction(action)}>
+        {(['write', 'rewrite', 'continue'] as const).map(action => <button type="button" key={action} className={workspaceStyles.action} disabled={loading || !activeChapter}
+          onPointerDown={() => { pendingTarget.current = captureTarget(); }}
+          onPointerCancel={() => { pendingTarget.current = undefined; }}
+          onKeyDown={() => { pendingTarget.current = captureTarget(); }}
+          onClick={() => {
+            const target = pendingTarget.current ?? captureTarget(); pendingTarget.current = undefined;
+            setWorkspaceAction(action);
+            if (action === 'write') { setResponse(''); setWritingPlan(null); setError(null); instructionsRef.current?.focus(); return; }
+            handleWritingAction(action, target);
+          }}>
           {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
         </button>)}
         <button type="button" className={workspaceStyles.action} onClick={onClose} aria-label="Close writing assistant">Close</button>
@@ -861,7 +890,9 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
         <p className={workspaceStyles.hint}>{isConfigured ? providerModeLabel : 'Connect a model once in Settings to start writing with AI.'} · Rewrite selected text or the final paragraph; Continue adds after the ending.</p>
         {!isConfigured && onConfigure && <Button onClick={onConfigure}>Connect AI model</Button>}
         <label htmlFor="workspace-writing-instructions">Instructions (required for Write)</label>
-        <textarea autoFocus={actionRequest?.action === 'write'} id="workspace-writing-instructions" className={workspaceStyles.instructions} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="What happens next? Or describe how to rewrite the passage…" />
+        <textarea ref={instructionsRef} autoFocus={actionRequest?.action === 'write'} id="workspace-writing-instructions" className={workspaceStyles.instructions} value={prompt} onChange={event => setPrompt(event.target.value)} placeholder="What happens next? Or describe how to rewrite the passage…" />
+        {workspaceAction === 'rewrite' && <p className={workspaceStyles.hint}>{rewriteTarget.current && rewriteTarget.current.selection.to > rewriteTarget.current.selection.from ? 'Rewrite target: selected text only.' : 'Rewrite target: final paragraph (no text selected).'}</p>}
+        {workspaceAction === 'rewrite' && rewriteTarget.current && rewriteTarget.current.selection.to > rewriteTarget.current.selection.from && <div className={workspaceStyles.result} aria-label="Original selected passage">{rewriteTarget.current.source.slice(rewriteTarget.current.selection.from, rewriteTarget.current.selection.to)}</div>}
         {loading && <div role="status">Generating… <Button onClick={() => abortRef.current?.abort()}>Stop</Button></div>}
         {error && <p className={workspaceStyles.error} role="alert">{error}</p>}
         {(response || isStreaming) && <>
@@ -872,6 +903,10 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
           </div>
         </>}
         <p className={workspaceStyles.hint}>Your manuscript stays unchanged until you accept a draft.</p>
+      </div>
+      <div className={workspaceStyles.bar}>
+        <Button onClick={() => handleWritingAction(workspaceAction, workspaceAction === 'rewrite' ? rewriteTarget.current : undefined)} disabled={loading || !activeChapter || (workspaceAction === 'write' && !prompt.trim())}>Generate draft</Button>
+        <span className={workspaceStyles.hint}>Action: {workspaceAction === 'write' ? 'Write' : workspaceAction === 'rewrite' ? 'Rewrite' : 'Continue'}</span>
       </div>
     </section>;
   }
