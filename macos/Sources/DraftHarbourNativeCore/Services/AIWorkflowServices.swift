@@ -138,6 +138,9 @@ public struct NativeAIProviderFactory {
       throw DraftHarbourError.providerNotConfigured(config.label)
     }
     let policy = NativeOperationalGuardrails.shared.currentPolicy()
+    if UserDefaults.standard.string(forKey: "DraftHarbour.aiSetup.mode") == "local", !Self.isLocalProvider(config) {
+      throw LocalRuntimeFailure.unavailable("Online providers are disabled while On this computer is selected. Change AI setup to use an existing online connection.")
+    }
     if policy.disableAIProviders == true {
       throw DraftHarbourError.providerNotConfigured("AI disabled by managed policy")
     }
@@ -168,10 +171,10 @@ public struct NativeAIProviderFactory {
 
   private static func isLocalProvider(_ config: AIProviderConfig) -> Bool {
     if config.provider == .customLLM, config.endpoint == NativeLocalModelRuntime.endpoint { return true }
-    if config.provider == .appleFoundation || config.provider == .localOpenAI {
+    if config.provider == .appleFoundation {
       return true
     }
-    guard config.provider == .openAICompatible || config.provider == .customLLM,
+    guard config.provider == .openAICompatible || config.provider == .customLLM || config.provider == .localOpenAI,
           let endpoint = URL(string: config.endpoint),
           let host = endpoint.host?.lowercased() else {
       return false

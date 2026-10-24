@@ -111,4 +111,16 @@ final class LocalModelRuntimeTests: XCTestCase {
     _ = try LocalModelInstaller.restorePrevious(destination: destination, catalog: catalog)
     XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
   }
+  func testLocalSetupCannotSendOtherNativeToolsToRemoteProviders() throws {
+    let key = "DraftHarbour.aiSetup.mode", defaults = UserDefaults.standard
+    let previous = defaults.string(forKey: key)
+    defer { if let previous { defaults.set(previous, forKey: key) } else { defaults.removeObject(forKey: key) } }
+    defaults.set("local", forKey: key)
+    for type in [AIProviderType.customLLM, .openAICompatible, .localOpenAI] {
+      let config = AIProviderConfig(provider: type, label: "Remote", endpoint: "https://example.test/v1/chat/completions", model: "test")
+      XCTAssertThrowsError(try NativeAIProviderFactory().provider(from: config)) { error in
+        XCTAssertTrue(error.localizedDescription.contains("On this computer"))
+      }
+    }
+  }
 }
