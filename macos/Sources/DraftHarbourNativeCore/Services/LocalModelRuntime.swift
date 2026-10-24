@@ -66,8 +66,6 @@ public enum LocalRuntimePackage {
     return path
   }
   public static func verify(_ root: URL, catalog: LocalRuntimeCatalog = .development, platform: String = Self.platform) throws -> LocalRuntimeManifest {
-    // macOS may enumerate /var through /private/var. Normalize the directory once
-    // so inventory paths and the verified root use the same system spelling.
     let root = root.standardizedFileURL.resolvingSymlinksInPath()
     guard catalog.platform == platform else { throw LocalRuntimeFailure.unavailable("No verified model package is available for this computer yet.") }
     let manifestURL = try file("manifest.json", in: root)
@@ -87,13 +85,21 @@ public enum LocalRuntimePackage {
       guard UInt64(try path.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) == record.bytes,
             try sha256(path) == record.sha256 else { throw LocalRuntimeFailure.unavailable("Local model file verification failed.") }
     }
-    let entries = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey])
     var actual = Set<String>()
-    while let path = entries?.nextObject() as? URL {
-      let values = try path.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
-      guard values.isSymbolicLink != true else { throw LocalRuntimeFailure.unavailable("Linked package files are not allowed.") }
-      if values.isRegularFile == true { actual.insert(String(path.path.dropFirst(root.path.count + 1))) }
+    // Build names relative to each directory. macOS URL enumeration can return
+    // /private/var even when resolvingSymlinksInPath spells the root as /var.
+    func inventory(_ directory: URL, prefix: String = "", depth: Int = 0) throws {
+      guard depth <= 32 else { throw LocalRuntimeFailure.unavailable("Local package nesting is too deep.") }
+      for name in try FileManager.default.contentsOfDirectory(atPath: directory.path) {
+        let path = directory.appendingPathComponent(name)
+        let values = try path.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .isDirectoryKey])
+        guard values.isSymbolicLink != true else { throw LocalRuntimeFailure.unavailable("Linked package files are not allowed.") }
+        if values.isRegularFile == true { actual.insert(prefix + name) }
+        else if values.isDirectory == true { try inventory(path, prefix: prefix + name + "/", depth: depth + 1) }
+        else { throw LocalRuntimeFailure.unavailable("Unsupported local package file.") }
+      }
     }
+    try inventory(root)
     guard actual == Set(manifest.files.keys).union(["manifest.json"]) else {
       throw LocalRuntimeFailure.unavailable("The local model package contains unverified files.")
     }
