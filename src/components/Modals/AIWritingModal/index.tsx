@@ -555,8 +555,15 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
 
   useEffect(() => {
     if (!open || !actionRequest || handledRequest.current === actionRequest.id) return;
-    handledRequest.current = actionRequest.id;
-    if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action);
+    // StrictMode replays mount effects. Dispatch after that replay so cleanup
+    // cannot cancel the first click and leave its request marked as handled.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || handledRequest.current === actionRequest.id) return;
+      handledRequest.current = actionRequest.id;
+      if (actionRequest.action !== 'write') handleWritingAction(actionRequest.action);
+    });
+    return () => { cancelled = true; };
   }, [actionRequest, handleWritingAction, open]);
 
   const handlePreset = (preset: PresetPrompt) => {
