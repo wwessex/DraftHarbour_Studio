@@ -179,7 +179,8 @@ export function AIConfigPanel({
         </>
       )}
 
-      {showLocalFields && (
+      {showLocalFields && config.customLlm?.managedRuntime && <p>The desktop app manages this local model and its private credentials. Use AI setup beside the manuscript to change modes.</p>}
+      {showLocalFields && !config.customLlm?.managedRuntime && (
         <>
           <div>
             <Button

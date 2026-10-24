@@ -31,6 +31,8 @@ export interface ServerProxyConfig {
 }
 
 export interface CustomLlmConfig {
+  /** Native IPC manages the runtime and private credentials. Never use HTTP fallback. */
+  managedRuntime?: boolean;
   /** Optional setup profile; inference remains model-neutral. */
   profile?: 'narratryx';
   /** Inference backend type */

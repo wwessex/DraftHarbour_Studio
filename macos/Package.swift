@@ -32,6 +32,11 @@ let package = Package(
     .testTarget(
       name: "DraftHarbourNativeCoreTests",
       dependencies: ["DraftHarbourNativeCore"]
+    ),
+    .executableTarget(
+      name: "LocalRuntimeSmoke",
+      dependencies: ["DraftHarbourNativeCore"],
+      path: "Tools/LocalRuntimeSmoke"
     )
   ]
 )

@@ -19,7 +19,19 @@ tauri-plugin-deep-link = "2"
 tauri-plugin-updater = "2"
 keyring = "3"
 unicode-normalization = "0.1"
+sha2 = "0.10.9"
+rustls = { version = "0.23.40", default-features = false, features = ["ring", "std", "tls12"] }
+rand = "0.8.5"
+tempfile = "3.26.0"
+reqwest = { version = "0.13.2", default-features = false, features = ["blocking", "json"] }
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+
+# File verification must remain responsive in development builds as well.
+[profile.dev.package.sha2]
+opt-level = 3
+
+[profile.test.package.sha2]
+opt-level = 3

@@ -2,9 +2,11 @@
 
 Decision recorded 24 October 2026. The owner has a website/domain, no app user-account system, and wants locally installed desktop applications with a choice of local or online AI during setup.
 
-**Status: accepted direction and implementation plan, not a completed runtime or hosted deployment.** Existing Write/Rewrite/Continue tools and the manually configured experimental service remain the current technical trial. No paid hosting, accounts, model distribution or automatic model downloads are created by this document.
+**Status: experimental native runtime/setup trial; production installation and hosted deployment remain unfinished.** Existing Write/Rewrite/Continue tools and the manually configured experimental service remain available alongside the app-managed Mac trial. No paid hosting, accounts, public model distribution or automatic model downloads are created by this plan.
 
 Artifact milestone, 24 October: a [verified macOS ARM64 development package](../llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) now exports and runs the craft adapter as a 2.71 GB text-only GGUF, with private runtime authentication managed by the developer harness. Native application lifecycle/setup, downloads and Windows/other-device runtime checks remain outstanding. This evidence advances step 1 without claiming that steps 2–5 are delivered.
+
+Native integration milestone, 24 October: [the app-managed trial](managed-local-ai-trial.md) adds Rust and Swift process managers and main-interface setup controls. Actual Mac native and Rust manager generation passed with internal credentials; the native app generated a preview without key entry. Automatic installation/downloads, target Windows/Linux runtime testing, complete first-run onboarding and hosted accounts remain unfinished. The artifact milestone above describes its earlier scope.
 
 ## User experience
 
@@ -36,7 +38,7 @@ Different local engines/models must be identified accurately. Existing Chrome or
 ## Current code boundaries and gaps
 
 - `src/components/AI/WritingWorkspace.tsx` and native `Views/WritingAssistantView.swift` provide the visible actions and preview workflow.
-- Shared providers can address compatible endpoints; the independent native factory resolves saved endpoint configurations and Keychain credentials. Neither currently installs or supervises a distributable local model runtime.
+- Shared providers can address compatible endpoints; the independent native factory resolves saved endpoint configurations and Keychain credentials. `DesktopLocalProvider` bridges to the new Rust manager; the independent native factory also resolves `ManagedLocalAIProvider`. Both supervise an already installed, verified development package; neither downloads/installs a public model yet.
 - `llm/Narratryx/runtime/local/` is a separately installed, hash-pinned MLX developer service. It is not a packaged cross-platform runtime.
 - `src/server/integrationBroker.ts` is Vite development middleware. Its managed generation route currently targets an environment-configured provider, not an authenticated production Narratryx account service.
 - `api/` is a separately deployed PHP proxy with server-key authorization/IP limits; a shared client token is not individual app account/session management.

@@ -835,7 +835,9 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
         : config.provider === 'openai-compatible'
           ? 'Using custom provider'
           : 'Using cloud AI';
-  const providerLabel = `AI ready · ${providerModeLabel}`;
+  const providerLabel = config.customLlm?.managedRuntime
+    ? 'Local AI · verifies and starts when you request a draft'
+    : `AI ready · ${providerModeLabel}`;
   const currentAIMode = resolveAIConfigMode(config);
   const providerIcon =
     config.provider === 'chrome-ai' ? 'memory'
@@ -1076,7 +1078,8 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
             <p className={styles.aiSettingsHint}>
               <strong>Quick setup (required to start):</strong> pick a provider, confirm model, add API key only if required, then test the connection.
             </p>
-            {config.provider === 'custom-llm' && config.customLlm && (
+            {config.provider === 'custom-llm' && config.customLlm?.managedRuntime && <p className={styles.aiSettingsHint}>The desktop app manages this model and its private credentials. Use AI setup beside the manuscript to change modes.</p>}
+            {config.provider === 'custom-llm' && config.customLlm && !config.customLlm.managedRuntime && (
               <div className={styles.aiSettingsFields}>
                 <label className={styles.aiLabel}>
                   Model
@@ -1130,7 +1133,7 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
               </div>
             )}
 
-            {advancedSettingsExpanded && config.provider === 'custom-llm' && config.customLlm && (
+            {advancedSettingsExpanded && config.provider === 'custom-llm' && config.customLlm && !config.customLlm.managedRuntime && (
               <div className={styles.aiSettingsFields}>
                 <label className={styles.aiLabel}>
                   <input
@@ -1184,7 +1187,7 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
               </div>
             )}
 
-            {config.provider === 'custom-llm' && (
+            {config.provider === 'custom-llm' && !config.customLlm?.managedRuntime && (
               <div className={styles.aiSettingsActions}>
                 <Button
                   variant="default"
