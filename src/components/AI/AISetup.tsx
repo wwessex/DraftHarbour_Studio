@@ -4,7 +4,7 @@ import { DESKTOP_LOCAL_MODEL, inspectDesktopLocalAI, stopDesktopLocalAI } from '
 import { saveAIConfig } from '@/lib/ai/providerManager';
 import styles from './WritingWorkspace.module.css';
 
-const MODE_KEY = 'draftharbour_ai_setup_mode_v1';
+import { setAISetupMode } from '@/lib/ai/setupPreferences';
 
 /** Explicit choices only: no download, remote fallback or endpoint probing on mount. */
 export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onConfigure?: () => void }) {
@@ -18,7 +18,7 @@ export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onC
       const config = createNarratryxConfig('http://127.0.0.1');
       config.customLlm = { ...config.customLlm!, model, managedRuntime: true };
       saveAIConfig(config);
-      localStorage.setItem(MODE_KEY, 'local');
+      setAISetupMode('local');
       setStatus(`Verified ${model}. Starts when you request a draft. No key entry is needed.`);
       onChanged();
     } catch (error) { setStatus(`Local AI unavailable: ${error instanceof Error ? error.message : String(error)} Your current connection is unchanged. No text was sent online.`); }
@@ -28,7 +28,7 @@ export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onC
     setChecking(true);
     try {
       await stopDesktopLocalAI();
-      localStorage.setItem(MODE_KEY, 'later');
+      setAISetupMode('later');
       setStatus('AI is off. Keep writing and return to AI setup at any time.');
       onChanged();
     } catch { setStatus('Unable to stop Local AI. Try again before changing mode.'); }
@@ -38,7 +38,7 @@ export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onC
     setChecking(true);
     try {
       await stopDesktopLocalAI();
-      localStorage.setItem(MODE_KEY, 'existing'); onChanged(); onConfigure?.();
+      setAISetupMode('existing'); onChanged(); onConfigure?.();
     } catch { setStatus('Unable to stop Local AI. Try again before changing mode.'); }
     finally { setChecking(false); }
   };

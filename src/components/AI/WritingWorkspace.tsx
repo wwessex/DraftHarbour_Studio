@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import type { WritingAction } from '@/lib/ai/writingActions';
 import styles from './WritingWorkspace.module.css';
 import { AISetup } from './AISetup';
+import { AI_SETUP_CHANGED, AI_SETUP_MODE_KEY, getAISetupMode } from '@/lib/ai/setupPreferences';
 
 const Composer = lazy(() => import('@/components/Modals/AIWritingModal').then(module => ({ default: module.AIWritingModal })));
 
@@ -9,8 +10,15 @@ const Composer = lazy(() => import('@/components/Modals/AIWritingModal').then(mo
 export function WritingWorkspace({ onConfigure }: { onConfigure?: () => void }) {
   const [request, setRequest] = useState<{ id: number; action: WritingAction } | null>(null);
   const [setup, setSetup] = useState(false);
-  const [disabled, setDisabled] = useState(() => localStorage.getItem('draftharbour_ai_setup_mode_v1') === 'later');
-  const changed = () => { setRequest(null); setDisabled(localStorage.getItem('draftharbour_ai_setup_mode_v1') === 'later'); };
+  const [disabled, setDisabled] = useState(() => getAISetupMode() === 'later');
+  const changed = () => { setRequest(null); setDisabled(getAISetupMode() === 'later'); };
+  useEffect(() => {
+    const changed = () => { setRequest(null); setDisabled(getAISetupMode() === 'later'); };
+    const stored = (event: StorageEvent) => { if (event.key === AI_SETUP_MODE_KEY) changed(); };
+    window.addEventListener(AI_SETUP_CHANGED, changed);
+    window.addEventListener('storage', stored);
+    return () => { window.removeEventListener(AI_SETUP_CHANGED, changed); window.removeEventListener('storage', stored); };
+  }, []);
   return <aside className={styles.workspace} aria-label="AI writing workspace">
     <div className={styles.bar}>
       <button className={styles.action} onClick={() => { setRequest(null); setSetup(value => !value); }} aria-expanded={setup}>AI setup</button>

@@ -66,6 +66,9 @@ public enum LocalRuntimePackage {
     return path
   }
   public static func verify(_ root: URL, catalog: LocalRuntimeCatalog = .development, platform: String = Self.platform) throws -> LocalRuntimeManifest {
+    // macOS may enumerate /var through /private/var. Normalize the directory once
+    // so inventory paths and the verified root use the same system spelling.
+    let root = root.standardizedFileURL.resolvingSymlinksInPath()
     guard catalog.platform == platform else { throw LocalRuntimeFailure.unavailable("No verified model package is available for this computer yet.") }
     let manifestURL = try file("manifest.json", in: root)
     guard (try manifestURL.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? Int.max) <= 1_048_576,

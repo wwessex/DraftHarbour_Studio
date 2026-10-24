@@ -14,6 +14,7 @@ import { OpenAIProvider } from './openaiProvider';
 import { ServerProxyProvider } from './serverProxyProvider';
 import { CustomLlmProvider } from './customLlmProvider';
 import { DesktopLocalProvider } from './desktopLocalProvider';
+import { getAISetupMode, setAISetupMode } from './setupPreferences';
 import { FallbackProvider, buildFallbackChain } from './fallbackProvider';
 import { isChromeAIAvailable, isChromeBrowser, detectLocalLlmServer } from './availability';
 import { deleteSecret, getSecret, isDesktop, setSecret } from '@/lib/desktopSecrets';
@@ -100,7 +101,7 @@ export function saveAIConfig(config: AIProviderConfig): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ provider: 'managed-cloud' }));
     return;
   }
-  localStorage.setItem('draftharbour_ai_setup_mode_v1', config.customLlm?.managedRuntime ? 'local' : 'existing');
+  setAISetupMode(config.customLlm?.managedRuntime ? 'local' : 'existing');
 
   if (isDesktop()) {
     if (config.sessionToken) {
@@ -162,7 +163,7 @@ export async function hydrateDesktopSecrets(config: AIProviderConfig): Promise<A
 
 /** Create the appropriate AIProvider instance from a config. */
 export function createProvider(config: AIProviderConfig): AIProvider {
-  if (localStorage.getItem('draftharbour_ai_setup_mode_v1') === 'later') {
+  if (getAISetupMode() === 'later') {
     return { type: config.provider, isAvailable: () => false, destroy: () => {},
       execute: async () => { throw new Error('AI is off. Choose AI setup when you are ready.'); } };
   }
