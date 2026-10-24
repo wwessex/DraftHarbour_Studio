@@ -4,6 +4,8 @@ Decision recorded 24 October 2026. The owner has a website/domain, no app user-a
 
 **Status: accepted direction and implementation plan, not a completed runtime or hosted deployment.** Existing Write/Rewrite/Continue tools and the manually configured experimental service remain the current technical trial. No paid hosting, accounts, model distribution or automatic model downloads are created by this document.
 
+Artifact milestone, 24 October: a [verified macOS ARM64 development package](../llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) now exports and runs the craft adapter as a 2.71 GB text-only GGUF, with private runtime authentication managed by the developer harness. Native application lifecycle/setup, downloads and Windows/other-device runtime checks remain outstanding. This evidence advances step 1 without claiming that steps 2–5 are delivered.
+
 ## User experience
 
 Setup offers **On this computer**, **Online AI** and **Decide later**. Ordinary drafting, files, backups and exports work locally without signing in, downloading a model or enabling AI. The choice remains editable beside the main writing controls.
