@@ -1,12 +1,22 @@
 /** @vitest-environment jsdom */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getTauriRuntime } from '@/lib/tauriRuntime';
-import { DesktopLocalProvider, DESKTOP_LOCAL_MODEL, inspectDesktopLocalAI } from './desktopLocalProvider';
+import { DesktopLocalProvider, DESKTOP_LOCAL_MODEL, inspectDesktopLocalAI, manageDesktopLocalPackage } from './desktopLocalProvider';
 import { createProvider, saveAIConfig } from './providerManager';
 vi.mock('@/lib/tauriRuntime', () => ({ getTauriRuntime: vi.fn() }));
 const input = { action: 'continue', context: 'A gull called.', prompt: 'Continue briefly.', projectType: 'book' as const };
 afterEach(() => { vi.resetAllMocks(); localStorage.clear(); });
 describe('app-owned local provider', () => {
+  it('delegates package selection and confirmation to native code without paths from IPC', async () => {
+    const invoke = vi.fn().mockResolvedValue(DESKTOP_LOCAL_MODEL);
+    vi.mocked(getTauriRuntime).mockResolvedValue({ invoke, listen: vi.fn() });
+    await manageDesktopLocalPackage('install'); await manageDesktopLocalPackage('restore');
+    expect(invoke.mock.calls).toEqual([['local_ai_install'], ['local_ai_restore']]);
+  });
+  it('refuses desktop installation in browser/iOS', async () => {
+    vi.mocked(getTauriRuntime).mockResolvedValue(null);
+    await expect(manageDesktopLocalPackage('install')).rejects.toThrow('Browser and iOS');
+  });
   it('uses native IPC without a renderer endpoint or key', async () => {
     const invoke = vi.fn().mockResolvedValue({ text: 'The quay fell silent.', model: DESKTOP_LOCAL_MODEL, latencyMs: 12 });
     vi.mocked(getTauriRuntime).mockResolvedValue({ invoke, listen: vi.fn() });

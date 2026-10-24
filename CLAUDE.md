@@ -57,6 +57,8 @@ For networking, inspect managed policy, client transport, timeouts, cancellation
 
 App-owned inference uses `desktop/src-tauri/src/local_runtime.rs` with the renderer's `DesktopLocalProvider`, and independent native `LocalModelRuntime.swift`/`ManagedLocalAIProvider`. Both own the child and internal authentication. Main writing UI exposes AI setup. Read [the managed local trial](docs/managed-local-ai-trial.md) for Mac-only artifact availability, tests and release gaps; no hosted sign-in or automatic model installer exists yet.
 
+Offline package selection/replacement/restore is implemented in `desktop/src-tauri/src/local_install.rs` and native `LocalModelInstaller.swift`. The native picker and confirmation precede staged copying/verification; prior verified files are retained. No remote download or arbitrary catalog/executable input is accepted from the renderer. See the trial guide for resource floors and failure-recovery limits.
+
 Local/online setup direction is recorded in [the implementation plan](docs/ai-local-and-online-setup-plan.md). `llm/Narratryx/runtime/packaging/` exports and verifies a separate GGUF development bundle; the [24 October runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) records Mac-only inference evidence. This harness does not implement native app setup, model downloads or an online account service.
 
 Narratryx is model development, not an established released specialist model. The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) trained twenty source-only answers for five updates and completed sixteen matched before/after tasks. Results are mixed and blinded human quality ratings remain absent.

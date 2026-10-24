@@ -16,6 +16,7 @@ use tauri::{
     AppHandle, Emitter, Manager, WindowEvent,
 };
 
+mod local_install;
 mod local_runtime;
 mod writing_engine;
 
@@ -53,6 +54,36 @@ async fn local_ai_stop() -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(|| local_ai().stop())
         .await
         .map_err(|_| "Unable to stop Local AI.".to_string())
+}
+
+#[tauri::command]
+async fn local_ai_install(app: AppHandle) -> Result<Option<String>, String> {
+    let root = local_ai_path(&app)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+        local_runtime::LocalRuntime::supported()?;
+        let Some(selected) = app.dialog().file().set_title("Choose a verified local model folder").blocking_pick_folder() else { return Ok(None); };
+        let source = selected.into_path().map_err(|_| "Choose a folder on this computer.")?;
+        let plan = local_install::plan(&source, &root)?;
+        let approved = app.dialog().message(format!("Model: {}\nCopy: {:.2} GiB; free: {:.2} GiB; staging requirement: {:.2} GiB\nRAM: {:.1} GiB (8 GiB floor; tested on a 16 GB Mac).\n\nReplace the active package and retain one verified previous package? No training or key entry is needed. Keep the app open during installation.",
+            plan.model, plan.bytes as f64 / 1073741824.0, plan.available as f64 / 1073741824.0, plan.required as f64 / 1073741824.0, plan.memory as f64 / 1073741824.0))
+            .title("Install verified local AI package?").buttons(MessageDialogButtons::OkCancelCustom("Install".into(), "Cancel".into())).blocking_show();
+        if !approved { return Ok(None); }
+        Ok(Some(local_ai().install(&source, &root)?))
+    }).await.map_err(|_| "Local installation could not finish.".to_string())?
+}
+#[tauri::command]
+async fn local_ai_restore(app: AppHandle) -> Result<Option<String>, String> {
+    let root = local_ai_path(&app)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+        local_runtime::LocalRuntime::supported()?;
+        let model = local_install::previous_model(&root)?;
+        let approved = app.dialog().message(format!("Restore {model}? The active verified package will be retained as the previous package."))
+            .title("Restore previous local model?").buttons(MessageDialogButtons::OkCancelCustom("Restore".into(), "Cancel".into())).blocking_show();
+        if !approved { return Ok(None); }
+        Ok(Some(local_ai().restore(&root)?))
+    }).await.map_err(|_| "Local model restore could not finish.".to_string())?
 }
 
 use writing_engine::{ManuscriptDocument, ManuscriptSearchResult, ManuscriptStatistics};
@@ -390,6 +421,8 @@ fn main() {
             local_ai_inspect,
             local_ai_generate,
             local_ai_stop,
+            local_ai_install,
+            local_ai_restore,
             set_unsaved_edits,
             quit_app,
             read_project_file,

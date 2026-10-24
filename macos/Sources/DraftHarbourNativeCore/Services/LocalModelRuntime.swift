@@ -168,6 +168,24 @@ public actor NativeLocalModelRuntime {
     self.session = URLSession(configuration: configuration, delegate: LocalOnlySessionDelegate(), delegateQueue: nil)
   }
   public nonisolated func stopNow() { owner.stop() }
+  public func install(from source: URL) async throws -> String {
+    let policy = NativeOperationalGuardrails.shared.currentPolicy()
+    guard policy.disableAIProviders != true, policy.disabledAIProviderTypes?.contains(.customLLM) != true else { throw LocalRuntimeFailure.unavailable("Local AI is disabled by managed policy.") }
+    guard !busy else { throw LocalRuntimeFailure.unavailable("Stop the current draft before installing a model.") }
+    busy = true; defer { busy = false }
+    owner.stop(); token = ""; base = nil
+    let root = root, catalog = catalog
+    return try await Task.detached { try LocalModelInstaller.install(source: source, destination: root, catalog: catalog) }.value
+  }
+  public func restorePrevious() async throws -> String {
+    let policy = NativeOperationalGuardrails.shared.currentPolicy()
+    guard policy.disableAIProviders != true, policy.disabledAIProviderTypes?.contains(.customLLM) != true else { throw LocalRuntimeFailure.unavailable("Local AI is disabled by managed policy.") }
+    guard !busy else { throw LocalRuntimeFailure.unavailable("Stop the current draft before restoring a model.") }
+    busy = true; defer { busy = false }
+    owner.stop(); token = ""; base = nil
+    let root = root, catalog = catalog
+    return try await Task.detached { try LocalModelInstaller.restorePrevious(destination: root, catalog: catalog) }.value
+  }
   public func inspect() async throws -> String {
     let root = root, catalog = catalog
     let manifest = try await Task.detached { try LocalRuntimePackage.verify(root, catalog: catalog) }.value
