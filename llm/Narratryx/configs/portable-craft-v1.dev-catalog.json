@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "purpose": "Internal development evidence only; not a download offer or release approval",
+  "platform": "darwin-arm64",
+  "model_id": "narratryx-craft-v1-q4-k-m",
+  "manifest_sha256": "bec8fcc53a370b0a19de9cef4a8f4234add5a31feb54dcad56a8b34b260eb4e3",
+  "model_sha256": "080c17b208b52a8823121824a27cfb9b03c34fa322faaf78b089e8273a15c71d",
+  "model_bytes": 2708804224,
+  "source_adapter_sha256": "09f950e0954105b4b5bf1cdd5c7a4ee882d617742aadad6ec33c1dda5af84688",
+  "base_revision": "5319bbbe4f1cbe6c0b3c80f4f7de4f0338c3906d",
+  "quantization": "Q4_K_M",
+  "context_limit": 4096,
+  "max_output_tokens": 512,
+  "runtime_source": "https://github.com/unslothai/llama.cpp",
+  "runtime_tag": "b11798-mix-f8a7950",
+  "runtime_commit": "ec0da70e9753093a66c34b9e2b04909d9b03f0ba",
+  "converter_sha256": "c9f5f413dcb77b1272f80b26a270ef44c82612a2af7c70712cfdd8446b0788f2",
+  "quantizer_sha256": "5a1b7c869347439b10babb7d727207592b8a22ee63019b6f02ba0232f1a96ae5",
+  "experimental": true,
+  "public_release_ready": false,
+  "download_url": null
+}

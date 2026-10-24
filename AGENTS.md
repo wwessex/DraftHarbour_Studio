@@ -75,6 +75,7 @@ Use checks proportionate to the change. Documentation-only work needs source/com
 ## Narratryx and experimental AI
 
 - Read `llm/Narratryx/README.md` and its latest linked report before model work. Training completion, structural validation and literary improvement are different claims.
+- Portable export/package tooling lives in `llm/Narratryx/runtime/packaging/`. Its development catalog has no download URL or release approval; Mac inference evidence does not establish Windows support or app-managed setup. See [the runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) and [local/online plan](docs/ai-local-and-online-setup-plan.md).
 - Experimental app setup uses existing providers (`src/lib/ai/narratryx.ts`, native `NarratryxProfile.swift`); the separate authenticated service is `llm/Narratryx/runtime/local/`. See [the integration guide](docs/narratryx-app-trial.md). Keep service token files and model artifacts out of Git.
 - Current adapters remain experimental. The latest craft pilot has mixed mechanical results and no completed blinded human quality ratings. Placeholder names such as `narratryx:latest` do not prove a model is installed or released.
 - Use only sources, jurisdictions, uses and spans supported by exact rights records. Dataset-wide public-domain metadata is not per-edition clearance. Attribute AI evidence reviews accurately; never invent human approval or legal certification.

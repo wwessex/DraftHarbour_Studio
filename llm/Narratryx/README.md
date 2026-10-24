@@ -1,10 +1,11 @@
 # Narratryx — independent literary model development
 
-Status reviewed **20 October 2026**. This workspace contains source-rights evidence, traceable datasets, CPU validation, evaluations and experimental model runs for DraftHarbour. It is independent of all application runtimes. It is not a released specialist model, production serving service or prerequisite for ordinary users.
+Status reviewed **24 October 2026**. This workspace contains source-rights evidence, traceable datasets, CPU validation, evaluations and experimental model runs for DraftHarbour. It is independent of all application runtimes. It is not a released specialist model, production serving service or prerequisite for ordinary users.
 
 ## Current position
 
-- Phase 1 rights/dataset/evaluation tooling is implemented. The foundation suite last ran successfully with **72 tests on 20 October 2026**; this is dated evidence, not a permanent test count.
+- A [portable text-model/runtime development package](docs/portable-local-runtime-2026-10-24.md) now runs on macOS ARM64: a 2.71 GB GGUF export, verified package files, internally managed credentials and sixteen export-comparison prompts. This is the first gate for local/online setup, not an installer, native app manager, Windows validation or model-quality promotion.
+- Phase 1 rights/dataset/evaluation tooling is implemented. The CPU suite last ran successfully with **93 tests on 24 October 2026**, including local-service and portable-package safeguards; this is dated evidence, not a permanent test count.
 - Several local Unsloth MLX pilots have completed on the development Mac. They establish that bounded training/inference can run locally, not that literary quality improved.
 - The latest craft pilot uses **20 source-only Wharton/Hamilton answers**, 2,443 answer words and 2,850 supervised tokens. Five updates completed in about 30 seconds at reported peak 6.34 GB. Its 16 before/after cases produced 32 complete responses without errors/truncation.
 - Mechanical results are mixed. Exact minimal-edit matches remain 2/4; compression word limits improve from 3/4 to 4/4 while continuation word limits fall from 2/4 to 1/4. These are not literary-quality ratings. No blinded human quality ballots have been completed; no adapter has been promoted.

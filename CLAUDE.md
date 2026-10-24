@@ -55,6 +55,8 @@ For networking, inspect managed policy, client transport, timeouts, cancellation
 
 ## Narratryx status
 
+Local/online setup direction is recorded in [the implementation plan](docs/ai-local-and-online-setup-plan.md). `llm/Narratryx/runtime/packaging/` exports and verifies a separate GGUF development bundle; the [24 October runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) records Mac-only inference evidence. This harness does not implement native app setup, model downloads or an online account service.
+
 Narratryx is model development, not an established released specialist model. The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) trained twenty source-only answers for five updates and completed sixteen matched before/after tasks. Results are mixed and blinded human quality ratings remain absent.
 
 The opt-in integration is implemented in `src/lib/ai/narratryx.ts`, shared `AIConfigPanel`, native `NarratryxProfile.swift` and native AI tools. The separate `llm/Narratryx/runtime/local/` service pins the craft adapter and cached base, authenticates inference, bounds context/output and exposes base/candidate IDs. Live HTTP and the actual shared provider path passed locally; this does not establish target-device or literary-quality acceptance. Read [the current integration guide](docs/narratryx-app-trial.md); the earlier [readiness assessment](docs/narratryx-integration-readiness-2026-10-20.md) is historical.
