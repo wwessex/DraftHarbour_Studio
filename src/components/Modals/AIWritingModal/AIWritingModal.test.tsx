@@ -1306,6 +1306,63 @@ describe('AIWritingModal', () => {
     await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent?.includes('Replace Passage'))!.click());
     expect(actionEditor.replaceRange).toHaveBeenCalledWith(10, 23, 'AI response text');
   });
+  it('preserves a captured partial-paragraph selection through focus changes and instruction edits', async () => {
+    const source = 'Before rough after.\n\nKeep this paragraph.';
+    actionEditor = { getContent: () => source, getSelection: () => ({ from: source.length, to: source.length, empty: true }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={{ id: 201, action: 'rewrite', target: { source, selection: { from: 7, to: 12 } } }} onClose={onCloseMock} />));
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('TARGET PASSAGE:\nrough');
+    expect(mockExecute.mock.calls.at(-1)?.[0].context).toBe('');
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).not.toContain('Keep this paragraph.');
+    expect(container.querySelector('[aria-label="Original selected passage"]')?.textContent).toBe('rough');
+    expect(container.textContent).toContain('selected text only');
+    const textarea = container.querySelector('textarea#workspace-writing-instructions')!;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(textarea, 'Make it gentler.');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Generate draft')!.click());
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('TARGET PASSAGE:\nrough');
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('Make it gentler.');
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Replace Passage')!.click());
+    expect(actionEditor.replaceRange).toHaveBeenCalledWith(7, 12, 'AI response text');
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
+  });
+  it('does not silently replace a paragraph when a captured selection became stale', async () => {
+    actionEditor = { getContent: () => 'Changed chapter.', getSelection: () => ({ from: 0, to: 0, empty: true }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={{ id: 202, action: 'rewrite', target: { source: 'Original chapter.', selection: { from: 0, to: 8 } } }} onClose={onCloseMock} />));
+    expect(mockExecute).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Select the passage again');
+  });
+  it('clears a previous selection when the assistant is closed and reopened without a highlight', async () => {
+    const source = 'Before rough after.\n\nKeep this paragraph.';
+    let selection = { from: 7, to: 12, empty: false };
+    actionEditor = { getContent: () => source, getSelection: () => selection, replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Rewrite')!.click());
+    await act(async () => root.render(<AIWritingModal open={false} onClose={onCloseMock} />));
+    selection = { from: source.length, to: source.length, empty: true };
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Rewrite')!.click());
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('TARGET PASSAGE:\nKeep this paragraph.');
+  });
+  it('offers Generate draft after Write instructions and previews without modifying the chapter', async () => {
+    actionEditor = { getContent: () => 'Original ending.', getSelection: () => ({ from: 0, to: 0, empty: true }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={{ id: 203, action: 'write' }} onClose={onCloseMock} />));
+    const generate = () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Generate draft')!;
+    expect(generate().disabled).toBe(true);
+    const textarea = container.querySelector('textarea#workspace-writing-instructions')!;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(textarea, 'A visitor arrives at dawn.');
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(generate().disabled).toBe(false);
+    await act(async () => generate().click());
+    expect(mockExecute.mock.calls.at(-1)?.[0]).toMatchObject({ action: 'write' });
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('A visitor arrives at dawn.');
+    expect(container.textContent).toContain('Append to Chapter');
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
+  });
 
   it('refuses a stale suggestion and requires instructions for Write', async () => {
     let content = 'Original.';

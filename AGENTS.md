@@ -66,6 +66,7 @@ Use checks proportionate to the change. Documentation-only work needs source/com
 - Follow established component patterns, CSS Modules, Tailwind and theme tokens. Retain lazy loading of heavy dependencies and offline drafting when providers fail or are unavailable.
 - Add meaningful regression coverage for behavior changes. Obtain test counts from current execution/inventory rather than stale prose.
 - Preserve user changes/manuscripts. Avoid unrelated fixes, repository-wide formatting, generated-file churn and changes in other worktrees.
+- When the user has native macOS running, do not use `script/build_and_run.sh` to stage a test update: it stops the process, even with `--no-launch`. Use a source-only build and a separate app-cache bundle; let the user save/quit before opening the new build.
 - Follow `docs/contracts/dhproj-v1.md` and shared fixtures. Web exports are ZIP with `project.json`; native macOS exports JSON; importers accept both. Preserve/remap known IDs and passive native extensions according to the contract.
 - The web database currently has v5 backup/trash additions. Add migrations for new persisted schema and keep old projects readable. IndexedDB and localStorage are not one crash-atomic transaction.
 - Preserve backups, trash, snapshots and recovery. Imports/restores must not silently overwrite the current manuscript or activate imported credentials.

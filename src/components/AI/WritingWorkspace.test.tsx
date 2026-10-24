@@ -4,18 +4,34 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { WritingWorkspace } from './WritingWorkspace';
 import { setAISetupMode } from '@/lib/ai/setupPreferences';
-import type { WritingAction } from '@/lib/ai/writingActions';
+import type { WritingAction, WritingSelectionSnapshot } from '@/lib/ai/writingActions';
+
+let workspaceEditor: { getContent: () => string; getSelection: () => { from: number; to: number } } | null = null;
+vi.mock('@/lib/editor/EditorContext', () => ({ useCurrentEditor: () => ({ editor: workspaceEditor }) }));
 
 vi.mock('@/components/Modals/AIWritingModal', () => ({
-  AIWritingModal: ({ actionRequest, onClose, onConfigure }: { actionRequest?: { action: WritingAction }; onClose: () => void; onConfigure?: () => void }) => <section aria-label="Writing assistant">
+  AIWritingModal: ({ actionRequest, onClose, onConfigure }: { actionRequest?: { action: WritingAction; target?: WritingSelectionSnapshot }; onClose: () => void; onConfigure?: () => void }) => <section aria-label="Writing assistant">
     <span>{actionRequest?.action} preview</span><button onClick={onClose}>Close</button><button onClick={onConfigure}>Connect model</button>
+    <output data-testid="captured-target">{JSON.stringify(actionRequest?.target)}</output>
   </section>,
 }));
 let root: ReturnType<typeof createRoot> | undefined;
 let container: HTMLDivElement;
-afterEach(() => { act(() => root?.unmount()); container?.remove(); localStorage.clear(); });
+afterEach(() => { act(() => root?.unmount()); container?.remove(); localStorage.clear(); workspaceEditor = null; });
 
 describe('main manuscript writing bar', () => {
+  it('captures highlighted text before a pointer click blurs the editor and loads the composer', async () => {
+    const source = 'Before rough after.\n\nKeep this paragraph.';
+    let selection = { from: 7, to: 12 };
+    workspaceEditor = { getContent: () => source, getSelection: () => selection };
+    container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
+    await act(async () => root!.render(<WritingWorkspace />));
+    const rewrite = [...container.querySelectorAll('button')].find(button => button.textContent === 'Rewrite')!;
+    await act(async () => rewrite.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })));
+    selection = { from: source.length, to: source.length };
+    await act(async () => rewrite.click());
+    expect(JSON.parse(container.querySelector('[data-testid="captured-target"]')!.textContent!)).toEqual({ source, selection: { from: 7, to: 12 } });
+  });
   it('reflects an explicit mode change from another settings surface', async () => {
     localStorage.setItem('draftharbour_ai_setup_mode_v1', 'later');
     container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);

@@ -35,6 +35,14 @@ function makeRequest(overrides: Partial<AIRequest> = {}): AIRequest {
 }
 
 describe('CustomLlmProvider', () => {
+  it('uses editing instructions for a bounded Rewrite request rather than creative continuation instructions', async () => {
+    mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: 'a gull cried' } }] }), { status: 200 }));
+    const provider = new CustomLlmProvider(makeConfig({ backend: 'generic-openai' }));
+    await provider.execute(makeRequest({ action: 'rewrite', prompt: 'TARGET PASSAGE:\na gull called', context: '' }));
+    const payload = JSON.parse(mockFetch.mock.calls[0][1]!.body as string);
+    expect(payload.messages[0].content).toContain('Rewrite only the words marked TARGET PASSAGE');
+    expect(payload.messages[1].content).toBe('TARGET PASSAGE:\na gull called');
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -1,5 +1,6 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import type { WritingAction } from '@/lib/ai/writingActions';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { WritingAction, WritingSelectionSnapshot } from '@/lib/ai/writingActions';
+import { useCurrentEditor } from '@/lib/editor/EditorContext';
 import styles from './WritingWorkspace.module.css';
 import { AISetup } from './AISetup';
 import { AI_SETUP_CHANGED, AI_SETUP_MODE_KEY, getAISetupMode } from '@/lib/ai/setupPreferences';
@@ -8,7 +9,10 @@ const Composer = lazy(() => import('@/components/Modals/AIWritingModal').then(mo
 
 /** Always-visible entry points; model code loads only after an explicit click. */
 export function WritingWorkspace({ onConfigure }: { onConfigure?: () => void }) {
-  const [request, setRequest] = useState<{ id: number; action: WritingAction } | null>(null);
+  const { editor } = useCurrentEditor();
+  const pendingTarget = useRef<WritingSelectionSnapshot | undefined>(undefined);
+  const captureTarget = () => editor ? { source: editor.getContent(), selection: editor.getSelection() } : undefined;
+  const [request, setRequest] = useState<{ id: number; action: WritingAction; target?: WritingSelectionSnapshot } | null>(null);
   const [setup, setSetup] = useState(false);
   const [disabled, setDisabled] = useState(() => getAISetupMode() === 'later');
   const changed = () => { setRequest(null); setDisabled(getAISetupMode() === 'later'); };
@@ -27,7 +31,15 @@ export function WritingWorkspace({ onConfigure }: { onConfigure?: () => void }) 
     {setup && <AISetup onChanged={changed} onConfigure={onConfigure} />}
     {!request ? <div className={styles.bar}>
       <span className={styles.label}>AI writing</span>
-      {(['write', 'rewrite', 'continue'] as const).map(action => <button key={action} type="button" disabled={disabled || setup} className={styles.action} onClick={() => setRequest({ id: Date.now(), action })}>
+      {(['write', 'rewrite', 'continue'] as const).map(action => <button key={action} type="button" disabled={disabled || setup} className={styles.action}
+        onPointerDown={() => { pendingTarget.current = captureTarget(); }}
+        onPointerCancel={() => { pendingTarget.current = undefined; }}
+        onKeyDown={() => { pendingTarget.current = captureTarget(); }}
+        onClick={() => {
+          const target = pendingTarget.current ?? captureTarget();
+          pendingTarget.current = undefined;
+          setRequest({ id: Date.now(), action, target });
+        }}>
         {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
       </button>)}
     </div> : <Suspense fallback={<div className={styles.bar} role="status">Opening writing assistant…</div>}>

@@ -50,5 +50,25 @@
     "output": "Improved.",
     "expected": "First.\nImproved.\nThird.",
     "target": "Second."
+  },
+  {
+    "id": "rewrite-middle-of-paragraph",
+    "action": "rewrite",
+    "source": "Before 😀, the rough phrase stays here. After.\n\nDo not change this paragraph.",
+    "from": 15,
+    "to": 27,
+    "output": "polished phrase",
+    "expected": "Before 😀, the polished phrase stays here. After.\n\nDo not change this paragraph.",
+    "target": "rough phrase"
+  },
+  {
+    "id": "rewrite-partial-paragraphs",
+    "action": "rewrite",
+    "source": "Intro before. First middle.\n\nSecond opening remains. Tail.",
+    "from": 20,
+    "to": 43,
+    "output": "revised bridge",
+    "expected": "Intro before. First revised bridge remains. Tail.",
+    "target": "middle.\n\nSecond opening"
   }
 ]
