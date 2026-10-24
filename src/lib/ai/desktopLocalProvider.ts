@@ -22,6 +22,13 @@ export async function stopDesktopLocalAI(): Promise<void> {
   const runtime = await getTauriRuntime();
   if (runtime) await runtime.invoke('local_ai_stop');
 }
+export async function manageDesktopLocalPackage(action: 'install' | 'restore'): Promise<string | null> {
+  assertLocalAIAllowed();
+  const runtime = await getTauriRuntime();
+  if (!runtime) throw new Error('Install local model packages through a supported desktop app. Browser and iOS cannot install desktop runtimes.');
+  // The native side owns the folder picker, package verification and final confirmation.
+  return runtime.invoke<string | null>(action === 'install' ? 'local_ai_install' : 'local_ai_restore');
+}
 
 /** The renderer sends text through native IPC. It never receives a port or key. */
 export class DesktopLocalProvider implements AIProvider {

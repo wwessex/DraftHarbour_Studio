@@ -60,4 +60,67 @@ final class LocalModelRuntimeTests: XCTestCase {
     XCTAssertEqual(catalog["platform"] as? String, LocalRuntimeCatalog.development.platform)
     XCTAssertEqual(catalog["model_id"] as? String, NativeLocalModelRuntime.modelID)
   }
+  private func installDestination() throws -> URL {
+    let (storage, _) = try fixture()
+    let parent = storage.appendingPathComponent("installed", isDirectory: true)
+    try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+    return parent.appendingPathComponent("bundle", isDirectory: true)
+  }
+  func testInstallerResourceLimits() throws {
+    XCTAssertNoThrow(try LocalModelInstaller.resources(model: "test", bytes: 100, available: 1_000_000_000, memory: LocalModelInstaller.minimumMemory))
+    XCTAssertThrowsError(try LocalModelInstaller.resources(model: "test", bytes: 100, available: 10, memory: LocalModelInstaller.minimumMemory))
+    XCTAssertThrowsError(try LocalModelInstaller.resources(model: "test", bytes: 100, available: UInt64.max, memory: LocalModelInstaller.minimumMemory - 1))
+  }
+  func testInstallReinstallAndRestoreVerifiedPackage() throws {
+    let (source, catalog) = try fixture(); let destination = try installDestination()
+    for _ in 0..<2 { _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog) }
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(LocalModelInstaller.previousURL(for: destination), catalog: catalog))
+    _ = try LocalModelInstaller.restorePrevious(destination: destination, catalog: catalog)
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+  }
+  func testFailedPromotionPreservesWorkingPackage() throws {
+    let (source, catalog) = try fixture(); let destination = try installDestination()
+    _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog)
+    XCTAssertThrowsError(try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog,
+      activate: { _, _ in throw LocalRuntimeFailure.unavailable("Simulated rename failure") }))
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(source, catalog: catalog))
+  }
+  func testUnrecognizedPreviousFilesAreNeverDeleted() throws {
+    let (source, catalog) = try fixture(); let destination = try installDestination()
+    _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog)
+    let previous = LocalModelInstaller.previousURL(for: destination)
+    try FileManager.default.createDirectory(at: previous, withIntermediateDirectories: true)
+    let keep = previous.appendingPathComponent("keep.txt")
+    try Data("unrecognized data".utf8).write(to: keep)
+    XCTAssertThrowsError(try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog))
+    XCTAssertEqual(try String(contentsOf: keep, encoding: .utf8), "unrecognized data")
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+  }
+  func testTamperedSourceCannotReplaceInstalledModel() throws {
+    let (source, catalog) = try fixture(); let destination = try installDestination()
+    _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog)
+    try Data("tampered".utf8).write(to: source.appendingPathComponent("model.gguf"))
+    XCTAssertThrowsError(try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog))
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+  }
+  func testRestoreCanRecoverMissingActiveDirectory() throws {
+    let (source, catalog) = try fixture(); let destination = try installDestination()
+    try FileManager.default.moveItem(at: source, to: LocalModelInstaller.previousURL(for: destination))
+    _ = try LocalModelInstaller.restorePrevious(destination: destination, catalog: catalog)
+    XCTAssertNoThrow(try LocalRuntimePackage.verify(destination, catalog: catalog))
+  }
+  func testLocalSetupCannotSendOtherNativeToolsToRemoteProviders() throws {
+    let key = "DraftHarbour.aiSetup.mode", defaults = UserDefaults.standard
+    let previous = defaults.string(forKey: key)
+    defer { if let previous { defaults.set(previous, forKey: key) } else { defaults.removeObject(forKey: key) } }
+    defaults.set("local", forKey: key)
+    for type in [AIProviderType.customLLM, .openAICompatible, .localOpenAI] {
+      let config = AIProviderConfig(provider: type, label: "Remote", endpoint: "https://example.test/v1/chat/completions", model: "test")
+      XCTAssertThrowsError(try NativeAIProviderFactory().provider(from: config)) { error in
+        XCTAssertTrue(error.localizedDescription.contains("On this computer"))
+      }
+    }
+  }
 }

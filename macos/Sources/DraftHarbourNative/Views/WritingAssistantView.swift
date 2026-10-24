@@ -61,12 +61,18 @@ struct WritingAssistantView: View {
             }.disabled(checkingLocal)
             Button("Online AI — coming soon") {}.disabled(true)
             Button("Decide later") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "later" }
+              .disabled(checkingLocal)
           }
-          if aiMode == "local" { Text(checkingLocal ? "Checking local package…" : localStatus).font(.caption) }
+          HStack {
+            Button("Install local package…", action: installPackage).disabled(checkingLocal || generating)
+            Button("Restore previous package…", action: restorePackage).disabled(checkingLocal || generating)
+          }
+          Text(localStatus).font(.caption)
+          if checkingLocal { ProgressView().controlSize(.small) }
           if aiMode == "later" { Text("AI is off. You can keep writing and return to setup at any time.").font(.caption) }
-          Text("Local package installation and online sign-in are still in development. No training or user-entered key is required by the managed local runtime.").font(.caption).foregroundStyle(.secondary)
+          Text("Install only a reviewed local package. Online sign-in is still in development. No training or user-entered key is required by the managed local runtime.").font(.caption).foregroundStyle(.secondary)
           if let configure {
-            Button("Use an existing connection…") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "existing"; configure() }
+            Button("Use an existing connection…") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "existing"; configure() }.disabled(checkingLocal)
           }
         }
       }
@@ -121,6 +127,48 @@ struct WritingAssistantView: View {
       error = nil
     }
     .onDisappear { task?.cancel() }
+  }
+
+  @MainActor
+  private func installPackage() {
+    let picker = NSOpenPanel()
+    picker.title = "Choose a verified local model folder"
+    picker.canChooseFiles = false; picker.canChooseDirectories = true; picker.allowsMultipleSelection = false
+    guard picker.runModal() == .OK, let source = picker.url else { return }
+    checkingLocal = true; localStatus = "Verifying package and checking storage…"
+    Task { @MainActor in
+      defer { checkingLocal = false }
+      do {
+        let plan = try await Task.detached { try LocalModelInstaller.plan(source: source) }.value
+        let alert = NSAlert()
+        alert.messageText = "Install verified local AI package?"
+        alert.informativeText = "Model: \(plan.model)\nCopy: \(ByteCountFormatter.string(fromByteCount: Int64(plan.packageBytes), countStyle: .file)); free: \(ByteCountFormatter.string(fromByteCount: Int64(plan.availableBytes), countStyle: .file)).\nRAM: \(plan.physicalMemory / 1_073_741_824) GiB (8 GiB floor; tested on a 16 GB Mac).\n\nReplace the active package and retain one verified previous package? Keep the app open during installation. No training or key entry is needed."
+        alert.addButton(withTitle: "Install"); alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { localStatus = "Installation cancelled. The installed package is unchanged."; return }
+        localStatus = "Copying and verifying the local package…"
+        let model = try await NativeLocalModelRuntime.shared.install(from: source)
+        draft = nil; result = ""
+        localStatus = "Installed \(model). Choose On this computer to use it."
+      } catch { localStatus = "Installation unavailable: \(error.localizedDescription)" }
+    }
+  }
+
+  @MainActor
+  private func restorePackage() {
+    checkingLocal = true; localStatus = "Checking the previous package…"
+    Task { @MainActor in
+      defer { checkingLocal = false }
+      do {
+        let model = try await Task.detached { try LocalRuntimePackage.verify(LocalModelInstaller.previousURL(for: NativeLocalModelRuntime.packageURL)).model_id }.value
+        let alert = NSAlert()
+        alert.messageText = "Restore previous local model?"
+        alert.informativeText = "Restore \(model)? The active verified package will be retained as the previous package."
+        alert.addButton(withTitle: "Restore"); alert.addButton(withTitle: "Cancel")
+        guard alert.runModal() == .alertFirstButtonReturn else { localStatus = "Restore cancelled. The installed package is unchanged."; return }
+        _ = try await NativeLocalModelRuntime.shared.restorePrevious()
+        draft = nil; result = ""; localStatus = "Restored \(model). Choose On this computer to use it."
+      } catch { localStatus = "Restore unavailable: \(error.localizedDescription)" }
+    }
   }
 
   @MainActor

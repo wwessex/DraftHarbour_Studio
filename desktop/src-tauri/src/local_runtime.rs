@@ -20,13 +20,14 @@ use std::{
 };
 use tempfile::TempDir;
 
-const CATALOG_HASH: &str = "bec8fcc53a370b0a19de9cef4a8f4234add5a31feb54dcad56a8b34b260eb4e3";
-const CATALOG_PLATFORM: &str = "darwin-arm64";
+pub(crate) const CATALOG_HASH: &str =
+    "bec8fcc53a370b0a19de9cef4a8f4234add5a31feb54dcad56a8b34b260eb4e3";
+pub(crate) const CATALOG_PLATFORM: &str = "darwin-arm64";
 pub const MODEL: &str = "narratryx-craft-v1-q4-k-m";
 
 #[derive(Deserialize)]
-struct FileRecord {
-    bytes: u64,
+pub(crate) struct FileRecord {
+    pub(crate) bytes: u64,
     sha256: String,
 }
 #[derive(Deserialize)]
@@ -39,10 +40,10 @@ pub struct Manifest {
     max_output_tokens: usize,
     model: String,
     executable: String,
-    files: HashMap<String, FileRecord>,
+    pub(crate) files: HashMap<String, FileRecord>,
 }
 
-fn platform() -> String {
+pub(crate) fn platform() -> String {
     let os = if cfg!(target_os = "macos") {
         "darwin"
     } else {
@@ -55,7 +56,7 @@ fn platform() -> String {
     };
     format!("{os}-{arch}")
 }
-fn hash(path: &Path) -> Result<String, String> {
+pub(crate) fn hash(path: &Path) -> Result<String, String> {
     let mut file = File::open(path).map_err(|_| "Local model package file is missing.")?;
     let mut digest = Sha256::new();
     let mut buffer = vec![0; 8 * 1024 * 1024];
@@ -70,7 +71,7 @@ fn hash(path: &Path) -> Result<String, String> {
     }
     Ok(format!("{:x}", digest.finalize()))
 }
-fn safe_file(root: &Path, name: &str) -> Result<PathBuf, String> {
+pub(crate) fn safe_file(root: &Path, name: &str) -> Result<PathBuf, String> {
     if name.is_empty()
         || name.contains(['\\', ':'])
         || name
@@ -205,11 +206,35 @@ impl Drop for BusyGuard<'_> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeReply {
-    text: String,
+    pub(crate) text: String,
     model: String,
     latency_ms: u128,
 }
 impl LocalRuntime {
+    pub fn supported() -> Result<(), String> {
+        if platform() != CATALOG_PLATFORM {
+            return Err(
+                "No verified local model package is available for this computer yet.".into(),
+            );
+        }
+        Ok(())
+    }
+    pub fn install(&self, source: &Path, destination: &Path) -> Result<String, String> {
+        if self.busy.swap(true, Ordering::SeqCst) {
+            return Err("Stop the current draft before installing a model.".into());
+        }
+        let _guard = BusyGuard(&self.busy);
+        self.stop();
+        crate::local_install::install(source, destination)
+    }
+    pub fn restore(&self, destination: &Path) -> Result<String, String> {
+        if self.busy.swap(true, Ordering::SeqCst) {
+            return Err("Stop the current draft before restoring a model.".into());
+        }
+        let _guard = BusyGuard(&self.busy);
+        self.stop();
+        crate::local_install::restore(destination)
+    }
     pub fn inspect(&self, root: &Path) -> Result<String, String> {
         Ok(verify(root, CATALOG_HASH, CATALOG_PLATFORM)?.model_id)
     }

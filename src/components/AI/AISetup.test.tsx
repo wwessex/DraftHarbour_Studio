@@ -3,9 +3,9 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
 import { AISetup } from './AISetup';
-import { inspectDesktopLocalAI, stopDesktopLocalAI, DESKTOP_LOCAL_MODEL } from '@/lib/ai/desktopLocalProvider';
+import { inspectDesktopLocalAI, stopDesktopLocalAI, manageDesktopLocalPackage, DESKTOP_LOCAL_MODEL } from '@/lib/ai/desktopLocalProvider';
 import { saveAIConfig } from '@/lib/ai/providerManager';
-vi.mock('@/lib/ai/desktopLocalProvider', () => ({ inspectDesktopLocalAI: vi.fn(), stopDesktopLocalAI: vi.fn(), DESKTOP_LOCAL_MODEL: 'narratryx-craft-v1-q4-k-m' }));
+vi.mock('@/lib/ai/desktopLocalProvider', () => ({ inspectDesktopLocalAI: vi.fn(), stopDesktopLocalAI: vi.fn(), manageDesktopLocalPackage: vi.fn(), DESKTOP_LOCAL_MODEL: 'narratryx-craft-v1-q4-k-m' }));
 vi.mock('@/lib/ai/providerManager', () => ({ saveAIConfig: vi.fn() }));
 let root: ReturnType<typeof createRoot>;
 let container: HTMLDivElement;
@@ -36,4 +36,21 @@ it('decide later stops local inference and leaves drafting available', async () 
   const changed = await render(); await click('Decide later');
   expect(stopDesktopLocalAI).toHaveBeenCalledOnce(); expect(localStorage.getItem('draftharbour_ai_setup_mode_v1')).toBe('later');
   expect(changed).toHaveBeenCalledOnce(); expect(container.textContent).toContain('Keep writing');
+});
+it('cancelled native installation leaves the connection and mode unchanged', async () => {
+  vi.mocked(manageDesktopLocalPackage).mockResolvedValue(null);
+  const changed = await render(); await click('Install local package…');
+  expect(manageDesktopLocalPackage).toHaveBeenCalledWith('install');
+  expect(saveAIConfig).not.toHaveBeenCalled(); expect(changed).not.toHaveBeenCalled();
+  expect(container.textContent).toContain('Cancelled');
+});
+it('successful installation still requires an explicit local-mode choice', async () => {
+  vi.mocked(manageDesktopLocalPackage).mockResolvedValue(DESKTOP_LOCAL_MODEL);
+  await render(); await click('Install local package…');
+  expect(saveAIConfig).not.toHaveBeenCalled(); expect(container.textContent).toContain('Choose On this computer');
+});
+it('restore failures preserve the selected provider and report the problem', async () => {
+  vi.mocked(manageDesktopLocalPackage).mockRejectedValue(new Error('No verified previous package'));
+  await render(); await click('Restore previous package…');
+  expect(saveAIConfig).not.toHaveBeenCalled(); expect(container.textContent).toContain('No verified previous package');
 });

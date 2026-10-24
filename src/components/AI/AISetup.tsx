@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createNarratryxConfig } from '@/lib/ai/narratryx';
-import { DESKTOP_LOCAL_MODEL, inspectDesktopLocalAI, stopDesktopLocalAI } from '@/lib/ai/desktopLocalProvider';
+import { DESKTOP_LOCAL_MODEL, inspectDesktopLocalAI, stopDesktopLocalAI, manageDesktopLocalPackage } from '@/lib/ai/desktopLocalProvider';
 import { saveAIConfig } from '@/lib/ai/providerManager';
 import styles from './WritingWorkspace.module.css';
 
@@ -8,7 +8,7 @@ import { setAISetupMode } from '@/lib/ai/setupPreferences';
 
 /** Explicit choices only: no download, remote fallback or endpoint probing on mount. */
 export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onConfigure?: () => void }) {
-  const [status, setStatus] = useState('Local installation and online sign-in are still in development.');
+  const [status, setStatus] = useState('Install a reviewed package through the desktop app. Online sign-in is still in development.');
   const [checking, setChecking] = useState(false);
   const chooseLocal = async () => {
     setChecking(true); setStatus('Checking the local model package…');
@@ -42,12 +42,24 @@ export function AISetup({ onChanged, onConfigure }: { onChanged: () => void; onC
     } catch { setStatus('Unable to stop Local AI. Try again before changing mode.'); }
     finally { setChecking(false); }
   };
+  const managePackage = async (action: 'install' | 'restore') => {
+    setChecking(true); setStatus('Checking the package. Review the native confirmation before any replacement.');
+    try {
+      const model = await manageDesktopLocalPackage(action);
+      if (model === null) { setStatus('Cancelled. The installed package and connection are unchanged.'); return; }
+      if (model !== DESKTOP_LOCAL_MODEL) throw new Error('Unexpected local model identity.');
+      setStatus(`${action === 'install' ? 'Installed' : 'Restored'} ${model}. Choose On this computer to use it.`);
+    } catch (error) { setStatus(`Package operation unavailable: ${error instanceof Error ? error.message : String(error)}`); }
+    finally { setChecking(false); }
+  };
   return <section className={styles.panel} aria-label="AI setup">
     <p className={styles.hint}>Choose how AI runs. Online requests send the requested passage and context to the selected service.</p>
     <div className={styles.bar}>
       <button className={styles.action} disabled={checking} onClick={() => void chooseLocal()}>On this computer</button>
       <button className={styles.action} disabled>Online AI — coming soon</button>
       <button className={styles.action} disabled={checking} onClick={() => void decideLater()}>Decide later</button>
+      <button className={styles.action} disabled={checking} onClick={() => void managePackage('install')}>Install local package…</button>
+      <button className={styles.action} disabled={checking} onClick={() => void managePackage('restore')}>Restore previous package…</button>
       {onConfigure && <button className={styles.action} disabled={checking} onClick={() => void existingConnection()}>Use an existing connection…</button>}
     </div>
     <p className={styles.hint} role="status">{status}</p>
