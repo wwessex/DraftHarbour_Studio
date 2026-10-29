@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "archive_status": "Experimental research backup; no app promotion",
+  "base": {
+    "base_repo": "mlx-community/Qwen3.5-4B-MLX-8bit",
+    "base_revision": "5319bbbe4f1cbe6c0b3c80f4f7de4f0338c3906d",
+    "base_weights_sha256": "87c362fdb36bdee8e32ff5961bdceca58d26c2d9b00738543cc0e17e985b46ce",
+    "base_metadata": {
+      "config.json": "bf914114dbc055c4355acadea0304ee2cc86e9c1f3ddfe51677c524f22c9d132",
+      "tokenizer.json": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+      "tokenizer_config.json": "e98f1901ac6f0adff67b1d540bfa0c36ac1a0cf59eb72ed78146ef89aafa1182"
+    }
+  },
+  "base_included": false,
+  "format": "MLX LoRA adapter; requires the exact base and compatible MLX runtime",
+  "models": [
+    {
+      "id": "narratryx-craft-v1",
+      "source_adapter": "artifacts/craft-training-v2/adapter",
+      "asset": "narratryx-craft-v1-mlx-adapter.zip",
+      "steps": 5,
+      "status": "Existing experimental app profile; not a production-quality endorsement",
+      "files": {
+        "adapters.safetensors": "09f950e0954105b4b5bf1cdd5c7a4ee882d617742aadad6ec33c1dda5af84688",
+        "adapter_config.json": "5a91c4ac9fb321a147835fa27b8155e0e9ce53e5e5335dd7da636288483502ff"
+      }
+    },
+    {
+      "id": "narratryx-grounding-v5",
+      "source_adapter": "artifacts/grounding-training-v5/adapter",
+      "asset": "narratryx-grounding-v5-mlx-adapter.zip",
+      "steps": 20,
+      "status": "Research candidate; not promoted and not the app default",
+      "files": {
+        "adapters.safetensors": "a3ceee1009b0744df22f544ab837223b2e267b10efd6c97f19e295917cf421f3",
+        "adapter_config.json": "860a2df18baf8f9ddd833c846d39ff2589561d6a16eaf10e9f2c8e15b5f390e8"
+      }
+    }
+  ],
+  "licence": "Apache-2.0; upstream licence and modification notice included",
+  "source_material": "Only expired original prose within existing GB/US training scope; source books, datasets, scans, manuscripts and reviewer keys are excluded",
+  "human_quality_ratings": 0
+}
