@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "archive_status": "Experimental research backup; no app promotion",
+  "base": {
+    "base_repo": "mlx-community/Qwen3.5-4B-MLX-8bit",
+    "base_revision": "5319bbbe4f1cbe6c0b3c80f4f7de4f0338c3906d",
+    "base_weights_sha256": "87c362fdb36bdee8e32ff5961bdceca58d26c2d9b00738543cc0e17e985b46ce",
+    "base_metadata": {
+      "config.json": "bf914114dbc055c4355acadea0304ee2cc86e9c1f3ddfe51677c524f22c9d132",
+      "tokenizer.json": "87a7830d63fcf43bf241c3c5242e96e62dd3fdc29224ca26fed8ea333db72de4",
+      "tokenizer_config.json": "e98f1901ac6f0adff67b1d540bfa0c36ac1a0cf59eb72ed78146ef89aafa1182"
+    }
+  },
+  "base_included": false,
+  "format": "MLX LoRA adapter; requires the exact base and compatible MLX runtime",
+  "models": [
+    {
+      "id": "narratryx-grounding-v6",
+      "source_adapter": "artifacts/grounding-training-v6/adapter",
+      "asset": "narratryx-grounding-v6-mlx-adapter.zip",
+      "steps": 20,
+      "status": "Learning-rate ablation; research candidate, not promoted",
+      "files": {
+        "adapters.safetensors": "10a7c1de1b3da41225ea16812d83d8644ce6d53ce138e215f09d4f277cab6138",
+        "adapter_config.json": "fe841f3179f0eb7625944cd0e3c25bbc836a12d2f4dd28bdedebde79e55e7ff7"
+      }
+    }
+  ],
+  "licence": "Apache-2.0; upstream licence and modification notice included",
+  "source_material": "Only expired original prose within existing GB/US training scope; source books, datasets, scans, manuscripts and reviewer keys are excluded",
+  "human_quality_ratings": 0,
+  "changed_training_parameter": {
+    "learning_rate_before": "5e-6",
+    "learning_rate_after": "5e-5",
+    "other_request_parameters_unchanged": true
+  }
+}
