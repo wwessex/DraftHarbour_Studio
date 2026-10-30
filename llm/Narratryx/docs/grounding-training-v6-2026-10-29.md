@@ -1,5 +1,7 @@
 # Learning-rate ablation and model archive — 29 October 2026
 
+Training/evaluation ran on 29 October UTC; final v6 remote-download verification completed on **30 October 2026 UTC**.
+
 The user explicitly requested repository upload of the custom model and the next training step. This work archives actual adapter weights and runs one bounded local learning-rate comparison. Neither operation promotes a model or changes application defaults. The previous recommendation for human review is not represented as a completed review; human literary-quality ratings remain zero.
 
 ## Verified model upload
@@ -63,7 +65,7 @@ A post-hoc exact comparison also finds **three of four transfer rewrites repeat 
 
 The [final verification](../artifacts/grounding-training-v6/final-verification.json) passed: 192 matched responses, 20 steps, 9,085 supervised tokens, saved adapter hash, 80 training/16 monitor records, resource limits, unchanged frozen inputs/base/protected prior artifacts, initial service state preserved and 80 blank human ballots. It also checks that learning rate is the request's only changed key. **166 CPU foundation tests passed in 162.822 seconds** during the fresh run. New execution, packaging, review and comparison modules compile; report links and source whitespace checks pass. The paired comparison verifies actual baseline reproduction rather than assuming it. No human quality approval is recorded.
 
-The [v6 model archive](../models/grounding-v6-2026-10-29/README.md) publishes the completed adapter separately as a research artifact, including its regressions; the selected craft model is not replaced. Model publication is authorised by the user's current instruction and is distinct from production promotion. Evaluation responses and private review keys remain local.
+The [v6 model archive](../models/grounding-v6-2026-10-29/README.md) publishes the completed adapter separately as a research artifact, including its regressions; the selected craft model is not replaced. Model publication is authorised by the user's current instruction and is distinct from production promotion. The v6 ZIP was downloaded again from its public prerelease, and ZIP integrity, ZIP checksum and embedded weight/configuration hashes passed; see the [dated remote verification](../models/grounding-v6-2026-10-29/upload-verification.json). Evaluation responses and private review keys remain local.
 
 
 The selected craft profile, all application defaults, cached base and protected previous adapters remain unchanged. The legacy port-8890 service was initially stopped and remains stopped; no experiment restores it into a state it did not previously have. Training/data preparation remain outside application startup and manuscript storage.

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "url": "https://github.com/wwessex/DraftHarbour_Studio/releases/tag/narratryx-grounding-v6-2026-10-29",
+  "public_prerelease": true,
+  "asset": {
+    "asset": "narratryx-grounding-v6-mlx-adapter.zip",
+    "sha256": "0d13c1e8d2cd69bcdc562f0697ceec219825e948eb992cd257832f1b2135d752",
+    "bytes": 44047869
+  },
+  "remote_download_verified": true,
+  "embedded_adapter_and_config_hashes_verified": true,
+  "raw_corpus_uploaded": false,
+  "app_defaults_changed": false,
+  "verified_on_utc": "2026-10-30T00:00:18Z"
+}
