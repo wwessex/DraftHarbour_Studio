@@ -227,11 +227,11 @@ public struct ScrivenerPackageExporter {
 
   public func exportPlainTextFiles(_ envelope: DhprojEnvelope, to packageURL: URL) throws {
     try FileManager.default.createDirectory(at: packageURL, withIntermediateDirectories: true)
+    let root = packageURL.resolvingSymlinksInPath().standardizedFileURL
     for section in envelope.sections {
       let basename = section.title.isEmpty ? section.id : section.title
       let filename = basename.replacingOccurrences(of: #"[/\\?%*|"<>:]"#, with: "-", options: .regularExpression)
       guard !filename.isEmpty, !filename.contains("\0") else { throw CocoaError(.fileWriteInvalidFileName) }
-      let root = packageURL.resolvingSymlinksInPath().standardizedFileURL
       let url = root.appendingPathComponent(filename + ".txt", isDirectory: false)
       guard url.resolvingSymlinksInPath().standardizedFileURL.deletingLastPathComponent().path == root.path,
             (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) != true else {
