@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-latest]
+        os: [windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,6 +29,7 @@ jobs:
       - name: Build unsigned executable with embedded frontend
         run: |
           npm run build
+          node .github/scripts/install-startup-error-probe.cjs
           cargo build --locked --manifest-path desktop/src-tauri/Cargo.toml
       - name: Launch Linux executable and capture native window
         if: runner.os == 'Linux'
@@ -65,7 +66,7 @@ jobs:
               Start-Sleep -Seconds 1
             }
             if ($process.MainWindowTitle -ne 'DraftHarbour Studio') { throw 'Native Tauri window did not become ready.' }
-            Start-Sleep -Seconds 5
+            Start-Sleep -Seconds 45
             $process.Refresh()
             if ($process.HasExited) { throw "Tauri exited with code $($process.ExitCode)" }
             Write-Host "Found live process $($process.Id) with window $($process.MainWindowTitle)."
