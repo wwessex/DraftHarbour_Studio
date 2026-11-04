@@ -46,10 +46,7 @@ jobs:
                 $page = Invoke-RestMethod http://127.0.0.1:49231/json/list | Where-Object { $_.type -eq 'page' -and $_.title -eq 'DraftHarbour Studio' } | Select-Object -First 1
                 if ($page -and $process.MainWindowHandle -ne 0) {
                   $env:SMOKE_WS = $page.webSocketDebuggerUrl
-                  @'
-                  const s = new WebSocket(process.env.SMOKE_WS); const timer=setTimeout(()=>process.exit(1),5000); s.onopen=()=>s.send(JSON.stringify({id:1,method:"Runtime.evaluate",params:{expression:"Boolean(document.querySelector(\u0027#root button\u0027))",returnByValue:true}})); s.onmessage=({data})=>{const m=JSON.parse(data);if(m.id===1){clearTimeout(timer);s.close();process.exit(m.result?.result?.value===true?0:1)}}; s.onerror=()=>process.exit(1)
-                  '@ | Set-Content smoke/webview.cjs
-                  node smoke/webview.cjs
+                  node .github/scripts/tauri-webview-smoke.cjs
                   if ($LASTEXITCODE -eq 0) { $ready = $true; break }
                 }
               } catch { Write-Host 'Waiting for WebView2' }
