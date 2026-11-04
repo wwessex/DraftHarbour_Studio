@@ -6,14 +6,14 @@ import path from 'path';
 import { handleBrokerRequest } from './src/server/integrationBroker';
 
 const MAX_BROKER_BODY_BYTES = 16 * 1024 * 1024;
-const MAX_BROKER_BODY_READS = 4;
+const MAX_BROKER_REQUESTS = 4;
 const BROKER_BODY_TIMEOUT_MS = 15_000;
 
 function integrationBrokerPlugin(): Plugin {
   return {
     name: 'integration-broker',
     configureServer(server) {
-      let activeReads = 0;
+      let activeRequests = 0;
       server.middlewares.use((req, res, next) => {
         const route = (req.url || '/').split('?')[0];
         if (req.method !== 'POST' || !/^\/api\/(?:ai\/generate|chat|integrations\/[^/]+\/(?:connect|push|pull))$/.test(route)) {
@@ -29,66 +29,70 @@ function integrationBrokerPlugin(): Plugin {
           reject(413);
           return;
         }
-        if (activeReads >= MAX_BROKER_BODY_READS) {
+        if (activeRequests >= MAX_BROKER_REQUESTS) {
           reject(503);
           return;
         }
 
-        activeReads++;
+        activeRequests++;
         let reading = true;
         let bytes = 0;
         const chunks: Buffer[] = [];
         const finishRead = () => {
           if (!reading) return false;
           reading = false;
-          activeReads--;
           clearTimeout(deadline);
           return true;
         };
+        const abandonRead = () => {
+          if (!finishRead()) return false;
+          activeRequests--;
+          chunks.length = 0;
+          return true;
+        };
         const deadline = setTimeout(() => {
-          if (finishRead()) {
-            chunks.length = 0;
-            reject(408);
-          }
+          if (abandonRead()) reject(408);
         }, BROKER_BODY_TIMEOUT_MS);
-        req.on('close', finishRead);
-        req.on('error', finishRead);
+        req.on('close', abandonRead);
+        req.on('error', abandonRead);
         req.on('data', (chunk: Buffer) => {
           if (!reading) return;
           bytes += chunk.length;
           if (bytes > MAX_BROKER_BODY_BYTES) {
-            finishRead();
-            chunks.length = 0;
-            reject(413);
+            if (abandonRead()) reject(413);
             return;
           }
           chunks.push(chunk);
         });
         req.on('end', async () => {
           if (!finishRead()) return;
-          let body: unknown;
           try {
-            body = bytes ? JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')) : {};
-          } catch {
-            reject(400);
-            return;
-          } finally {
-            chunks.length = 0;
-          }
+            let body: unknown;
+            try {
+              body = bytes ? JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')) : {};
+            } catch {
+              reject(400);
+              return;
+            } finally {
+              chunks.length = 0;
+            }
 
-          const result = await handleBrokerRequest({
-            method: 'POST',
-            path: route,
-            body,
-            authorization: req.headers.authorization,
-          });
-          if (!result) {
-            next();
-            return;
+            const result = await handleBrokerRequest({
+              method: 'POST',
+              path: route,
+              body,
+              authorization: req.headers.authorization,
+            });
+            if (!result) {
+              next();
+              return;
+            }
+            res.statusCode = result.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.body));
+          } finally {
+            activeRequests--;
           }
-          res.statusCode = result.status;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(result.body));
         });
       });
     },
