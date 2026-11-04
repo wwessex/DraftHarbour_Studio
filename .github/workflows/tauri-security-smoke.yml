@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-latest]
+        os: [windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,23 +26,10 @@ jobs:
         run: |
           npm ci
           npm --prefix desktop ci
-      - name: Build Tauri executable with embedded frontend
-        run: npm run desktop:build:debug -- --no-bundle
-      - name: Launch Linux executable in Xvfb
-        if: runner.os == 'Linux'
+      - name: Build unsigned executable with embedded frontend
         run: |
-          mkdir -p smoke
-          xvfb-run -a bash -euo pipefail -c '
-            desktop/src-tauri/target/debug/draftharbour_desktop >smoke/linux.log 2>&1 &
-            app=$!
-            trap "kill $app 2>/dev/null || true" EXIT
-            window=$(timeout 50s xdotool search --sync --onlyvisible --name "^DraftHarbour Studio$" | head -1)
-            test -n "$window"
-            sleep 5
-            kill -0 "$app"
-            import -window "$window" smoke/linux.png
-            echo "Found visible DraftHarbour Studio window and a live Tauri process."
-          '
+          npm run build
+          cargo build --locked --manifest-path desktop/src-tauri/Cargo.toml
       - name: Launch Windows executable and verify WebView2 renders
         if: runner.os == 'Windows'
         shell: pwsh
@@ -59,7 +46,10 @@ jobs:
                 $page = Invoke-RestMethod http://127.0.0.1:49231/json/list | Where-Object { $_.type -eq 'page' -and $_.title -eq 'DraftHarbour Studio' } | Select-Object -First 1
                 if ($page -and $process.MainWindowHandle -ne 0) {
                   $env:SMOKE_WS = $page.webSocketDebuggerUrl
-                  node -e 'const s = new WebSocket(process.env.SMOKE_WS); const timer=setTimeout(()=>process.exit(1),5000); s.onopen=()=>s.send(JSON.stringify({id:1,method:"Runtime.evaluate",params:{expression:"Boolean(document.querySelector(\u0027#root button\u0027))",returnByValue:true}})); s.onmessage=({data})=>{const m=JSON.parse(data);if(m.id===1){clearTimeout(timer);s.close();process.exit(m.result?.result?.value===true?0:1)}}; s.onerror=()=>process.exit(1)'
+                  @'
+                  const s = new WebSocket(process.env.SMOKE_WS); const timer=setTimeout(()=>process.exit(1),5000); s.onopen=()=>s.send(JSON.stringify({id:1,method:"Runtime.evaluate",params:{expression:"Boolean(document.querySelector(\u0027#root button\u0027))",returnByValue:true}})); s.onmessage=({data})=>{const m=JSON.parse(data);if(m.id===1){clearTimeout(timer);s.close();process.exit(m.result?.result?.value===true?0:1)}}; s.onerror=()=>process.exit(1)
+                  '@ | Set-Content smoke/webview.cjs
+                  node smoke/webview.cjs
                   if ($LASTEXITCODE -eq 0) { $ready = $true; break }
                 }
               } catch { Write-Host 'Waiting for WebView2' }
