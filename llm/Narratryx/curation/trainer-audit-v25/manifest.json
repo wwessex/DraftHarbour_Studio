@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-03",
+  "input_hashes": {
+    "curation/trainer-audit-v25/audit.py": "8e9a53031ca43060c300d8ff928c2aecd664a9d2f9546818317e41e3960e35a9",
+    "curation/curriculum-fit-v24/manifest.json": "d4fe619047d37c77e395c4ce38361b86cbaa97106e296481ea15fe09722ccc80",
+    "artifacts/curriculum-fit-v24/records.review-only.jsonl": "509fce55420325ee6cff967007b3d51ef65efc47918bdcf7b24af07b99383909",
+    "artifacts/curriculum-fit-v24/tokenizer-preflight.json": "40ee372e6837bf9959fe045aed1a5abb8c0f059df9122b0cbc2eb975fb8cba70",
+    "artifacts/trainer-recipe-v21b/installed-audit.json": "596c2688085cb8ad36365d1a66fd57bf1800f9eb4d3179a167fa5dd5da6de9ea",
+    "artifacts/trainer-recipe-v21b/model-metadata.pins.json": "cc3188b4b2c6646688edc45da722b4bf053eafa976e649ba7306f7151c828f58",
+    "artifacts/trainer-recipe-v21b/protocol.proposed.frozen.json": "15cfdba4305ed027194691e60dc6db9c165a2cd29fa939f600335019bd95b506",
+    "artifacts/trainer-recipe-v21b/train.tokens.jsonl": "00d7ebee0ada761d36c8392c19b72e119cbd41a8d948966b5649c2ac9e4db8ac",
+    "artifacts/trainer-recipe-v21b/validation.tokens.jsonl": "e6122e8e5f312b285b27e408f9e67eb573693f65748b4a4c876665382fe92977",
+    "foundation/trainer_recipe.py": "535bde9736e24dc47179dfae79c7a76c73b4efd85d2aa130ddab5b13c8db8185"
+  },
+  "completion_hashes": {
+    "artifacts/trainer-audit-v25/installed-audit.json": "beda287e717325ede42bc91d52fc979d18fbb84942a7978e5a821a30f88a5678",
+    "docs/trainer-audit-v25-2026-11-03.md": "d7678d137d5fb5a0a722d0acbde47d4e6222baf0b8b2324544b4c49b52f8664c"
+  },
+  "targeted_tests": 4
+}

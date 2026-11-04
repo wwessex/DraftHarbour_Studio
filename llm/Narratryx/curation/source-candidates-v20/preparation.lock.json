@@ -1,0 +1,61 @@
+{
+  "status": "source-only-candidate-preparation-no-training",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "candidates": 9,
+    "selected_candidates": 8,
+    "reserved_candidates": 1,
+    "train_records": 28,
+    "exposed_validation_monitors": 16,
+    "additional_lesson_records_relative_v16": 6,
+    "additional_exact_edition_spans_relative_v16": 7,
+    "train_authors": [
+      "amelia-opie",
+      "arthur-conan-doyle",
+      "frances-ew-harper",
+      "harriet-e-wilson",
+      "henry-james",
+      "hg-wells",
+      "pauline-hopkins"
+    ],
+    "validation_authors": [
+      "james-jackson-wray"
+    ],
+    "new_authors": 0,
+    "source_disjoint_proposal": true,
+    "source_answers_verified": true,
+    "all_prior_evidence_and_models_unchanged": true,
+    "training_executed": false,
+    "inference_requests": 0,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/source-candidates-v20/verify.py": "beca48a3cfd3be3ae1c99958ede6d12df7a190ab59e100a7ad0e5ee5e4591b66",
+    "curation/source-candidates-v20/prepare.py": "dd0423c740808b24c51d3689224f6407acedde88f10b14696a70ef49cdce45e9",
+    "curation/source-candidates-v20/preflight.py": "4fe7afee7bf02a359e4e19cf91c83608fb699063cc81e72643bd3033d4cdc107",
+    "foundation/source_candidates.py": "1527bc5aa6447d30b19dde193f0aee3e6ce76a6ae612ece15cb9eea7c400132f",
+    "tests/test_source_candidates.py": "4ae77c4648af2f2b93bee415aa30aebf7496949cf2733ffddb8be9bb6895b861",
+    "docs/source-candidates-v20-2026-11-01.md": "7292e5f341911b21cfec606365690ea01047d936f14981b99a939133f2f33d40"
+  },
+  "artifact_hashes": {
+    "artifacts/source-candidates-v20/derivations.jsonl": "218d1510f96bde36d89487c47034ac16958f58c107cfd9a3babd1784a5f4593f",
+    "artifacts/source-candidates-v20/tokenizer-preflight.json": "e2f069511c5b479e44c6dc76e5cd93360a8f378ba34951c9a24136513fe8fc57",
+    "artifacts/source-candidates-v20/final-verification.json": "cc8d4b76a7c3859b40ecc4d2c9ab184977d9180b80e8756e0a7152ea75c345ce",
+    "artifacts/source-candidates-v20/candidates.jsonl": "7443014d8b42396b9a6d1f1dfff90d90d734b06d60624130ae9e6a5b9ed43044",
+    "artifacts/source-candidates-v20/verification.json": "66ed824000a619ed6467a0cfb2a615f554bf286b527972ff41ab587fefa009f2",
+    "artifacts/source-candidates-v20/REVIEW.md": "6becf4eae0f3fd09851f5ff921258333377024b3fdec09c17a930ab90cf3b039",
+    "artifacts/source-candidates-v20/records.proposed.jsonl": "6e77713c58d3b8d4dae25714292fa9ab172776c2b7501e8d8d8d1d9252851789"
+  },
+  "tests": {
+    "passed": true,
+    "count": 235,
+    "seconds": 70.671,
+    "log_sha256": "49a81a058b66eb439cf6fc48324a15924d2601870298b67664e1087907b6d521"
+  },
+  "training_jobs": 0,
+  "inference_requests": 0,
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

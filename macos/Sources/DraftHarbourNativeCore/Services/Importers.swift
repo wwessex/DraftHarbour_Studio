@@ -156,19 +156,17 @@ public struct DOCXImporter: Importer {
   public init() {}
 
   public func importDocument(data: Data, filename: String, projectId: String, projectType: ProjectType) throws -> ImportResult {
-    let temporaryURL = FileManager.default.temporaryDirectory
-      .appendingPathComponent("DraftHarbour-\(makeIdentifier())")
-      .appendingPathExtension("docx")
-    try data.write(to: temporaryURL, options: .atomic)
-    defer { try? FileManager.default.removeItem(at: temporaryURL) }
-
-    let archive = try Archive(url: temporaryURL, accessMode: .read)
+    let maxBytes = 100 * 1024 * 1024
+    guard data.count <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
+    let archive = try Archive(data: data, accessMode: .read)
     guard let entry = archive["word/document.xml"] else {
       throw DraftHarbourError.unsupportedFormat(filename)
     }
+    guard entry.uncompressedSize <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
 
     var xmlData = Data()
     _ = try archive.extract(entry) { chunk in
+      guard chunk.count <= maxBytes - xmlData.count else { throw CocoaError(.fileReadTooLarge) }
       xmlData.append(chunk)
     }
 

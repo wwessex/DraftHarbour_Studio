@@ -3,6 +3,7 @@
 import { act, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { newBibleEntry, persistBibleEntry } from '@/lib/storyBibleEntries';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -171,6 +172,7 @@ vi.mock('@/lib/ai/pipelines', () => ({
 }));
 
 vi.mock('@/lib/utils', () => ({
+  generateId: () => 'bible-test-entry',
   editorToPlainText: vi.fn(() => 'Hello world'),
 }));
 
@@ -216,6 +218,7 @@ describe('AIWritingModal', () => {
   let onCloseMock: any;
 
   beforeEach(() => {
+    localStorage.clear();
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -481,7 +484,7 @@ describe('AIWritingModal', () => {
     });
 
     const allButtons = Array.from(container.querySelectorAll('button'));
-    const copyBtn = allButtons.find(b => b.textContent?.includes('Copy'));
+    const copyBtn = allButtons.find(b => b.textContent?.endsWith('Copy'));
     const insertBtn = allButtons.find(b => b.textContent?.includes('Append to Chapter'));
     expect(copyBtn).toBeDefined();
     expect(insertBtn).toBeDefined();
@@ -624,6 +627,7 @@ describe('AIWritingModal', () => {
   /* --- Run Pipeline --- */
 
   it('runs pipeline when Run Pipeline button is clicked', async () => {
+    persistBibleEntry({ ...newBibleEntry('novel-1'), title: 'Mara', status: 'canon', body: 'Cannot swim.' });
     act(() => {
       root.render(<AIWritingModal open={true} onClose={onCloseMock} />);
     });
@@ -642,6 +646,7 @@ describe('AIWritingModal', () => {
 
     // Pipeline calls execute multiple times (once per non-optional stage)
     expect(mockExecute).toHaveBeenCalledTimes(2); // 2 non-optional stages
+    for (const [request] of mockExecute.mock.calls) expect(request.context).toContain('Cannot swim.');
     const text = container.textContent || '';
     expect(text).toContain('Response');
   });
@@ -772,7 +777,7 @@ describe('AIWritingModal', () => {
     });
 
     const allButtons = Array.from(container.querySelectorAll('button'));
-    const copyBtn = allButtons.find(b => b.textContent?.includes('Copy'));
+    const copyBtn = allButtons.find(b => b.textContent?.endsWith('Copy'));
 
     await act(async () => {
       copyBtn!.click();
@@ -1306,6 +1311,55 @@ describe('AIWritingModal', () => {
     await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent?.includes('Replace Passage'))!.click());
     expect(actionEditor.replaceRange).toHaveBeenCalledWith(10, 23, 'AI response text');
   });
+  it('previews verified copyedits for the highlighted span and applies only on acceptance', async () => {
+    const source = 'Before. rough rough After.';
+    actionEditor = { getContent: () => source, getSelection: () => ({ from: 8, to: 19, empty: false }), replaceRange: vi.fn() };
+    mockExecute.mockResolvedValueOnce({ text: '{"edits":[{"before":"rough rough","after":"rough"}]}', provider: 'custom-llm' });
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Copyedit')!.click());
+    expect(mockExecute.mock.calls.at(-1)?.[0]).toMatchObject({ action: 'copyedit', onStreamChunk: undefined });
+    expect(mockExecute.mock.calls.at(-1)?.[0].prompt).toContain('TARGET PASSAGE:\nrough rough');
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+    expect(container.textContent).not.toContain('"edits"');
+    expect(container.textContent).toContain('1 correction proposed');
+    expect(container.querySelector('del')?.textContent).toBe('"rough rough"');
+    expect(container.querySelector('ins')?.textContent).toBe('"rough"');
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Replace Passage')!.click());
+    expect(actionEditor.replaceRange).toHaveBeenCalledWith(8, 19, 'rough');
+  });
+  it.each(['empty', 'identity'])('reports unchanged %s copyedits and prevents a replacement', async (kind) => {
+    const source = 'A clean sentence.';
+    actionEditor = { getContent: () => source, getSelection: () => ({ from: 0, to: source.length, empty: false }), replaceRange: vi.fn() };
+    mockExecute.mockResolvedValueOnce({ text: JSON.stringify({ edits: kind === 'empty' ? [] : [{ before: 'clean', after: 'clean' }] }), provider: 'custom-llm' });
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Copyedit')!.click());
+    expect(container.textContent).toContain('No corrections proposed. The text is unchanged.');
+    expect(container.textContent).toContain('Use Rewrite for style, pacing or stronger wording.');
+    expect(container.querySelector('[aria-label="AI draft preview"]')).toBeNull();
+    const apply = [...container.querySelectorAll('button')].find(b => b.textContent === 'Replace Passage')!;
+    expect(apply.disabled).toBe(true);
+    await act(async () => apply.click());
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+    expect(mockUpdateChapter).not.toHaveBeenCalled();
+  });
+  it('reports an unchanged copyedit in the advanced modal too', async () => {
+    const source = 'A clean sentence.';
+    actionEditor = { getContent: () => source, getSelection: () => ({ from: 0, to: source.length, empty: false }), replaceRange: vi.fn() };
+    mockExecute.mockResolvedValueOnce({ text: '{"edits":[]}', provider: 'custom-llm' });
+    await act(async () => root.render(<AIWritingModal open onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Copyedit')!.click());
+    expect(container.textContent).toContain('No corrections proposed. The text is unchanged.');
+    expect([...container.querySelectorAll('button')].find(b => b.textContent?.includes('Replace Passage'))?.disabled).toBe(true);
+  });
+  it('rejects an unverified copyedit without an apply button or manuscript changes', async () => {
+    actionEditor = { getContent: () => 'Red. Red.', getSelection: () => ({ from: 0, to: 9, empty: false }), replaceRange: vi.fn() };
+    mockExecute.mockResolvedValueOnce({ text: '{"edits":[{"before":"Red","after":"Blue"}]}', provider: 'custom-llm' });
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" onClose={onCloseMock} />));
+    await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Copyedit')!.click());
+    expect(container.textContent).toContain('could not be verified');
+    expect(container.textContent).not.toContain('Replace Passage');
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
+  });
   it('preserves a captured partial-paragraph selection through focus changes and instruction edits', async () => {
     const source = 'Before rough after.\n\nKeep this paragraph.';
     actionEditor = { getContent: () => source, getSelection: () => ({ from: source.length, to: source.length, empty: true }), replaceRange: vi.fn() };
@@ -1326,6 +1380,19 @@ describe('AIWritingModal', () => {
     await act(async () => [...container.querySelectorAll('button')].find(b => b.textContent === 'Replace Passage')!.click());
     expect(actionEditor.replaceRange).toHaveBeenCalledWith(7, 12, 'AI response text');
     expect(mockUpdateChapter).not.toHaveBeenCalled();
+  });
+
+  it('supplies canon as read-only references without broadening a highlighted rewrite', async () => {
+    persistBibleEntry({ ...newBibleEntry('novel-1'), title: 'Mara', status: 'canon', body: 'Cannot swim.' });
+    const source = 'Before rough after.\n\nKeep this paragraph.';
+    actionEditor = { getContent: () => source, getSelection: () => ({ from: 7, to: 12, empty: false }), replaceRange: vi.fn() };
+    await act(async () => root.render(<AIWritingModal open presentation="workspace" actionRequest={{ id: 301, action: 'rewrite', target: { source, selection: { from: 7, to: 12 } } }} onClose={onCloseMock} />));
+    const request = mockExecute.mock.calls.at(-1)![0];
+    expect(request.context).toContain('Cannot swim.');
+    expect(request.context).toContain('read-only project data');
+    expect(request.context).not.toContain('Keep this paragraph.');
+    expect(request.prompt).toContain('TARGET PASSAGE:\nrough');
+    expect(actionEditor.replaceRange).not.toHaveBeenCalled();
   });
   it('does not silently replace a paragraph when a captured selection became stale', async () => {
     actionEditor = { getContent: () => 'Changed chapter.', getSelection: () => ({ from: 0, to: 0, empty: true }), replaceRange: vi.fn() };

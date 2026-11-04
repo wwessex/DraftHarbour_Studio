@@ -1,6 +1,8 @@
 import Foundation
 
-#if canImport(FoundationModels) && canImport(FoundationModelsMacros)
+// Macro implementations are compiler plugins, not importable Swift modules.
+// Gate the public SDK only so supported Macs actually query the system model.
+#if canImport(FoundationModels)
 import FoundationModels
 #endif
 
@@ -55,7 +57,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
   }
 
   public static func availabilityStatus() -> AppleFoundationModelsAvailabilityStatus {
-    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
+    #if canImport(FoundationModels)
     if #available(macOS 26.0, *) {
       switch SystemLanguageModel.default.availability {
       case .available:
@@ -101,13 +103,13 @@ public struct AppleFoundationModelsProvider: AIProvider {
       throw DraftHarbourError.providerNotConfigured(Self.availabilityStatus().label)
     }
 
-    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
+    #if canImport(FoundationModels)
     if #available(macOS 26.0, *) {
       let started = Date()
       let session = LanguageModelSession(
         instructions: "You are DraftHarbour's local macOS writing assistant. Work only with the provided project context and user request."
       )
-      let prompt = [request.context, request.prompt].compactMap { value -> String? in
+      let prompt = [request.context, request.styledPrompt].compactMap { value -> String? in
         guard let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
         return value
       }.joined(separator: "\n\n")
@@ -131,7 +133,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
 
     let context = projectContext ?? AIProjectContextService.index(for: envelope)
 
-    #if canImport(FoundationModels) && canImport(FoundationModelsMacros)
+    #if canImport(FoundationModels)
     if #available(macOS 26.0, *) {
       let session = LanguageModelSession(
         tools: [
@@ -144,6 +146,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
         ],
         instructions: """
         You are DraftHarbour's local macOS writing assistant.
+        \(AIRequest.naturalWritingStyle)
         You can inspect the full local project with tools. Use tools before answering questions that depend on chapters, scenes, characters, world entries, or blueprint details.
         If the story bible is empty, do not conclude that there are no characters; use manuscript text and the local manuscript character scan.
         When proposing manuscript edits, return precise UTF-16 ranges, the exact original text, replacement text, and a short rationale. Do not claim an edit was applied.
@@ -176,7 +179,7 @@ public struct AppleFoundationModelsProvider: AIProvider {
   }
 }
 
-#if canImport(FoundationModels) && canImport(FoundationModelsMacros)
+#if canImport(FoundationModels)
 @available(macOS 26.0, *)
 @Generable
 private struct AppleChatGeneratedEdit {

@@ -308,3 +308,6 @@
     max-height: calc(var(--mobile-viewport-height) - 108px - var(--mobile-safe-top));
   }
 }
+
+.desktopAI { display: flex; align-items: center; gap: 4px; }
+@media (max-width: 820px) { .desktopAI { display: none; } }

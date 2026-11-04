@@ -1,0 +1,29 @@
+{
+  "status": "informed-ai-review-not-human-approval",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "reviewed_pairs": 21,
+    "all_evidence_anchors_verified": true,
+    "original_run_artifacts_unchanged": true,
+    "unchanged_blank_human_ballots": 42,
+    "blinded": false,
+    "independent": false,
+    "human_quality_ratings": 0,
+    "training_eligible": false,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/mixed-training-v16-ai-review/build.py": "cc49a72608c1a8fa978e8b73c32bb1c9c62775164759ce77103a7ce316b01a2f",
+    "curation/mixed-training-v16-ai-review/verify.py": "c84f31e52d740c9dcbaf8f906446b0d1e2d6fa891a2a297657d75167088cc8be"
+  },
+  "artifact_hashes": {
+    "artifacts/mixed-training-v16-ai-review/REVIEW.md": "91a26a84fe5a1846415512c7f5e6b1aaf3266fbffa4b1bb4e7f71f83242afe24",
+    "artifacts/mixed-training-v16-ai-review/ai-review.jsonl": "3a26694c7db25808622bad47a3e61c9d1f82c4e8371a09ae9ec61e9117b1c109",
+    "artifacts/mixed-training-v16-ai-review/final-verification.json": "d82bc778ae695f0d2789ad20cc2aa204b88f085782841c7d6070bd09dc2f7044",
+    "artifacts/mixed-training-v16-ai-review/verification.json": "1fe3cdc3d6d2dae84599c2914154994b9d70f8a3899779f5589a46c38d4f5071"
+  },
+  "notes_sha256": "eadde885b944ea68483a91bbcf2feca6981eab799e2edf49555d07c1ff63ddb8",
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

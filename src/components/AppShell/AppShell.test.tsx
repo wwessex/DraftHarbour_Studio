@@ -18,6 +18,7 @@ vi.mock('@/components/Sidebar', () => ({ Sidebar: () => <div>Sidebar</div> }));
 vi.mock('@/components/Editor', () => ({ Editor: () => <div>Editor</div> }));
 vi.mock('@/components/Inspector', () => ({ Inspector: () => <div>Inspector</div> }));
 vi.mock('@/components/PanelErrorBoundary', () => ({ PanelErrorBoundary: ({ children }: { children?: ReactNode }) => <>{children}</> }));
+vi.mock('@/components/Panels/AIChatSidebar', () => ({ AIChatSidebar: ({ open }: { open: boolean }) => open ? <aside aria-label="AI Chat">Chat</aside> : null }));
 vi.mock('@/components/Panels', () => ({ AISuggestionsPanel: () => <div>AI</div> }));
 vi.mock('@/components/UI/Tooltip', () => ({ Tooltip: ({ children }: { children?: ReactNode }) => <>{children}</> }));
 

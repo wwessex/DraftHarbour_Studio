@@ -1,43 +1,91 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import { handleBrokerRequest } from './src/server/integrationBroker';
 
-function integrationBrokerPlugin() {
+const MAX_BROKER_BODY_BYTES = 16 * 1024 * 1024;
+const MAX_BROKER_BODY_READS = 4;
+const BROKER_BODY_TIMEOUT_MS = 15_000;
+
+function integrationBrokerPlugin(): Plugin {
   return {
     name: 'integration-broker',
-    configureServer(server: { middlewares: { use: (handler: (req: { method?: string; url?: string; on: (event: string, cb: (chunk?: unknown) => void) => void }, res: { statusCode: number; setHeader: (name: string, value: string) => void; end: (body: string) => void }, next: () => void) => void) => void } }) {
+    configureServer(server) {
+      let activeReads = 0;
       server.middlewares.use((req, res, next) => {
-        const method = req.method || 'GET';
-        const url = req.url || '/';
-        const pathOnly = url.split('?')[0];
-
-        if (!pathOnly.startsWith('/api/')) {
+        const route = (req.url || '/').split('?')[0];
+        if (req.method !== 'POST' || !/^\/api\/(?:ai\/generate|chat|integrations\/[^/]+\/(?:connect|push|pull))$/.test(route)) {
           next();
           return;
         }
 
-        let raw = '';
-        req.on('data', (chunk) => {
-          const textChunk = typeof chunk === 'string' ? chunk : String(chunk ?? '');
-          raw += textChunk;
+        const reject = (status: number) => {
+          res.writeHead(status, { Connection: 'close' });
+          res.end();
+        };
+        if (Number(req.headers['content-length']) > MAX_BROKER_BODY_BYTES) {
+          reject(413);
+          return;
+        }
+        if (activeReads >= MAX_BROKER_BODY_READS) {
+          reject(503);
+          return;
+        }
+
+        activeReads++;
+        let reading = true;
+        let bytes = 0;
+        const chunks: Buffer[] = [];
+        const finishRead = () => {
+          if (!reading) return false;
+          reading = false;
+          activeReads--;
+          clearTimeout(deadline);
+          return true;
+        };
+        const deadline = setTimeout(() => {
+          if (finishRead()) {
+            chunks.length = 0;
+            reject(408);
+          }
+        }, BROKER_BODY_TIMEOUT_MS);
+        req.on('close', finishRead);
+        req.on('error', finishRead);
+        req.on('data', (chunk: Buffer) => {
+          if (!reading) return;
+          bytes += chunk.length;
+          if (bytes > MAX_BROKER_BODY_BYTES) {
+            finishRead();
+            chunks.length = 0;
+            reject(413);
+            return;
+          }
+          chunks.push(chunk);
         });
         req.on('end', async () => {
-          let body: unknown = {};
+          if (!finishRead()) return;
+          let body: unknown;
           try {
-            body = raw ? JSON.parse(raw) : {};
+            body = bytes ? JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')) : {};
           } catch {
-            body = {};
+            reject(400);
+            return;
+          } finally {
+            chunks.length = 0;
           }
 
-          const result = await handleBrokerRequest({ method, path: pathOnly, body });
+          const result = await handleBrokerRequest({
+            method: 'POST',
+            path: route,
+            body,
+            authorization: req.headers.authorization,
+          });
           if (!result) {
             next();
             return;
           }
-
           res.statusCode = result.status;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(result.body));

@@ -136,6 +136,10 @@ export function useAppKeyboardShortcuts({
   reopenLastProject,
 }: UseAppKeyboardShortcutsParams) {
   const handleMenuAction = useCallback((action: CommandId) => {
+    if (action === COMMAND_IDS.AI_CHAT && window.innerWidth <= 820) {
+      if (!settings.sidebarHidden) dispatch({ type: 'TOGGLE_SIDEBAR' });
+      setInspectorOpen(false);
+    }
     runCommand(action, {
       editor,
       fileInputRef,
@@ -158,7 +162,7 @@ export function useAppKeyboardShortcuts({
       showToast,
       createCommentFromSelection,
     });
-  }, [createCommentFromSelection, createChapter, dispatch, editor, fileInputRef, handleExportBackup, handleSaveProjectFile, importInputRef, openModal, openRecentProjects, projectFileInputRef, reopenLastProject, settings.typewriterMode, setInspectorOpen, setQuickSwitcherOpen, showToast, toggleModal, updateSettings]);
+  }, [createCommentFromSelection, createChapter, dispatch, editor, fileInputRef, handleExportBackup, handleSaveProjectFile, importInputRef, openModal, openRecentProjects, projectFileInputRef, reopenLastProject, settings.sidebarHidden, settings.typewriterMode, setInspectorOpen, setQuickSwitcherOpen, showToast, toggleModal, updateSettings]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

@@ -91,10 +91,12 @@ struct EditorWorkspaceView: View {
         do { _ = try store.splitActiveSection(atUTF16: selectedRange.location); selectedRange = NSRange(location: 0, length: 0) }
         catch { operationError = "Choose a cursor inside the chapter, outside a comment anchor. " + error.localizedDescription }
       }
+      .help("Split this chapter or scene at the text cursor")
       Button("Merge Next") {
         do { try store.mergeActiveSectionWithNext() }
         catch { operationError = error.localizedDescription }
       }.disabled(store.envelope.sections.last?.id == section.id)
+      .help("Merge this chapter or scene with the next one")
 
       formattingButton("bold", command: .bold)
       formattingButton("italic", command: .italic)
@@ -111,6 +113,7 @@ struct EditorWorkspaceView: View {
         }
       }
       .frame(width: 130)
+      .help("Set the chapter or scene status")
 
       Toggle("Page", isOn: $pageView)
         .toggleStyle(.button)
@@ -136,5 +139,16 @@ struct EditorWorkspaceView: View {
       Image(systemName: image)
     }
     .buttonStyle(.borderless)
+    .help(formattingTitle(image))
+    .accessibilityLabel(formattingTitle(image))
   }
+  private func formattingTitle(_ image: String) -> String {
+    switch image {
+    case "bold": "Bold (⌘B)"
+    case "italic": "Italic (⌘I)"
+    case "underline": "Underline (⌘U)"
+    default: "Block quote"
+    }
+  }
+
 }

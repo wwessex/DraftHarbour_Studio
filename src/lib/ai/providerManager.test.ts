@@ -315,3 +315,17 @@ describe('providerManager', () => {
     });
   });
 });
+
+
+it('notifies open panels after saving a provider even when setup mode is unchanged', () => {
+  const listener = vi.fn();
+  window.addEventListener('draftharbour-ai-setup-changed', listener);
+  try {
+    const config = { provider: 'custom-llm' as const, customLlm: { backend: 'ollama' as const, baseUrl: 'http://localhost:11434', model: 'local' } };
+    saveAIConfig(config);
+    listener.mockClear();
+    saveAIConfig({ ...config, customLlm: { ...config.customLlm, model: 'updated' } });
+    expect(listener).toHaveBeenCalled();
+    expect(loadAIConfig().customLlm?.model).toBe('updated');
+  } finally { window.removeEventListener('draftharbour-ai-setup-changed', listener); }
+});

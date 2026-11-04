@@ -31,6 +31,20 @@ public struct LocalRuntimeManifest: Decodable, Sendable {
 public enum LocalRuntimeFailure: Error, LocalizedError {
   case unavailable(String)
   public var errorDescription: String? { if case .unavailable(let message) = self { return message }; return nil }
+
+  public static func httpFailure(status: Int, body: Data) -> LocalRuntimeFailure {
+    let object = (try? JSONSerialization.jsonObject(with: body)) as? [String: Any]
+    let details = object?["error"] as? [String: Any]
+    let type = (details?["type"] as? String ?? "").lowercased()
+    let message = (details?["message"] as? String ?? "").lowercased()
+    if status == 413 || type.contains("context") || (status == 400 && message.contains("context")) {
+      return .unavailable("This request exceeds the local model's context window. Use the Suggestions sidebar for bounded chapter context, or review a smaller selected passage.")
+    }
+    if status == 429 { return .unavailable("Local AI is busy. Wait for the current request to finish, then retry.") }
+    if status == 401 || status == 403 { return .unavailable("Local AI authentication failed. Stop Local AI and retry to create a new private session.") }
+    if status == 400 { return .unavailable("Local AI rejected the request. Check the selected action and model configuration, then retry.") }
+    return .unavailable("Local AI could not complete this request. Retry, or restart Local AI if the problem persists.")
+  }
 }
 
 public enum LocalRuntimePackage {
@@ -199,9 +213,8 @@ public actor NativeLocalModelRuntime {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = body
     let (data, response) = try await session.data(for: request)
-    guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-      throw LocalRuntimeFailure.unavailable("Local AI could not complete this request. Try a shorter passage or restart Local AI.")
-    }
+    guard let http = response as? HTTPURLResponse else { throw LocalRuntimeFailure.unavailable("Local AI returned an invalid response.") }
+    guard http.statusCode == 200 else { throw LocalRuntimeFailure.httpFailure(status: http.statusCode, body: data) }
     return data
   }
   private func start() async throws {
@@ -278,7 +291,7 @@ public actor NativeLocalModelRuntime {
       do {
         try await start()
         try Task.checkCancellation()
-        let prompt = [request.context ?? "", request.prompt].filter { !$0.isEmpty }.joined(separator: "\n\n")
+        let prompt = [request.context ?? "", request.styledPrompt].filter { !$0.isEmpty }.joined(separator: "\n\n")
         guard prompt.utf8.count <= 65_536 else { throw LocalRuntimeFailure.unavailable("Use a shorter passage for Local AI.") }
         let payload: [String: Any] = ["model": Self.modelID, "messages": [["role": "user", "content": prompt]],
           "max_tokens": 512, "stream": false, "temperature": 0, "seed": 42, "cache_prompt": false,

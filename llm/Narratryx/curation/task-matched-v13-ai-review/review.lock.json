@@ -1,0 +1,28 @@
+{
+  "status": "informed-ai-review-not-human-approval",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "reviewed_pairs": 17,
+    "all_evidence_anchors_verified": true,
+    "original_run_artifacts_unchanged": true,
+    "unchanged_blank_human_ballots": 34,
+    "blinded": false,
+    "independent": false,
+    "human_quality_ratings": 0,
+    "training_eligible": false,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/task-matched-v13-ai-review/build.py": "484f66e3d2f1b04e1721a8bffb6b70bc9e387b76ec0596f5279d5ca7e0f9e6c1",
+    "curation/task-matched-v13-ai-review/verify.py": "d483fe92140fdbd72e68fdcb6d62d0e816cbc82c57627fc0d0b5c955bde6c7f8"
+  },
+  "artifact_hashes": {
+    "artifacts/task-matched-v13-ai-review/REVIEW.md": "1f533fbc24e272449cc83beaf555af0bebb9ae599732e48b38069e7d4b909ed6",
+    "artifacts/task-matched-v13-ai-review/ai-review.jsonl": "1d2d7c39ea9c07e14a9a8b9a6b91186f05f635ade4d07ad9b5c38816b70ee16c",
+    "artifacts/task-matched-v13-ai-review/final-verification.json": "7da1130b6aeaf19c52dcc566ba83968f90839c1991502a02552778f0bf20b5d6",
+    "artifacts/task-matched-v13-ai-review/verification.json": "de7d7d1e753a6143739b44983a5a1d9430ca5d67f5ddd6e2164870e2d5d497d8"
+  },
+  "notes_sha256": "15713bf5dabdb4eb08e0cf92d5469c059ba5271362f848db98f00c986a4f469e",
+  "model_promoted": false
+}

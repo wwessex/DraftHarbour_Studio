@@ -21,6 +21,7 @@ export type ModalKey =
   | 'projects'
   | 'sceneTemplates'
   | 'exportHistory'
+  | 'aiChat'
   | 'aiPanel'
   | 'translation'
   | 'corkboard'
@@ -51,6 +52,7 @@ const initialState: ModalState = {
   projects: false,
   sceneTemplates: false,
   exportHistory: false,
+  aiChat: false,
   aiPanel: false,
   translation: false,
   corkboard: false,

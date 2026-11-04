@@ -10,3 +10,8 @@
 .hint { color: var(--text-secondary); font-size: 0.8rem; margin: 0; }
 .error { color: var(--danger, var(--color-error)); margin: 0; }
 @media (max-width: 600px) { .bar { padding: 0.5rem; gap: 0.4rem; } .label { font-size: 0.8rem; } .action { padding: 0.5rem 0.65rem; } .panel { padding: 0.6rem; max-height: 42vh; } }
+
+.changes { margin: 0.5rem 0; padding-left: 1.5rem; overflow-wrap: anywhere; }
+.changes li { margin-bottom: 0.65rem; }
+.changes del { text-decoration: line-through; white-space: pre-wrap; }
+.changes ins { text-decoration: underline; font-weight: 600; white-space: pre-wrap; }

@@ -57,7 +57,7 @@ struct WelcomeView: View {
       recentColumn
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .frame(width: 760, height: 500)
+    .frame(minWidth: 760, maxWidth: .infinity, minHeight: 500, maxHeight: .infinity)
     .onAppear {
       recentProjects = refreshRecentProjects()
     }

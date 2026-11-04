@@ -5,8 +5,16 @@ public enum AIChatService {
     to prompt: String,
     envelope: DhprojEnvelope,
     providerConfig: AIProviderConfig,
-    secretStore: SecretStore = KeychainClient.shared
+    secretStore: SecretStore = KeychainClient.aiCredentials,
+    allowsEdits: Bool = false,
+    history: String = "",
+    progress: @Sendable (String) async -> Void = { _ in }
   ) async throws -> AIChatGenerationResult {
+    guard NativeAIProviderFactory.isLocalProvider(providerConfig) else {
+      throw LocalRuntimeFailure.unavailable("AI Chat requires a local model. Configure one in Settings > AI.")
+    }
+    // Validate enabled state, AI setup and managed policy for every chat path.
+    let provider = try NativeAIProviderFactory(secretStore: secretStore).provider(from: providerConfig)
     let context = AIProjectContextService.index(for: envelope)
     if shouldAnswerWithLocalCharacterScan(prompt) {
       return localCharacterScanResponse(prompt: prompt, context: context)
@@ -14,20 +22,12 @@ public enum AIChatService {
 
     if providerConfig.provider == .appleFoundation {
       let provider = AppleFoundationModelsProvider(id: providerConfig.id, displayName: providerConfig.label, projectContext: context)
-      return try await provider.generateChat(prompt: prompt, envelope: envelope)
+      var result = try await provider.generateChat(prompt: prompt + (allowsEdits ? "\nThe author requests edit proposals for approval." : "\nDiscussion only. Do not propose manuscript edits."), envelope: envelope)
+      result.editProposals = allowsEdits ? try ManuscriptChatService.verifiedToolProposals(result.editProposals, context: context) : []
+      return result
     }
 
-    let provider = try NativeAIProviderFactory(secretStore: secretStore).provider(from: providerConfig)
-    let response = try await provider.generate(
-      AIRequest(
-        prompt: genericProviderPrompt(userPrompt: prompt, context: context),
-        context: context.compactFullContext(),
-        projectType: envelope.projectType,
-        sectionTitle: envelope.sections.first?.title,
-        model: providerConfig.model
-      )
-    )
-    return decodeGenericResponse(response.text, context: context, providerId: response.provider, model: response.model ?? providerConfig.model)
+    return try await ManuscriptChatService.respond(prompt: prompt, context: context, provider: provider, model: providerConfig.model, allowsEdits: allowsEdits, history: history, progress: progress)
   }
 
   public static func genericProviderPrompt(userPrompt: String, context: AIProjectContextIndex) -> String {

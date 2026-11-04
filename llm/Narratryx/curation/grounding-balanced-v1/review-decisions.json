@@ -1,0 +1,24 @@
+{
+  "reviewed_on": "2026-10-29",
+  "reviewer": "Codex AI: informed semantic and source-alignment review",
+  "human_approval": false,
+  "independent_blinded_review": false,
+  "review_scope": "All24 semantic annotations in the existing178-record packet; the original packet remains unchanged.",
+  "status_reasons": {
+    "explicit_fact": "Unqualified narration within the supplied fiction; not a real-world historical assertion.",
+    "character_statement": "Spoken or written claim/preference, without treating the utterance as independent corroboration.",
+    "plan": "Announced appointment, promise or schedule, not evidence of completion.",
+    "request": "A direction or request, not an accomplished event.",
+    "hypothetical": "An imagined response or counterfactual wish; quotation marks alone do not make it actual speech.",
+    "uncertain_or_inferred": "The source explicitly qualifies an interpretation, prediction or uncertainty.",
+    "reported_information": "What a narrator or character says they heard; this does not verify the reported event.",
+    "not_established": "The supplied excerpt lacks the requested identity, location, remarriage detail or payment amount. Wider-book memory is not evidence."
+  },
+  "accept_unchanged": ["ge-evidence-00","ge-evidence-01","ge-evidence-02","ge-evidence-03","ge-evidence-04","ge-evidence-05","ge-evidence-06","ge-evidence-07","ge-evidence-08","ge-evidence-09","ge-evidence-10","ge-evidence-11","ge-evidence-12","ge-evidence-13","ge-evidence-14","ge-evidence-15","ge-evidence-16","ge-evidence-17","ge-evidence-18","ge-evidence-19","ge-evidence-20","ge-evidence-22","ge-evidence-23"],
+  "clarify": {
+    "id": "ge-evidence-21",
+    "action": "Replace only the classification quotation with the explicit offer to help later in the same supplied passage; retain plan label and original source body.",
+    "reason": "The earlier reassurance can be read as a prediction. An explicit offer is a clearer promise example."
+  },
+  "limitations": ["AI annotations, not human gold.","No literary quality preference score.","No source prose generated or rewritten.","This review does not authorise model promotion."]
+}

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import type { WritingAction, WritingSelectionSnapshot } from '@/lib/ai/writingActions';
+import { writingActionTitle, type WritingAction, type WritingSelectionSnapshot } from '@/lib/ai/writingActions';
 import { useCurrentEditor } from '@/lib/editor/EditorContext';
 import styles from './WritingWorkspace.module.css';
 import { AISetup } from './AISetup';
@@ -31,7 +31,7 @@ export function WritingWorkspace({ onConfigure }: { onConfigure?: () => void }) 
     {setup && <AISetup onChanged={changed} onConfigure={onConfigure} />}
     {!request ? <div className={styles.bar}>
       <span className={styles.label}>AI writing</span>
-      {(['write', 'rewrite', 'continue'] as const).map(action => <button key={action} type="button" disabled={disabled || setup} className={styles.action}
+      {(['write', 'rewrite', 'copyedit', 'continue'] as const).map(action => <button key={action} type="button" disabled={disabled || setup} className={styles.action}
         onPointerDown={() => { pendingTarget.current = captureTarget(); }}
         onPointerCancel={() => { pendingTarget.current = undefined; }}
         onKeyDown={() => { pendingTarget.current = captureTarget(); }}
@@ -40,7 +40,7 @@ export function WritingWorkspace({ onConfigure }: { onConfigure?: () => void }) 
           pendingTarget.current = undefined;
           setRequest({ id: Date.now(), action, target });
         }}>
-        {action === 'write' ? 'Write' : action === 'rewrite' ? 'Rewrite' : 'Continue'}
+        {writingActionTitle(action)}
       </button>)}
     </div> : <Suspense fallback={<div className={styles.bar} role="status">Opening writing assistant…</div>}>
       <Composer open presentation="workspace" actionRequest={request} onClose={() => setRequest(null)} onConfigure={onConfigure ? () => { setRequest(null); onConfigure(); } : undefined} />

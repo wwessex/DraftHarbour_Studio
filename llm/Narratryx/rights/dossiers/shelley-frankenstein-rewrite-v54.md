@@ -1,0 +1,18 @@
+# Frankenstein edition and excerpt assessment
+
+Codex AI assessed the selected historical prose on 3 November 2026 for private training and evaluation in GB and the US. The machine-readable records apply to six excerpts, three per edition. The older general candidate for ebook 84 remains separate.
+
+- **1818.** The Lackington, Hughes, Harding, Mavor & Jones London edition is corroborated by the Library of Congress record. Gutenberg ebook 41445 identifies its transcription as coming from a photo-reprint of the 1818 edition. [Library of Congress](https://www.loc.gov/item/53051218/) · [Gutenberg catalogue](https://www.gutenberg.org/ebooks/41445) · [Transcription](https://www.gutenberg.org/files/41445/41445-h/41445-h.htm)
+- **1831.** The Colburn and Bentley London edition is corroborated by the NYPL collection. Gutenberg ebook 42324 identifies its transcription as coming from a photo-reprint of the 1831 edition and reproduces the title page identifying Shelley as reviser. [NYPL collection](https://old-digitalcollections.nypl.org/collections/frankenstein-or-the-modern-prometheus-to-which-is-added-vol-1-of-f-schillers) · [Gutenberg catalogue](https://www.gutenberg.org/ebooks/42324) · [Transcription](https://www.gutenberg.org/files/42324/42324-h/42324-h.htm)
+
+Both exact Gutenberg catalogue records designate their ebooks public domain in the USA. The underlying original prose dates to 1818 and 1831, beyond the applicable historical terms. Shelley died in 1851, so the ordinary UK literary term has also elapsed. Only the original, unbranded prose is in scope. The acquired source files retain the provider notices. Modern contributions, typography, images, introductions and other apparatus are excluded. [US Copyright Office](https://www.copyright.gov/circs/circ15a.pdf) · [UK Intellectual Property Office](https://www.gov.uk/copyright/how-long-copyright-lasts) · [Gutenberg permissions](https://www.gutenberg.org/policy/permission.html)
+
+| Pair | Same-scene change | Facts kept in scope |
+| --- | --- | --- |
+| Justine’s accusation | Ernest’s dialogue gains a delivery cue and a sharper rhetorical ending. | The family has heard the accusation and Elizabeth remains unconvinced. The passage does not establish guilt. |
+| The mourning household | A figurative close replaces a summary of Elizabeth’s later talk. | The household mourns and Victor recalls Elizabeth’s former cheer. |
+| Walton among the ice, September 2 | The close turns from stoic resolve to responsibility for his crew’s danger. | The ship remains trapped, Walton retains his courage, and survival is uncertain. |
+
+The historical Variorum transcriptions corroborate the edition-specific prose. Paragraph grouping and punctuation can differ from Gutenberg, particularly in the Walton passage, so the packet uses span-level wording from the pinned Gutenberg bytes with whitespace normalisation. The comparison does not identify the physical copies behind the photo-reprints. Other changes, including the altered circumstances of Victor’s collapse and the different travel itinerary after his wedding, are outside the packet. [1818 Variorum](https://frankensteinvariorum.github.io/fv-collation/Frankenstein_1818.html) · [1831 Variorum](https://frankensteinvariorum.github.io/fv-collation/Frankenstein_1831.html)
+
+The preparer checks the two complete HTML hashes, extracts only the identified paragraphs, and validates the exact text offsets in the resulting excerpt files. The selected 1831 prose supplies the answers. Codex authored the task briefs. This is a bounded project evidence assessment recorded as such in the ledger.

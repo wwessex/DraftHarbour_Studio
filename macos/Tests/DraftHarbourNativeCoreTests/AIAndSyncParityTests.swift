@@ -43,20 +43,26 @@ final class AIAndSyncParityTests: XCTestCase {
   }
 
   func testProviderFactoryUsesInjectableSecretStore() throws {
-    let factory = NativeAIProviderFactory(secretStore: MockSecretStore(values: ["ai": "token"]))
-    let provider = try factory.provider(
-      from: AIProviderConfig(
-        provider: .localOpenAI,
-        label: "Local",
-        endpoint: "http://localhost:11434/v1/chat/completions",
-        model: "llama3.1",
-        keychainAccount: "ai"
-      )
+    var config = AIProviderConfig(
+      provider: .localOpenAI,
+      label: "Local",
+      endpoint: "http://localhost:11434/v1/chat/completions",
+      model: "llama3.1",
+      keychainAccount: "unbound"
     )
+    let account = NativeAIProviderFactory.credentialAccount(for: config)
+    let factory = NativeAIProviderFactory(secretStore: MockSecretStore(values: [account: "token", "unbound": "legacy"]))
+    XCTAssertThrowsError(try factory.provider(from: config))
 
-    let concrete = try XCTUnwrap(provider as? OpenAICompatibleProvider)
+    config.keychainAccount = account
+    let concrete = try XCTUnwrap(factory.provider(from: config) as? OpenAICompatibleProvider)
     XCTAssertEqual(concrete.apiKey, "token")
     XCTAssertEqual(concrete.defaultModel, "llama3.1")
+
+    config.endpoint = "https://receiver.example/v1/chat/completions"
+    XCTAssertThrowsError(try factory.provider(from: config))
+    config.keychainAccount = NativeAIProviderFactory.credentialAccount(for: config)
+    XCTAssertThrowsError(try factory.provider(from: config))
   }
 
   func testAIProviderConfigAndRevisionLogPersistInStore() {

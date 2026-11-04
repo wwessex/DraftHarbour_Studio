@@ -115,6 +115,11 @@ public struct AIChatGenerationResult: Equatable, Sendable {
 }
 
 public extension AIProviderConfig {
+  static func managedLocalDefault() -> AIProviderConfig {
+    AIProviderConfig(id: "managed-local", provider: .customLLM, label: "On this computer (experimental)",
+      endpoint: NativeLocalModelRuntime.endpoint, model: NativeLocalModelRuntime.modelID)
+  }
+
   static let appleFoundationEndpoint = "apple-foundation://default"
   static let appleFoundationModel = "system-default"
 

@@ -317,6 +317,7 @@ export interface BackupDataV3 {
   exportedAt: number;
   characters?: CharacterEntity[];
   worldEntries?: WorldEntry[];
+  bibleEntries?: import('./storyBible').BibleEntry[];
   storyBlueprint?: StoryBlueprint | null;
 }
 
@@ -347,6 +348,7 @@ export interface DhprojData {
   integrations?: DhprojIntegrations;
   characters?: CharacterEntity[];
   worldEntries?: WorldEntry[];
+  bibleEntries?: import('./storyBible').BibleEntry[];
   storyBlueprint?: StoryBlueprint | null;
 }
 
@@ -593,3 +595,5 @@ export interface AppErrorInfo {
   /** Timestamp of occurrence. */
   timestamp: number;
 }
+
+export type { BibleEntry, BibleEntryState, BibleRevision } from './storyBible';

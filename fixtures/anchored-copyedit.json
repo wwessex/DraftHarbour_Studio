@@ -1,0 +1,14 @@
+[
+ {"id":"unicode-and-whitespace","source":"  Éva 😀 said said ‘yes’.  ","proposal":{"edits":[{"before":"said said","after":"said"}]},"expected":"  Éva 😀 said ‘yes’.  "},
+ {"id":"several-original-coordinates","source":"The the bell rang rang.","proposal":{"edits":[{"before":"The the","after":"The"},{"before":"rang rang","after":"rang"}]},"expected":"The bell rang."},
+ {"id":"no-changes","source":"An intact sentence.","proposal":{"edits":[]},"expected":"An intact sentence."},
+ {"id":"ambiguous","source":"Red. Red.","proposal":{"edits":[{"before":"Red","after":"Blue"}]}},
+ {"id":"overlapping-occurrences","source":"aaa","proposal":{"edits":[{"before":"aa","after":"a"}]}},
+ {"id":"overlapping-edits","source":"A small bird.","proposal":{"edits":[{"before":"small bird","after":"finch"},{"before":"bird","after":"owl"}]}},
+ {"id":"missing-anchor","source":"An intact sentence.","proposal":{"edits":[{"before":"missing","after":"found"}]}},
+ {"id":"no-full-prose-fallback","source":"Text.","raw":"Corrected text."},
+ {"id":"no-fences","source":"Text.","raw":"```json\n{\"edits\":[]}\n```"},
+ {"id":"no-empty-anchor","source":"Text.","proposal":{"edits":[{"before":"","after":"new"}]}},
+ {"id":"no-extra-keys","source":"Text.","proposal":{"edits":[],"explanation":"fine"}},
+ {"id":"deletion","source":"The red old old door.","proposal":{"edits":[{"before":"old old ","after":""}]},"expected":"The red door."}
+]

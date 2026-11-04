@@ -1,6 +1,6 @@
 # CLAUDE.md — DraftHarbour Studio
 
-Source guide reviewed 20 October 2026. Read [AGENTS.md](AGENTS.md) first: its standing all-version scope, data-protection, validation and model-development rules also apply to Claude. [README.md](README.md) is the setup/product entry point. Manifests and lockfiles take precedence over dependency versions mentioned in prose.
+Source guide reviewed 4 November 2026. Read [AGENTS.md](AGENTS.md) first: its standing all-version scope, data-protection, validation and model-development rules also apply to Claude. [README.md](README.md) is the setup/product entry point. Manifests and lockfiles take precedence over dependency versions mentioned in prose.
 
 ## Architecture
 
@@ -63,11 +63,11 @@ Offline package selection/replacement/restore is implemented in `desktop/src-tau
 
 Local/online setup direction is recorded in [the implementation plan](docs/ai-local-and-online-setup-plan.md). `llm/Narratryx/runtime/packaging/` exports and verifies a separate GGUF development bundle; the [24 October runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) records Mac-only inference evidence. This harness does not implement native app setup, model downloads or an online account service.
 
-Narratryx is model development, not an established released specialist model. The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) trained twenty source-only answers for five updates and completed sixteen matched before/after tasks. Results are mixed and blinded human quality ratings remain absent.
+Narratryx is an experimental model-development workspace. Craft v1 remains selected. The v57 rewrite specialist tied both comparators, and v62 timing prompts helped some actions while length and limited viewpoint remained unreliable. Start with the [Narratryx README](llm/Narratryx/README.md) and [development log](llm/Narratryx/CONTINUOUS_DEVELOPMENT.md). Local response packets can be checked with `python -m foundation.experiment_evidence` from the Narratryx workspace.
 
 The opt-in integration is implemented in `src/lib/ai/narratryx.ts`, shared `AIConfigPanel`, native `NarratryxProfile.swift` and native AI tools. The separate `llm/Narratryx/runtime/local/` service pins the craft adapter and cached base, authenticates inference, bounds context/output and exposes base/candidate IDs. Live HTTP and the actual shared provider path passed locally; this does not establish target-device or literary-quality acceptance. Read [the current integration guide](docs/narratryx-app-trial.md); the earlier [readiness assessment](docs/narratryx-integration-readiness-2026-10-20.md) is historical.
 
-Passage-scoped writing actions live in `src/lib/ai/writingActions.ts` and native `Services/WritingActions.swift`, with common UTF-16/paragraph fixtures. Main editor entry points are `src/components/AI/WritingWorkspace.tsx` and native `Views/WritingAssistantView.swift`; keep them visible without menu navigation and load inference only on explicit actions. New Write/Rewrite/Continue actions preview before acceptance and reject stale source text. Native selection reaches the tool panel through `editorSelection`; do not infer selection from panel focus.
+Passage-scoped writing actions live in `src/lib/ai/writingActions.ts` and native `Services/WritingActions.swift`, with common UTF-16/paragraph fixtures. Main editor entry points are `src/components/AI/WritingWorkspace.tsx` and native `Views/WritingAssistantView.swift`; keep them visible without menu navigation and load inference only on explicit actions. Write/Rewrite/Copyedit/Continue actions preview before acceptance and reject stale source text. Native selection reaches the tool panel through `editorSelection`; do not infer selection from panel focus.
 
 Keep model versions replaceable and model serving/training outside the application. Do not enable experimental adapters by default, embed Studio credentials, require ordinary users to train locally, or silently alter manuscripts. Existing Narratryx branding/default model strings are not evidence those models are installed.
 
@@ -78,3 +78,9 @@ Use [AGENTS.md](AGENTS.md) and platform guides for commands. `npm run ci` is a f
 For docs-only edits, check paths, commands, links and factual consistency. For runtime work, run meaningful regressions and required platform checks; synchronize Capacitor assets when shared runtime changes warrant it. Report Windows/Linux builds, iOS simulator/device checks and native GUI checks separately.
 
 Historical `docs/reviews/` results retain their dates and limitations. Avoid stale test counts, universal parity claims and treating configured CI jobs as completed runs. Preserve unrelated local changes and other `.claude/worktrees/` checkouts.
+
+## 25 October editing/context additions
+
+Copyedit uses strict anchored JSON in the existing `WritingActions` modules. Freeze the selected source, validate every anchor against that original span and preview plain prose before explicit acceptance. Never accept full prose as an invalid patch fallback. Common fixtures: `fixtures/anchored-copyedit.json`. Keep creative Rewrite separate and do not add editing minimum lengths.
+
+Structured Bible inference policies live in shared `src/lib/ai/bibleAccess.ts` and native `Services/BibleAccess.swift`. Filter before ranking; suppress controlled legacy duplicates, omit conditional facts when explicit scene state is absent, and sanitise native chat/search indexing. Preserve `aiAccess` through portable records and revision history. See `docs/reviews/copyedit-context-integration-2026-10-25.md` and the format contract. Do not reinterpret author exports as inference-filtered data.

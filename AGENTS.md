@@ -1,6 +1,6 @@
 # AGENTS.md — DraftHarbour Studio
 
-Repository guidance reviewed against source on 20 October 2026. Manifests, lockfiles and workflow files remain authoritative for executable commands and dependency versions. `CLAUDE.md` provides a source navigation guide; `README.md` documents setup and product/model status.
+Repository guidance reviewed against source on 4 November 2026. Manifests, lockfiles and workflow files remain authoritative for executable commands and dependency versions. `CLAUDE.md` provides a source navigation guide; `README.md` documents setup and product/model status.
 
 ## Standing preference: all maintained applications
 
@@ -75,18 +75,24 @@ Use checks proportionate to the change. Documentation-only work needs source/com
 
 ## Narratryx and experimental AI
 
-- Read `llm/Narratryx/README.md` and its latest linked report before model work. Training completion, structural validation and literary improvement are different claims.
+- Read `llm/Narratryx/README.md` and `llm/Narratryx/CONTINUOUS_DEVELOPMENT.md` before model work. Training completion, structural validation and literary improvement are different claims.
 - Portable export/package tooling lives in `llm/Narratryx/runtime/packaging/`. Its development catalog has no download URL or release approval; Mac inference evidence does not establish Windows support or production installer readiness. See [the runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) and [local/online plan](docs/ai-local-and-online-setup-plan.md).
 - App-owned inference is implemented separately in `desktop/src-tauri/src/local_runtime.rs`, shared `src/lib/ai/desktopLocalProvider.ts` and native `LocalModelRuntime.swift`. See [the app-managed trial](docs/managed-local-ai-trial.md). Never expose a native credential/port through renderer IPC, accept executable paths/trust hashes from projects, or add HTTP/cloud fallback to the managed-local provider. The current catalog enables only the verified Mac ARM64 development bundle; Windows/Linux installers, model downloads and hosted sign-in are not delivered.
 - Verified offline package replacement/restore lives in `desktop/src-tauri/src/local_install.rs` and native `LocalModelInstaller.swift`. Native code owns selection/confirmation. Preserve unknown files and recovery directories; do not delete a prior package before verification or treat staged renames as power-loss-safe transactions. The current 8 GiB rejection floor is not hardware certification. Different model identities require reviewed catalog/engine updates.
 - Experimental app setup uses existing providers (`src/lib/ai/narratryx.ts`, native `NarratryxProfile.swift`); the separate authenticated service is `llm/Narratryx/runtime/local/`. See [the integration guide](docs/narratryx-app-trial.md). Keep service token files and model artifacts out of Git.
-- Current adapters remain experimental. The latest craft pilot has mixed mechanical results and no completed blinded human quality ratings. Placeholder names such as `narratryx:latest` do not prove a model is installed or released.
+- Run local Narratryx evaluation and screening automatically after each authorized pilot. Human review is optional. Keep the current model when a candidate regresses, and advance candidates that pass the screening gate to fresh evaluation. Record the decision and supporting metrics.
+- Current adapters remain experimental. Craft v1 remains selected after the v57 rewrite tie and the mixed v62 continuity results. Check the development log for evidence and remaining limitations. Placeholder names such as `narratryx:latest` do not prove a model is installed or released.
 - Use only sources, jurisdictions, uses and spans supported by exact rights records. Dataset-wide public-domain metadata is not per-edition clearance. Attribute AI evidence reviews accurately; never invent human approval or legal certification.
 - The user's current training scope excludes generated literary teaching targets. Keep unresolved teacher-output candidates and unreviewed bulk corpus rows out of training. Distinguish task instructions from source-derived answer provenance.
 - Preserve held-out authors/works, benchmark hashes and independent evaluation. Editing tests must not gain a minimum length that encourages explanation. Exact canonical continuation is not a fiction-quality metric.
 - Keep data preparation/training out of app startup, installers and manuscript storage. Integrate through the existing provider abstraction and a separate, replaceable inference service. Ordinary users must not need local training or an expensive GPU.
 - Loopback URLs refer to the client device: a Mac Studio URL cannot serve a Windows PC or iPhone through that device's own `127.0.0.1`.
 - Documentation work does not authorize paid jobs, corpus uploads, model publication/promotion or changes to app defaults. Follow the user's execution scope.
+
+## Copyedit and controlled context (25 October 2026)
+
+- Main writing UI offers Copyedit separately from Rewrite. Anchored JSON is validated in the shared/native WritingActions modules before preview; no prose fallback or guessed anchor repair. Retain explicit acceptance, strict source snapshots and selection boundaries. Shared regression fixture: `fixtures/anchored-copyedit.json`.
+- Preserve optional Bible `aiAccess` policies in revisions/imports/exports/backups. Filter hidden and conditional fields before relevance ranking, suppress matching legacy fallbacks, and sanitise native chat/search contexts too. Explicit scene facts are ephemeral; missing state excludes conditional facts. Author exports retain facts hidden from inference. See [the integration report](docs/reviews/copyedit-context-integration-2026-10-25.md).
 
 ## Releases and reporting
 

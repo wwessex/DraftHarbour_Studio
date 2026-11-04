@@ -280,6 +280,10 @@ export function Header({ onAction, onToggleInspector, inspectorOpen, hasTextSele
             />
           )}
           <SaveStatus isSaving={state.isSaving} hasUnsavedChanges={hasUnsavedChanges} />
+          <span className={styles.desktopAI}>
+            <IconButton icon="chat" label="AI Chat" variant="ghost" onClick={() => dispatchCommand(COMMAND_IDS.AI_CHAT)} />
+            <IconButton icon="assistant" label="AI Suggestions" variant="ghost" onClick={() => dispatchCommand(COMMAND_IDS.AI_PANEL)} />
+          </span>
           <Tooltip content="Toggle inspector (Ctrl+Shift+I)" position="bottom">
             <IconButton
               icon="info"

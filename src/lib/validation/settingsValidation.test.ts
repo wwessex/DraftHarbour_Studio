@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  aiTransportError,
   mapAIConnectionFailureMessage,
   validateAiEndpointUrl,
   validateAuthorizationHeader,
@@ -31,4 +32,11 @@ describe('settingsValidation helpers', () => {
     expect(mapAIConnectionFailureMessage({ status: 404, errorText: 'model not found' })).toContain('Model not found');
     expect(mapAIConnectionFailureMessage({ errorMessage: 'Failed to fetch' })).toContain('Cannot reach the AI server');
   });
+});
+
+
+it('does not expose URL credentials or query strings in recovery messages', () => {
+  const error = aiTransportError(new TypeError('Failed to fetch'), 'http://private-user:private-key@127.0.0.1:8890/v1?token=private-query');
+  expect(error.message).toContain('http://127.0.0.1:8890');
+  expect(error.message).not.toContain('private-');
 });

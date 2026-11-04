@@ -1,6 +1,12 @@
 import Foundation
 
 public struct AIRequest: Codable, Equatable, Sendable {
+  public static let naturalWritingStyle = "Writing style: Follow the author's task, requested voice, language, scope and output format first. For new prose and rewrites, match the supplied author's voice, viewpoint, tense and register. Prefer concrete details, precise verbs, natural dialogue and varied sentence lengths. Avoid stock phrases, repetitive rhythms, inflated language, generic transitions and unnecessary summaries or explanations. For chat, feedback and suggestions, be direct, specific and conversational. Do not add deliberate mistakes, invented facts or claims of human authorship. For copyediting, grammar, translation and structured output, preserve meaning, edit boundaries, exact anchors and required schemas; apply style only where the task permits. Return only the requested output."
+
+  public var styledPrompt: String {
+    prompt.hasPrefix(Self.naturalWritingStyle + "\n\n") ? prompt : Self.naturalWritingStyle + "\n\n" + prompt
+  }
+
   public var prompt: String
   public var context: String?
   public var projectType: ProjectType
@@ -36,6 +42,13 @@ public protocol AIProvider: Sendable {
   func generate(_ request: AIRequest) async throws -> AIResponse
 }
 
+private final class AIEndpointSessionDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+  func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                  newRequest request: URLRequest, completionHandler: @escaping @Sendable (URLRequest?) -> Void) {
+    completionHandler(nil)
+  }
+}
+
 public struct OpenAICompatibleProvider: AIProvider {
   public var id: String
   public var displayName: String
@@ -54,7 +67,8 @@ public struct OpenAICompatibleProvider: AIProvider {
   }
 
   public func generate(_ request: AIRequest) async throws -> AIResponse {
-    guard apiKey != nil || endpoint.host?.contains("localhost") == true || endpoint.host == "127.0.0.1" else {
+    let isLoopback = ["localhost", "127.0.0.1", "::1", "[::1]"].contains(endpoint.host?.lowercased() ?? "")
+    guard apiKey?.isEmpty == false || isLoopback else {
       throw DraftHarbourError.providerNotConfigured(displayName)
     }
 
@@ -79,7 +93,16 @@ public struct OpenAICompatibleProvider: AIProvider {
     )
     urlRequest.httpBody = try JSONEncoder().encode(payload)
 
-    let (data, response) = try await session.data(for: urlRequest)
+    let data: Data
+    let response: URLResponse
+    do {
+      (data, response) = try await session.data(for: urlRequest, delegate: AIEndpointSessionDelegate())
+    } catch let error as URLError where [.cannotConnectToHost, .cannotFindHost, .networkConnectionLost, .notConnectedToInternet, .timedOut].contains(error.code) {
+      let local = ["localhost", "127.0.0.1", "::1", "[::1]"].contains(endpoint.host?.lowercased() ?? "")
+      throw LocalRuntimeFailure.unavailable(local
+        ? "Cannot reach the local AI server. Start your local model service, check its address in Settings > AI, then retry."
+        : "Cannot reach the AI server. Check your connection and endpoint in Settings > AI, then retry.")
+    }
     if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
       let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
       let details = (payload?["error"] as? [String: Any])?["message"] as? String
@@ -99,9 +122,9 @@ public struct OpenAICompatibleProvider: AIProvider {
   private func buildPrompt(_ request: AIRequest) -> String {
     let sectionLabel = request.projectType == .screenplay ? "scene" : "chapter"
     if let context = request.context, !context.isEmpty {
-      return "Current \(sectionLabel): \(request.sectionTitle ?? "Untitled")\n\n---\n\(context)\n---\n\n\(request.prompt)"
+      return "Current \(sectionLabel): \(request.sectionTitle ?? "Untitled")\n\n---\n\(context)\n---\n\n\(request.styledPrompt)"
     }
-    return request.prompt
+    return request.styledPrompt
   }
 }
 

@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "created_on": "2026-10-26",
+  "transcription_method": "Codex AI manually transcribed selected spans from inspected original page images; not generated literary prose. Printed line breaks/line-end hyphenation and spacing normalised, curly quotation encoding used, paragraphs retained; no spelling or lexical modernisation. OCR is discovery-only, not gold. No human verification recorded.",
+  "acquisitions": [
+    {
+      "id": "hopkins",
+      "kind": "ocr",
+      "url": "https://archive.org/download/contending-forces/Contending%20Forces_djvu.txt",
+      "path": "rights/raw/independent-scenes-2026-10-26/hopkins.txt",
+      "sha256": "ad89c35eb7b7c8ef756b46d4972835ccfd41cb33b785c2259813d9255c824c1e",
+      "bytes": 505742,
+      "retrieved_on": "2026-10-26"
+    },
+    {
+      "id": "hopkins",
+      "kind": "pages",
+      "url": "https://archive.org/download/contending-forces/Contending%20Forces_scandata.xml",
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-pages.xml",
+      "sha256": "360e431aa3620039b43101f8ad1d4c15d5cb6ff38d101b98bdb27cfcbbd024b1",
+      "bytes": 147273,
+      "retrieved_on": "2026-10-26"
+    },
+    {
+      "id": "james-1881",
+      "kind": "ocr",
+      "url": "https://archive.org/download/portraitoflady01jamerich/portraitoflady01jamerich_djvu.txt",
+      "path": "rights/raw/independent-scenes-2026-10-26/james-1881.txt",
+      "sha256": "010a31ca4472119b557599364ff317a662f2085e58405fedf24276a75e1bba17",
+      "bytes": 522628,
+      "retrieved_on": "2026-10-26"
+    },
+    {
+      "id": "james-1908",
+      "kind": "ocr",
+      "url": "https://archive.org/download/portraitlady103jameuoft/portraitlady103jameuoft.txt",
+      "path": "rights/raw/independent-scenes-2026-10-26/james-1908.txt",
+      "sha256": "da6f843dd4b3bfa29ee80596f5ae9619968abec4177d0df1dfa7ec8dc0bf80c4",
+      "bytes": 709270,
+      "retrieved_on": "2026-10-26"
+    }
+  ],
+  "images": [
+    {
+      "source": "hopkins",
+      "leaf": 2,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-2.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0002.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "ef83a2c5dbdf182c0e7e86376677e0722c0558da13edb6ab587651ff4801dcbe"
+    },
+    {
+      "source": "hopkins",
+      "leaf": 99,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-99.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0099.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "57035abcda2dacbfd1b89318ca60cc0e6d8afb437f773c35c417fb5afc1a1e85"
+    },
+    {
+      "source": "hopkins",
+      "leaf": 100,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-100.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0100.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "c3165decc66e3e750d7eff3eb6e7b09981b06e3926369c5153e4228057dbfe00"
+    },
+    {
+      "source": "hopkins",
+      "leaf": 101,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-101.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0101.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "195be8573bc00ca052bcee6588cc5902c4e3efd073eb3bc5da6279a27ed62289"
+    },
+    {
+      "source": "hopkins",
+      "leaf": 102,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-102.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0102.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "fdbb980dba6d19064de76f5eb5b2d0571120343beac1fc3d0a0f6be673d57a80"
+    },
+    {
+      "source": "hopkins",
+      "leaf": 103,
+      "path": "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-103.jpg",
+      "url": "https://ia600408.us.archive.org/BookReader/BookReaderImages.php?zip=%2F28%2Fitems%2Fcontending-forces%2FContending+Forces_jp2.zip&file=Contending+Forces_jp2%2FContending+Forces_0103.jp2&id=contending-forces&scale=2&rotate=0",
+      "sha256": "418f6c3f5248d2888e67d917d4de954ff408819690761509c679c32bf78b6430"
+    },
+    {
+      "source": "james-1881",
+      "leaf": 13,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-13.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0013.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "6129e665dda04c0d3e7cb570f45545df6ec8f34877a568a856a0d3e6fb4ae87e"
+    },
+    {
+      "source": "james-1881",
+      "leaf": 18,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-18.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0018.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "38f14ecd13c1a3f9e23a0d28b25cabb8f8a21cda84c50eeb5cab1c50cbea0c45"
+    },
+    {
+      "source": "james-1881",
+      "leaf": 19,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-19.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0019.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "51a18793bd88019c37060dead79d8442256755c4b248ea5e6bc32e3c2a9c18d7"
+    },
+    {
+      "source": "james-1881",
+      "leaf": 20,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-20.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0020.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "30588aa9f185123541272821dfbf9bebfd3a81baf4baa0716b2f4a1ffc1fbaf7"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 7,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-7.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0007.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "997cac49ec32d4f95d5faf8ead34ca526c02955ea2f098b1e4dc2d9c363c5545"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 30,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-30.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0030.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "2895c04eb2f3409d5f97939201725f2657d13e1797f4382e0b254a733b167f2d"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 31,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-31.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0031.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "86418066e042c87b5b1b1df4e6e0c61bf01430079dcdea4eb94aaa093620df9a"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 42,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-42.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0042.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "74002af8188de3a233b29efc84943545ebbd10871c8de5baeacfa0bc3d030480"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 43,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-43.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0043.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "981de2c420f3db017d46c6d4f6ca729b0f74f048c2dd7fae3a7aa901619540f4"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 44,
+      "path": "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-44.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0044.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "c8d66d20d58ddc4f39c7823abc83ef59c3851ec5285b05fdaae6f027f211e04c"
+    }
+  ],
+  "files": {
+    "rights/evidence/independent-scenes-2026-10-26/acquisition.json": "634db8aac0063bcbd8be557f9074b0bc397ab19dbafcb00b8738744df73ef7b0",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-100.jpg": "c3165decc66e3e750d7eff3eb6e7b09981b06e3926369c5153e4228057dbfe00",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-101.jpg": "195be8573bc00ca052bcee6588cc5902c4e3efd073eb3bc5da6279a27ed62289",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-102.jpg": "fdbb980dba6d19064de76f5eb5b2d0571120343beac1fc3d0a0f6be673d57a80",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-103.jpg": "418f6c3f5248d2888e67d917d4de954ff408819690761509c679c32bf78b6430",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-2.jpg": "ef83a2c5dbdf182c0e7e86376677e0722c0558da13edb6ab587651ff4801dcbe",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-leaf-99.jpg": "57035abcda2dacbfd1b89318ca60cc0e6d8afb437f773c35c417fb5afc1a1e85",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-metadata.json": "780c44601458a0382b9f19e4f4b8713512d11239ad15810a042720f659879e30",
+    "rights/evidence/independent-scenes-2026-10-26/hopkins-pages.xml": "360e431aa3620039b43101f8ad1d4c15d5cb6ff38d101b98bdb27cfcbbd024b1",
+    "rights/evidence/independent-scenes-2026-10-26/images.initial-path-failure.json": "85352e1dfe2efaa68ef9a4ec179f0ce910d6c0ccbf656583f4617b5f71396a85",
+    "rights/evidence/independent-scenes-2026-10-26/images.manifest.json": "d4e34aefc052f377c014e93b136e0b1ffe065fb010939b50e1e5211792ce3a6b",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-13.jpg": "6129e665dda04c0d3e7cb570f45545df6ec8f34877a568a856a0d3e6fb4ae87e",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-18.jpg": "38f14ecd13c1a3f9e23a0d28b25cabb8f8a21cda84c50eeb5cab1c50cbea0c45",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-19.jpg": "51a18793bd88019c37060dead79d8442256755c4b248ea5e6bc32e3c2a9c18d7",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-20.jpg": "30588aa9f185123541272821dfbf9bebfd3a81baf4baa0716b2f4a1ffc1fbaf7",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-metadata.json": "f4bdbb1dd19b5eb3c4956b44d87b679928927487f45741883dc99d97ade73ef0",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-pages.xml": "c105f8afc97be0c917772a626a5091861ef03cbbb6ba2bebe9ebc786d91b9cc6",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-scandata.zip": "be3168ed102fe83d1f0ca054024c0c748facd9aab56f35812538db81a399015f",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-30.jpg": "2895c04eb2f3409d5f97939201725f2657d13e1797f4382e0b254a733b167f2d",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-31.jpg": "86418066e042c87b5b1b1df4e6e0c61bf01430079dcdea4eb94aaa093620df9a",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-42.jpg": "74002af8188de3a233b29efc84943545ebbd10871c8de5baeacfa0bc3d030480",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-43.jpg": "981de2c420f3db017d46c6d4f6ca729b0f74f048c2dd7fae3a7aa901619540f4",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-44.jpg": "c8d66d20d58ddc4f39c7823abc83ef59c3851ec5285b05fdaae6f027f211e04c",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-7.jpg": "997cac49ec32d4f95d5faf8ead34ca526c02955ea2f098b1e4dc2d9c363c5545",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-metadata.json": "349d35880f3af62efa18e347c8633f81265111ebecb8375a95c518dfe095761d",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-pages.xml": "d235a056ad63c8b2b6eeacde625cae48cf7ee8a391329603dadbdb9119548884",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-scandata.xml": "d235a056ad63c8b2b6eeacde625cae48cf7ee8a391329603dadbdb9119548884",
+    "rights/raw/independent-scenes-2026-10-26/hopkins.txt": "ad89c35eb7b7c8ef756b46d4972835ccfd41cb33b785c2259813d9255c824c1e",
+    "rights/raw/independent-scenes-2026-10-26/hopkins.verified.txt": "356f08d524d4380205e274baa2ffd2de4f2c63f43ae7349da8055cb9dfae82c2",
+    "rights/raw/independent-scenes-2026-10-26/james-1881.txt": "010a31ca4472119b557599364ff317a662f2085e58405fedf24276a75e1bba17",
+    "rights/raw/independent-scenes-2026-10-26/james-1881.verified.txt": "ac9f87908991f4a33499ba7c6dd53875b73b5c98ab315663b1a8cfe0669bfe36",
+    "rights/raw/independent-scenes-2026-10-26/james-1908.txt": "da6f843dd4b3bfa29ee80596f5ae9619968abec4177d0df1dfa7ec8dc0bf80c4",
+    "rights/raw/independent-scenes-2026-10-26/james-1908.verified.txt": "77d0b4f1e962f84af153b7cabd4f049ac768a570a84b863f7cbfa1ccf1fb9042",
+    "rights/raw/independent-scenes-2026-10-26/transcriptions.json": "1c9e33aeee140b8855afc0bf0dbfb78dc1ab7149552945ab92c810e3ece3c789"
+  }
+}

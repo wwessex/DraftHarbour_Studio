@@ -25,6 +25,25 @@ pub(crate) const CATALOG_HASH: &str =
 pub(crate) const CATALOG_PLATFORM: &str = "darwin-arm64";
 pub const MODEL: &str = "narratryx-craft-v1-q4-k-m";
 
+fn http_failure(status: u16, body: &Value) -> &'static str {
+    let kind = body["error"]["type"].as_str().unwrap_or("").to_lowercase();
+    let message = body["error"]["message"]
+        .as_str()
+        .unwrap_or("")
+        .to_lowercase();
+    if status == 413 || kind.contains("context") || (status == 400 && message.contains("context")) {
+        "This request exceeds the local model's context window. Use a smaller passage or bounded Suggestions context."
+    } else if status == 429 {
+        "Local AI is busy. Wait for the current request to finish, then retry."
+    } else if status == 401 || status == 403 {
+        "Local AI authentication failed. Stop Local AI and retry to create a new private session."
+    } else if status == 400 {
+        "Local AI rejected the request. Check the selected action and model configuration, then retry."
+    } else {
+        "Local AI could not complete this request. Retry, or restart Local AI if the problem persists."
+    }
+}
+
 #[derive(Deserialize)]
 pub(crate) struct FileRecord {
     pub(crate) bytes: u64,
@@ -404,7 +423,9 @@ impl LocalRuntime {
                 "stream":false,"temperature":0,"seed":42,"cache_prompt":false,"chat_template_kwargs":{"enable_thinking":false}
             })).send().map_err(|_| "Local AI stopped or could not complete this request.")?;
             if !response.status().is_success() {
-                return Err("Local AI could not complete this request. Try a shorter passage or restart Local AI.".into());
+                let status = response.status().as_u16();
+                let body = response.json::<Value>().unwrap_or(Value::Null);
+                return Err(http_failure(status, &body).into());
             }
             let value: Value = response
                 .json()
@@ -433,6 +454,16 @@ impl LocalRuntime {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn http_errors_distinguish_context_limits_without_exposing_server_details() {
+        let body = json!({"error":{"type":"exceed_context_size_error","message":"private runtime path or token"}});
+        let message = http_failure(400, &body);
+        assert!(message.contains("context window"));
+        assert!(!message.contains("private"));
+        assert!(http_failure(429, &Value::Null).contains("busy"));
+        assert!(http_failure(401, &Value::Null).contains("private session"));
+    }
+
     fn fixture() -> (TempDir, String) {
         let temp = tempfile::tempdir().unwrap();
         fs::write(temp.path().join("model.gguf"), b"model").unwrap();

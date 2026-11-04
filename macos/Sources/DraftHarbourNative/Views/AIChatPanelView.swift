@@ -11,24 +11,24 @@ private struct AIProposalDisplayRow: Identifiable {
 
 struct AIChatPanelView: View {
   @Bindable var store: ProjectStore
+  @Bindable var session: AIChatSession
   var focusEditProposal: (AIEditProposal) -> Void
 
-  @State private var selectedThreadID: String?
-  @State private var selectedProviderID: String?
-  @State private var prompt = ""
-  @State private var isSending = false
-  @State private var errorMessage: String?
+  @AppStorage("DraftHarbour.aiSetup.mode") private var aiMode = "existing"
 
   private var providerOptions: [AIProviderConfig] {
-    var providers = store.envelope.aiProviders.filter(\.enabled)
+    var providers = store.envelope.aiProviders.filter { $0.enabled && NativeAIProviderFactory.isLocalProvider($0) }
+    if aiMode == "local", !providers.contains(where: { $0.endpoint == NativeLocalModelRuntime.endpoint }) {
+      providers.insert(.managedLocalDefault(), at: 0)
+    }
     if !providers.contains(where: { $0.provider == .appleFoundation }) {
-      providers.insert(.appleFoundationDefault(), at: 0)
+      providers.append(.appleFoundationDefault())
     }
     return providers
   }
 
   private var selectedProvider: AIProviderConfig {
-    if let selectedProviderID,
+    if let selectedProviderID = session.selectedProviderID,
        let provider = providerOptions.first(where: { $0.id == selectedProviderID }) {
       return provider
     }
@@ -36,7 +36,8 @@ struct AIChatPanelView: View {
   }
 
   private var selectedThread: AIChatThread? {
-    if let selectedThreadID,
+    if session.selectedThreadID == "" { return nil }
+    if let selectedThreadID = session.selectedThreadID,
        let thread = store.envelope.aiChatThreads.first(where: { $0.id == selectedThreadID }) {
       return thread
     }
@@ -56,17 +57,34 @@ struct AIChatPanelView: View {
     VStack(alignment: .leading, spacing: 14) {
       header
       threadSelector
-      transcript
+      ScrollViewReader { reader in
+        ScrollView {
+          VStack(alignment: .leading, spacing: 14) {
+            transcript
+            if !proposalRows.isEmpty { proposals }
+            Color.clear.frame(height: 1).id("chat-bottom")
+          }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear { reader.scrollTo("chat-bottom", anchor: .bottom) }
+        .onChange(of: selectedThread?.messages.count) { _, _ in
+          reader.scrollTo("chat-bottom", anchor: .bottom)
+        }
+        .onChange(of: selectedThread?.id) { _, _ in
+          reader.scrollTo("chat-bottom", anchor: .bottom)
+        }
+      }
       composer
-      proposals
-      if let errorMessage {
+        .fixedSize(horizontal: false, vertical: true)
+        .layoutPriority(1)
+      if let errorMessage = session.errorMessage {
         Label(errorMessage, systemImage: "exclamationmark.triangle")
           .foregroundStyle(.red)
       }
     }
     .onAppear {
-      selectedThreadID = selectedThreadID ?? store.envelope.aiChatThreads.first?.id
-      selectedProviderID = selectedProviderID ?? providerOptions.first?.id
+      session.selectedThreadID = session.selectedThreadID ?? store.envelope.aiChatThreads.first?.id
+      session.selectedProviderID = session.selectedProviderID ?? providerOptions.first?.id
     }
   }
 
@@ -76,7 +94,7 @@ struct AIChatPanelView: View {
         Picker("Provider", selection: Binding(get: {
           selectedProvider.id
         }, set: { value in
-          selectedProviderID = value
+          session.selectedProviderID = value
         })) {
           ForEach(providerOptions) { provider in
             Text(provider.label).tag(provider.id)
@@ -90,7 +108,7 @@ struct AIChatPanelView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         }
-        Text("Chapters, scenes, characters, world entries, and blueprint details stay local for Apple Foundation Models requests. Edits are proposals until accepted.")
+        Text("AI Chat uses local models only. Project context stays on this device. Edits are proposals until accepted.")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -103,7 +121,7 @@ struct AIChatPanelView: View {
       Picker("Thread", selection: Binding(get: {
         selectedThread?.id ?? ""
       }, set: { value in
-        selectedThreadID = value.isEmpty ? nil : value
+        session.selectedThreadID = value.isEmpty ? nil : value
       })) {
         if store.envelope.aiChatThreads.isEmpty {
           Text("New Chat").tag("")
@@ -115,11 +133,12 @@ struct AIChatPanelView: View {
       .frame(maxWidth: 360)
 
       Button {
-        selectedThreadID = nil
-        prompt = ""
+        session.selectedThreadID = ""
+        session.prompt = ""
       } label: {
         Label("New Chat", systemImage: "plus.message")
       }
+      .help("Start a new local AI conversation")
     }
   }
 
@@ -140,6 +159,7 @@ struct AIChatPanelView: View {
                 }
               }
               Text(message.content)
+                .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
               if !message.editProposals.isEmpty {
@@ -163,17 +183,22 @@ struct AIChatPanelView: View {
   private var composer: some View {
     GroupBox("Ask") {
       VStack(alignment: .leading, spacing: 10) {
-        TextField("Ask about continuity, characters, plot, or request specific edits", text: $prompt, axis: .vertical)
-          .lineLimit(3...7)
+        Toggle("Request edit proposals", isOn: $session.requestEdits).disabled(session.isSending)
+        Text("All \(store.envelope.sections.count) chapters/scenes · edits require approval").font(.caption).foregroundStyle(.secondary)
+        if session.isSending { Text(session.sendStatus).font(.caption).foregroundStyle(.secondary) }
+        TextField("Ask about continuity, characters, plot, or request specific edits", text: $session.prompt, axis: .vertical)
+          .lineLimit(2...4)
           .textFieldStyle(.roundedBorder)
         HStack {
           Button {
-            Task { await sendPrompt() }
+            session.start(store: store, provider: selectedProvider)
           } label: {
-            Label(isSending ? "Thinking..." : "Send", systemImage: "paperplane")
+            Label(session.isSending ? "Thinking..." : "Send", systemImage: "paperplane")
           }
-          .disabled(isSending || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || (selectedProviderUnavailable && !canSendWithLocalCommand))
+          .help("Send your message to the selected local model")
+          .disabled(session.isSending || session.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
+          if session.isSending { Button("Stop") { session.cancel() }.help("Stop generating this reply") }
           if selectedProviderUnavailable {
             Text(providerStatusText(selectedProvider))
               .font(.caption)
@@ -256,7 +281,7 @@ struct AIChatPanelView: View {
               prompt: selectedThread.map { latestUserPrompt(in: $0) } ?? ""
             )
           } catch {
-            errorMessage = error.localizedDescription
+            session.errorMessage = error.localizedDescription
           }
         }
         .disabled(row.proposal.status != .pending)
@@ -265,7 +290,7 @@ struct AIChatPanelView: View {
           do {
             _ = try store.rejectAIEditProposal(threadID: row.threadID, messageID: row.messageID, proposalID: row.proposal.id)
           } catch {
-            errorMessage = error.localizedDescription
+            session.errorMessage = error.localizedDescription
           }
         }
         .disabled(row.proposal.status != .pending)
@@ -273,99 +298,23 @@ struct AIChatPanelView: View {
     }
   }
 
-  @MainActor
-  private func sendPrompt() async {
-    let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty else { return }
-    isSending = true
-    errorMessage = nil
-    defer { isSending = false }
-
-    do {
-      let thread = store.ensureAIChatThread(id: selectedThreadID, title: trimmed)
-      selectedThreadID = thread.id
-      if selectedProvider.provider == .appleFoundation,
-         !store.envelope.aiProviders.contains(where: { $0.id == selectedProvider.id }) {
-        store.upsertAIProvider(selectedProvider)
-      }
-      _ = try store.appendAIChatMessage(threadID: thread.id, role: .user, content: trimmed)
-      prompt = ""
-
-      let shouldAddCharacters = AIChatService.shouldAddCharactersToStoryBible(trimmed)
-      let shouldAddWorldEntries = AIChatService.shouldAddWorldEntriesToStoryBible(trimmed)
-      if shouldAddCharacters || shouldAddWorldEntries {
-        var replyParts: [String] = []
-        var context = AIProjectContextService.index(for: store.envelope)
-
-        if shouldAddCharacters {
-          let candidates = context.manuscriptCharacterCandidates(limit: 80)
-          let addedCharacters = store.addAICharacterCandidatesToStoryBible(candidates)
-          replyParts.append(AIChatService.storyBibleAddResponse(
-            addedCharacters: addedCharacters,
-            candidates: candidates,
-            checkedSectionCount: context.sections.count,
-            projectType: context.projectType
-          ))
-          context = AIProjectContextService.index(for: store.envelope)
-        }
-
-        if shouldAddWorldEntries {
-          let candidates = context.manuscriptWorldCandidates(limit: 80)
-          let addedWorldEntries = store.addAIWorldCandidatesToStoryBible(candidates)
-          replyParts.append(AIChatService.storyBibleWorldAddResponse(
-            addedWorldEntries: addedWorldEntries,
-            candidates: candidates,
-            checkedSectionCount: context.sections.count,
-            projectType: context.projectType
-          ))
-        }
-
-        _ = try store.appendAIChatMessage(
-          threadID: thread.id,
-          role: .assistant,
-          content: replyParts.joined(separator: "\n\n"),
-          providerId: "local-story-bible-update",
-          model: "story-bible-candidate-scan"
-        )
-        return
-      }
-
-      let result = try await AIChatService.respond(to: trimmed, envelope: store.envelope, providerConfig: selectedProvider)
-      _ = try store.appendAIChatMessage(
-        threadID: thread.id,
-        role: .assistant,
-        content: result.reply,
-        providerId: result.providerId,
-        model: result.model,
-        editProposals: result.editProposals
-      )
-    } catch {
-      errorMessage = error.localizedDescription
-    }
-  }
-
   private var selectedProviderUnavailable: Bool {
     selectedProvider.provider == .appleFoundation && AppleFoundationModelsProvider.availabilityStatus() != .available
-  }
-
-  private var canSendWithLocalCommand: Bool {
-    AIChatService.shouldAnswerWithLocalCharacterScan(prompt) ||
-      AIChatService.shouldAddCharactersToStoryBible(prompt) ||
-      AIChatService.shouldAddWorldEntriesToStoryBible(prompt)
   }
 
   private func providerStatusText(_ provider: AIProviderConfig) -> String {
     if provider.provider == .appleFoundation {
       return AppleFoundationModelsProvider.availabilityStatus().label
     }
-    return provider.endpoint.contains("localhost") || provider.endpoint.contains("127.0.0.1") ? "Local endpoint" : "Configured endpoint"
+    if provider.endpoint == NativeLocalModelRuntime.endpoint { return "On-device managed model" }
+    return NativeAIProviderFactory.isLocalProvider(provider) ? "Local endpoint" : "Configured endpoint"
   }
 
   private func providerStatusStyle(_ provider: AIProviderConfig) -> Color {
     if provider.provider == .appleFoundation {
       return AppleFoundationModelsProvider.availabilityStatus() == .available ? .green : .secondary
     }
-    return provider.endpoint.contains("localhost") || provider.endpoint.contains("127.0.0.1") ? .green : .secondary
+    return NativeAIProviderFactory.isLocalProvider(provider) ? .green : .secondary
   }
 
   private func statusStyle(_ status: AIEditProposalStatus) -> Color {

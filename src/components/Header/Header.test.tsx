@@ -67,6 +67,8 @@ describe('Header desktop menu fallback', () => {
       root.render(<Header onAction={vi.fn()} hasTextSelection={false} editorFocused={false} />);
     });
     expect(container.querySelector('[data-testid="menu-bar"]')).toBeNull();
+    expect(Array.from(container.querySelectorAll('button')).some(button => button.textContent === 'AI Chat')).toBe(true);
+    expect(Array.from(container.querySelectorAll('button')).some(button => button.textContent === 'AI Suggestions')).toBe(true);
 
     delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
     act(() => {

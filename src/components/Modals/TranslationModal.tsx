@@ -1,3 +1,4 @@
+import { storyBibleReferences } from '@/lib/ai/storyBibleReferences';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Dialog, Button } from '@/components/UI';
 import { useToast } from '@/components/UI';
@@ -98,7 +99,7 @@ export function TranslationModal({ open, onClose }: TranslationModalProps) {
       const response = await provider.execute({
         action: 'translate',
         prompt,
-        context: '',
+        context: storyBibleReferences(state.novelId, text),
         projectType: state.projectType,
         sectionTitle: activeChapter.title,
         signal: controller.signal,
@@ -113,7 +114,7 @@ export function TranslationModal({ open, onClose }: TranslationModalProps) {
       setLoading(false);
       provider.destroy();
     }
-  }, [activeChapter, selectedLanguage, preserveFormatting, state.projectType, sectionLabel]);
+  }, [activeChapter, selectedLanguage, preserveFormatting, state.projectType, state.novelId, sectionLabel]);
 
   const handleCopy = () => {
     if (result) {

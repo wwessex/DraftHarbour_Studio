@@ -1,0 +1,57 @@
+{
+  "status": "installed-trainer-audit-recipe-frozen-not-executed",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "training_records": 28,
+    "monitor_records": 16,
+    "proposed_max_updates": 28,
+    "supervised_train_tokens": 3033,
+    "supervised_monitor_tokens": 1709,
+    "maximum_record_tokens": 499,
+    "primary_cases": 44,
+    "all_primary_exposed": true,
+    "seen_fit_cases": 5,
+    "proposed_requests": 147,
+    "installed_source_hashes_match": true,
+    "cached_tokenizer_metadata_pinned": true,
+    "exact_token_masks_and_records_verified": true,
+    "prior_evidence_and_models_unchanged": true,
+    "worker_started": false,
+    "weights_loaded": false,
+    "training_executed": false,
+    "inference_requests": 0,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/trainer-recipe-v21/pin_tokenizer.py": "cb511bb932383c355d14c6c6e48e41a1b9d0226fd72e4c81472fecdf74875b14",
+    "curation/trainer-recipe-v21/verify.py": "afd32c0455de36581d8b7dff301aa449ce7972be9396a6c890c3d1c14aff684f",
+    "curation/trainer-recipe-v21/prepare.py": "78e750de332e4821fff974ac69f42087176274abbd77b8f7e9f4ead1a118380a",
+    "foundation/trainer_recipe.py": "535bde9736e24dc47179dfae79c7a76c73b4efd85d2aa130ddab5b13c8db8185",
+    "tests/test_trainer_recipe.py": "a7d62b23f3932d9803b83a96650c9c33c51310ec19e0697e5978fa3f8cbb95ee",
+    "docs/trainer-recipe-v21-2026-11-01.md": "5f21c06b62810dc2f65b0da524c028947a1ce76b8525cbc413137eb0c3c7b116"
+  },
+  "artifact_hashes": {
+    "artifacts/trainer-recipe-v21/installed-audit.json": "7ebcd1883c1fbfba522ccd0687e6a69f8ee391cb0d4dcbc51b7048c105d6d169",
+    "artifacts/trainer-recipe-v21/protocol.proposed.frozen.json": "66829596f1665bc90b76ba27801e087e4aa25dcac36e0b6380c9f316f1a109f4",
+    "artifacts/trainer-recipe-v21/request.proposed.json": "91636687980787b05f89142a6d6d2facb8bc9891e9bbf13237eddb5061ed353c",
+    "artifacts/trainer-recipe-v21/model-metadata.pins.json": "720b2cfdc42ed6a51e0364d5b72c082776b1b381b8d576531418382e3478ea80",
+    "artifacts/trainer-recipe-v21/worker-config.proposed.json": "a3c18decd03daf4288c1ec56a760087561249bc22a13d3d26375432c5ad30a74",
+    "artifacts/trainer-recipe-v21/seen-fit.cases.frozen.jsonl": "56d1a749679002a144f56b6cb7408bcf6c62c72420d74cca93ca68a0b243f2bb",
+    "artifacts/trainer-recipe-v21/primary.cases.frozen.jsonl": "294aa3a799788bba1aa0f1fca3080511804eebe8790e896483b19160f00926f5",
+    "artifacts/trainer-recipe-v21/train.tokens.jsonl": "00d7ebee0ada761d36c8392c19b72e119cbd41a8d948966b5649c2ac9e4db8ac",
+    "artifacts/trainer-recipe-v21/validation.tokens.jsonl": "e6122e8e5f312b285b27e408f9e67eb573693f65748b4a4c876665382fe92977",
+    "artifacts/trainer-recipe-v21/verification.json": "dd98b0e5eb0b3771b692857aa4159dd52ead25cdcfe5050bbf612e39e40eca0b"
+  },
+  "tests": {
+    "passed": true,
+    "count": 239,
+    "seconds": 72.305,
+    "log_sha256": "348fbdf2e66a25e6d90fc585b6d1c5480ab5cb02629ea4b100be7b6acd559f88"
+  },
+  "training_executed": false,
+  "inference_requests": 0,
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-scan-metadata.json",
+    "url": "https://archive.org/metadata/lifecharlesdick01unkngoog",
+    "sha256": "30b010fc5637ef9676eb223a9dd432ee275c216267f2470462b3edd41cd01ed2"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-scan-ocr.txt",
+    "url": "https://archive.org/download/lifecharlesdick01unkngoog/lifecharlesdick01unkngoog_djvu.txt",
+    "sha256": "abb9633d79c715dc66b09cdaddbc6e154ce61d3a87a6c2d86d1e918f1e8a752a"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-scan-pages.xml",
+    "url": "https://archive.org/download/lifecharlesdick01unkngoog/lifecharlesdick01unkngoog_scandata.xml",
+    "sha256": "f281370ce0e64b49525ca7dfaffe09680a1f5cfff21400eb86379250e1dc4360"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/dickens-1890-chapter.html",
+    "url": "https://en.wikisource.org/wiki/Great_Expectations_(1890)/Chapter_LIX",
+    "sha256": "800b7a1894300e451684a2e0c870d33b5d8d587a13a7ec1d8fb214f20bd8d5d4"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/dickens-1890-index.html",
+    "url": "https://en.wikisource.org/wiki/Index:Great_Expectations.djvu",
+    "sha256": "d3c26597e20fe6e08ef70e0a18e078b0d0eece0e8235762423706eca57d71ece"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/uk-term.html",
+    "url": "https://www.gov.uk/copyright/how-long-copyright-lasts",
+    "sha256": "7db6e5e171e0f3d850dedaf40284fc7b34a74ba4a995ac8179e53194bfc30f8b"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/us-term.pdf",
+    "url": "https://www.copyright.gov/circs/circ15a.pdf",
+    "sha256": "6ff3c5612e1cd56469b3eb7d35eba7fd3374843d82744c63ab909225f53b7aef"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-leaf-13.jpg",
+    "url": "https://ia600605.us.archive.org/BookReader/BookReaderImages.php?zip=/3/items/lifecharlesdick01unkngoog/lifecharlesdick01unkngoog_jp2.zip&file=lifecharlesdick01unkngoog_jp2/lifecharlesdick01unkngoog_0013.jp2&id=lifecharlesdick01unkngoog&scale=2&rotate=0",
+    "sha256": "42546d984af36f5391eb18f150a0ec4bc6b80fadc0be1ddb197ea599b1016f2b"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-leaf-361.jpg",
+    "url": "https://ia600605.us.archive.org/BookReader/BookReaderImages.php?zip=/3/items/lifecharlesdick01unkngoog/lifecharlesdick01unkngoog_jp2.zip&file=lifecharlesdick01unkngoog_jp2/lifecharlesdick01unkngoog_0361.jp2&id=lifecharlesdick01unkngoog&scale=2&rotate=0",
+    "sha256": "01559cf60623d68c77c9d22983ae801142668711ad7693bc620c6ba84bd55a1e"
+  },
+  {
+    "path": "rights/evidence/author-revision-followup-2026-10-25/forster-leaf-362.jpg",
+    "url": "https://ia600605.us.archive.org/BookReader/BookReaderImages.php?zip=/3/items/lifecharlesdick01unkngoog/lifecharlesdick01unkngoog_jp2.zip&file=lifecharlesdick01unkngoog_jp2/lifecharlesdick01unkngoog_0362.jp2&id=lifecharlesdick01unkngoog&scale=2&rotate=0",
+    "sha256": "f515eccca09838d411ad71685d072992b64242f97e90fd0bfac4167e3f97ef61"
+  }
+]

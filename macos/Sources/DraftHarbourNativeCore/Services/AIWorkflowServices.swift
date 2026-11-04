@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 public protocol SecretStore: Sendable {
@@ -98,7 +99,7 @@ public enum AIWorkflowServices {
     """
   }
 
-  public static func buildStoryContext(envelope: DhprojEnvelope, section: Section?) -> String {
+  public static func buildStoryContext(envelope: DhprojEnvelope, section: Section?, scene: [String: String] = [:]) -> String {
     var parts: [String] = [
       "Project: \(envelope.project.title)",
       "Type: \(envelope.projectType.rawValue)"
@@ -106,12 +107,8 @@ public enum AIWorkflowServices {
     if let blueprint = envelope.storyBlueprint {
       parts.append("Blueprint: \(blueprint.genre) \(blueprint.subgenre), tone \(blueprint.tone), voice \(blueprint.voice), structure \(blueprint.structure.rawValue)")
     }
-    if !envelope.characters.isEmpty {
-      parts.append("Characters: " + envelope.characters.map { "\($0.name) (\($0.role))" }.joined(separator: ", "))
-    }
-    if !envelope.worldEntries.isEmpty {
-      parts.append("World: " + envelope.worldEntries.map { "\($0.name) [\($0.category)]" }.joined(separator: ", "))
-    }
+    let references = storyBibleReferences(envelope: envelope, query: String((section?.content ?? "").suffix(2000)), scene: scene)
+    if !references.isEmpty { parts.append(references) }
     if let section {
       parts.append("Current section: \(section.title)\n\(section.content ?? "")")
     }
@@ -126,7 +123,7 @@ public enum AIWorkflowServices {
 public struct NativeAIProviderFactory {
   public var secretStore: SecretStore
 
-  public init(secretStore: SecretStore = KeychainClient.shared) {
+  public init(secretStore: SecretStore = KeychainClient.aiCredentials) {
     self.secretStore = secretStore
   }
 
@@ -156,10 +153,19 @@ public struct NativeAIProviderFactory {
     if config.provider == .customLLM, config.endpoint == NativeLocalModelRuntime.endpoint {
       return ManagedLocalAIProvider(id: config.id)
     }
-    guard let endpoint = URL(string: config.endpoint) else {
+    guard let endpoint = URL(string: config.endpoint),
+          ["http", "https"].contains(endpoint.scheme?.lowercased() ?? ""),
+          endpoint.host != nil, endpoint.user == nil, endpoint.password == nil else {
       throw DraftHarbourError.providerNotConfigured("\(config.label) endpoint")
     }
-    let apiKey = try config.keychainAccount.flatMap { try secretStore.secret(account: $0) }
+    let account = Self.credentialAccount(for: config)
+    var apiKey: String?
+    if config.keychainAccount != nil {
+      guard config.keychainAccount == account, let secret = try secretStore.secret(account: account), !secret.isEmpty else {
+        throw DraftHarbourError.providerNotConfigured("Re-enter the API key in Settings > AI to approve this endpoint")
+      }
+      apiKey = secret
+    }
     return OpenAICompatibleProvider(
       id: config.id,
       displayName: config.label,
@@ -169,7 +175,14 @@ public struct NativeAIProviderFactory {
     )
   }
 
-  private static func isLocalProvider(_ config: AIProviderConfig) -> Bool {
+  public static func credentialAccount(for config: AIProviderConfig) -> String {
+    let fields = [config.id, config.provider.rawValue, config.endpoint]
+    let binding = fields.map { "\($0.utf8.count):\($0)" }.joined()
+    let digest = SHA256.hash(data: Data(binding.utf8))
+    return "ai-v2-\(digest.map { String(format: "%02x", $0) }.joined())"
+  }
+
+  public static func isLocalProvider(_ config: AIProviderConfig) -> Bool {
     if config.provider == .customLLM, config.endpoint == NativeLocalModelRuntime.endpoint { return true }
     if config.provider == .appleFoundation {
       return true
@@ -179,7 +192,7 @@ public struct NativeAIProviderFactory {
           let host = endpoint.host?.lowercased() else {
       return false
     }
-    return host == "localhost" || host == "127.0.0.1" || host == "::1"
+    return ["http", "https"].contains(endpoint.scheme?.lowercased() ?? "") && (host == "localhost" || host == "127.0.0.1" || host == "::1" || host == "[::1]")
   }
 }
 

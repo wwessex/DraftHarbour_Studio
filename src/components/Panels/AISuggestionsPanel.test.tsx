@@ -2,16 +2,21 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import type { AIProviderConfig } from '@/lib/ai';
+import { newBibleEntry, persistBibleEntry } from '@/lib/storyBibleEntries';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const onCloseMock = vi.fn();
 const executeMock = vi.fn(async () => ({ text: 'AI response', provider: 'test', latencyMs: 100 }));
 const destroyMock = vi.fn();
+const defaultConfig: AIProviderConfig = { provider: 'openai-compatible', endpoint: 'https://test/v1', sessionToken: 'tok', model: 'gpt-test' };
+let currentConfig = defaultConfig;
+const providerConfigs: AIProviderConfig[] = [];
 
 vi.mock('@/context/AppContext', () => ({
   useApp: () => ({
-    state: { projectType: 'book' },
+    state: { projectType: 'book', novelId: 'suggestion-project' },
     activeChapter: {
       id: 'c1',
       title: 'Test Chapter',
@@ -21,8 +26,12 @@ vi.mock('@/context/AppContext', () => ({
 }));
 
 vi.mock('@/lib/ai', () => ({
-  loadAIConfig: () => ({ provider: 'openai-compatible', endpoint: 'https://test/v1', sessionToken: 'tok', model: 'gpt-test' }),
-  createProvider: () => ({ execute: executeMock, destroy: destroyMock, isAvailable: () => true }),
+  loadAIConfig: () => currentConfig,
+  hydrateDesktopSecrets: async (config: unknown) => config,
+  createProvider: (config: AIProviderConfig) => {
+    providerConfigs.push(config);
+    return { execute: executeMock, destroy: destroyMock, isAvailable: () => true };
+  },
 }));
 
 vi.mock('@/lib/utils', () => ({
@@ -45,6 +54,9 @@ describe('AISuggestionsPanel', () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
+    localStorage.clear();
+    currentConfig = defaultConfig;
+    providerConfigs.length = 0;
     onCloseMock.mockClear();
     executeMock.mockClear();
     destroyMock.mockClear();
@@ -54,6 +66,19 @@ describe('AISuggestionsPanel', () => {
 
   afterEach(() => {
     document.body.removeChild(container);
+  });
+
+  it('uses updated provider settings without reopening the panel', async () => {
+    const root = createRoot(container);
+    await act(async () => { root.render(<AISuggestionsPanel open={true} onClose={onCloseMock} editor={null} />); });
+    currentConfig = { provider: 'custom-llm', customLlm: { backend: 'generic-openai', baseUrl: 'http://127.0.0.1:8890', model: 'narratryx-craft-v1' } };
+    await act(async () => { window.dispatchEvent(new Event('draftharbour-ai-setup-changed')); });
+    expect(container.textContent).toContain('computer');
+    const action = Array.from(container.querySelectorAll('button')).find(button => button.textContent?.includes('Strengthen'))!;
+    await act(async () => { action.click(); });
+    expect(providerConfigs.at(-1)?.customLlm?.baseUrl).toBe('http://127.0.0.1:8890');
+    expect(executeMock).toHaveBeenCalled();
+    await act(async () => root.unmount());
   });
 
   it('returns null when not open', async () => {
@@ -150,6 +175,7 @@ describe('AISuggestionsPanel', () => {
   });
 
   it('clicking quick action calls AI provider', async () => {
+    persistBibleEntry({ ...newBibleEntry('suggestion-project'), title: 'Mara', status: 'canon', body: 'Cannot swim.' });
     const root = createRoot(container);
     await act(async () => {
       root.render(<AISuggestionsPanel open={true} onClose={onCloseMock} editor={null} />);
@@ -169,6 +195,7 @@ describe('AISuggestionsPanel', () => {
         action: 'continue',
         projectType: 'book',
         sectionTitle: 'Test Chapter',
+        context: expect.stringContaining('Cannot swim.'),
       })
     );
 

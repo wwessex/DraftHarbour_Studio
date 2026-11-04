@@ -1,0 +1,14 @@
+{
+  "files": {
+    "artifacts/task-matched-v3/records.jsonl": "35aac37fb0324098549cc9cddc56089265506deae3712b60dd54b200b6df40d8",
+    "rights/literary-mix-v2.scoped.jsonl": "c33f68c8e951a8cde40f76815529e1b9702895d20ed5ac89c8fdcd8a842ba78a",
+    "artifacts/task-matched-v3/trace.jsonl": "9ca2d655d3c3ae2de79eb69bc11acc781bbdbda4b5e73851748889e0c581fd40",
+    "artifacts/task-matched-v3/tokenizer-preflight.json": "beac51bf309f0efb489af41360534b13280a5a11d9ea2aec9dd7ec6ce258c48e",
+    "curation/revision-preflight-v1/source-lock.json": "6b35008f52a9711696d798539d683b832f59ce178a52e3db000262a211853fe7",
+    "curation/revision-preflight-v1/build.py": "4aeef82c1f81b013f1696375ddf56bfb75f7daac36ed936bf61a96f46ff894af",
+    "artifacts/revision-preflight-v1/records.jsonl": "131fad46874acb47f97867c82695c54e320d0ba8b5866d83907c3859a25b64fc",
+    "rights/revision-preflight-v1.scoped.jsonl": "d6716a36acc3c4305f98b8b0f523af96b802073072dbfaf03b21cec79e802c4d",
+    "artifacts/revision-preflight-v1/membership.json": "ac83c188a4b18a8a89c97d3296148f8177b39d738e8cad70e81473d95be40ec2",
+    "artifacts/revision-preflight-v1/selection.json": "7870719e74612e3073a432d2a24204e11e1d5341005ee9ec9d5e417ff55f0652"
+  }
+}

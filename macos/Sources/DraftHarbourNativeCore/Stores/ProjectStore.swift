@@ -691,6 +691,16 @@ public final class ProjectStore {
     markChanged()
   }
 
+  public func saveBibleEntry(_ entry: BibleEntry) {
+    guard entry.novelId == envelope.project.id else { return }
+    if let index = envelope.bibleEntries.firstIndex(where: { $0.id == entry.id }) {
+      envelope.bibleEntries[index] = entry
+    } else {
+      envelope.bibleEntries.append(entry)
+    }
+    markChanged()
+  }
+
   public func updateWorldEntry(id: String, update: (inout WorldEntry) -> Void) {
     guard let index = envelope.worldEntries.firstIndex(where: { $0.id == id }) else { return }
     update(&envelope.worldEntries[index])

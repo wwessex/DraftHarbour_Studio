@@ -346,7 +346,7 @@ struct DraftHarbourCommands: Commands {
 
       Divider()
 
-      Button("Character And World Bible") {
+      Button("Story Bible") {
         perform(.characterBible)
       }
       .disabled(!canPerform(.characterBible))

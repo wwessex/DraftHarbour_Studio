@@ -33,7 +33,7 @@ enum ToolPanel: String, CaseIterable, Identifiable, Hashable {
     case .wordCount: "Word Count"
     case .comments: "Comments"
     case .collaboration: "Collaboration"
-    case .characterBible: "Character & World"
+    case .characterBible: "Story Bible"
     case .storyCards: "Story Cards"
     case .sceneTemplates: "Scene Templates"
     case .integrations: "Integrations"
@@ -78,6 +78,9 @@ struct NativeDocumentView: View {
   @State private var columnVisibility = NavigationSplitViewVisibility.all
   @SceneStorage("DraftHarbour.workspaceMode") private var workspaceModeRaw = WorkspaceMode.write.rawValue
   @SceneStorage("DraftHarbour.selectedToolPanel") private var selectedToolPanel = ToolPanel.dashboard.rawValue
+  @State private var chatSession = AIChatSession()
+  @State private var chatSidebarVisible = false
+  @State private var suggestionsSidebarVisible = false
   @SceneStorage("DraftHarbour.inspectorVisible") private var inspectorVisible = false
   @State private var showingQuickSwitcher = false
   @State private var showingFindReplace = false
@@ -125,19 +128,11 @@ struct NativeDocumentView: View {
     } detail: {
       workspace
     }
+    .background(ChatSessionWindowLifetimeBridge(session: chatSession).frame(width: 0, height: 0))
     .focusedValue(\.projectStore, store)
     .navigationTitle(store.envelope.project.title)
     .toolbar {
       ToolbarItemGroup {
-        Button {
-          runCommand(.toggleSidebar)
-        } label: {
-          Label("Toggle Sidebar", systemImage: "sidebar.left")
-        }
-        .labelStyle(.iconOnly)
-        .help("Toggle sidebar")
-        .disabled(!commandEnabled(.toggleSidebar))
-
         Button {
           runCommand(.newSection)
         } label: {
@@ -149,11 +144,12 @@ struct NativeDocumentView: View {
 
         Picker("Workspace", selection: workspaceMode) {
           ForEach(WorkspaceMode.allCases) { mode in
-            Label(mode.title, systemImage: mode.systemImage).tag(mode)
+            Label(mode.title, systemImage: mode.systemImage).tag(mode).help(mode.title + " workspace")
           }
         }
         .pickerStyle(.segmented)
         .frame(width: 260)
+        .help("Choose Write, Corkboard or Review workspace")
         .disabled(!commandEnabled(.workspaceWrite))
 
         Button {
@@ -257,6 +253,12 @@ struct NativeDocumentView: View {
         delay = 300_000_000_000
       }
     }
+    .onChange(of: store.envelope.project.id) { _, _ in
+      chatSession.cancel()
+      chatSession.selectedThreadID = nil
+      chatSession.prompt = ""
+      chatSession.errorMessage = nil
+    }
     .onChange(of: store.activeSectionID) { _, newValue in
       recoveryService.recordActiveSectionID(newValue, projectId: store.envelope.project.id)
     }
@@ -330,6 +332,51 @@ struct NativeDocumentView: View {
   }
 
   private var workspace: some View {
+    VStack(spacing: 0) {
+      HStack(spacing: 12) {
+        Button { runCommand(.aiChat) } label: { Label("AI Chat", systemImage: "message") }
+          .help("Toggle AI Chat sidebar")
+        Button { runCommand(.aiSuggestions) } label: { Label("AI Suggestions", systemImage: "wand.and.stars") }
+          .help("Open AI Suggestions")
+        Spacer()
+      }
+      .padding(.horizontal, 12).padding(.vertical, 8)
+      Divider()
+      workspaceWithChat
+    }
+  }
+
+  private var workspaceWithChat: some View {
+    HSplitView {
+      workspaceContent
+      if suggestionsSidebarVisible {
+        VStack(spacing: 0) {
+          HStack {
+            Text("AI Suggestions").font(.headline)
+            Spacer()
+            Button { suggestionsSidebarVisible = false } label: { Image(systemName: "xmark") }.help("Close AI Suggestions")
+          }.padding()
+          Divider()
+          ScrollView { AISuggestionsSidebarView(store: store, selection: selectedRange).padding() }
+        }
+        .frame(minWidth: 300, idealWidth: 380, maxWidth: 520)
+      }
+      if chatSidebarVisible {
+        VStack(spacing: 0) {
+          HStack {
+            Text("AI Chat").font(.headline)
+            Spacer()
+            Button { chatSidebarVisible = false } label: { Image(systemName: "xmark") }.help("Close AI Chat")
+          }.padding()
+          Divider()
+          AIChatPanelView(store: store, session: chatSession, focusEditProposal: focusAIEditProposal(_:)).padding()
+        }
+        .frame(minWidth: 300, idealWidth: 380, maxWidth: 520)
+      }
+    }
+  }
+
+  private var workspaceContent: some View {
     Group {
       switch workspaceMode.wrappedValue {
       case .write:
@@ -550,6 +597,12 @@ struct NativeDocumentView: View {
   }
 
   private func showToolPanel(_ panel: ToolPanel) {
+    if panel == .aiSuggestions || panel == .aiChat {
+      toolPanelCoordinator.close()
+      suggestionsSidebarVisible = panel == .aiSuggestions
+      chatSidebarVisible = panel == .aiChat
+      return
+    }
     selectedToolPanel = panel.rawValue
     persistToolPanelSelection(panel.rawValue)
     toolPanelCoordinator.show(
@@ -560,6 +613,9 @@ struct NativeDocumentView: View {
       selectionChanged: { rawValue in
         selectedToolPanel = rawValue
         persistToolPanelSelection(rawValue)
+        if let panel = ToolPanel(rawValue: rawValue), panel == .aiSuggestions || panel == .aiChat {
+          Task { @MainActor in showToolPanel(panel) }
+        }
       },
       focusEditProposal: focusAIEditProposal(_:),
       editorSelection: { selectedRange }
@@ -736,7 +792,7 @@ struct NativeDocumentView: View {
         } else {
           prompt = "Revise this selected passage for clarity, tension, and character voice:\n\n\(source)"
         }
-        let response = try await provider.generate(AIRequest(prompt: prompt, context: source, projectType: store.projectType, sectionTitle: section.title, model: config.model))
+        let response = try await provider.generate(AIRequest(prompt: prompt, context: AIWorkflowServices.storyBibleReferences(envelope: store.envelope, query: source), projectType: store.projectType, sectionTitle: section.title, model: config.model))
         let before = section.content ?? ""
         store.applyGeneratedText(response.text, mode: .replace, range: selectedRange)
         store.recordAIRevision(
@@ -865,11 +921,15 @@ struct NativeDocumentView: View {
     case .integrations:
       showToolPanel(.integrations)
     case .aiChat:
-      showToolPanel(.aiChat)
+      toolPanelCoordinator.close()
+      suggestionsSidebarVisible = false
+      chatSidebarVisible.toggle()
     case .aiWriting, .translation:
       showToolPanel(.ai)
     case .aiPanel, .aiSuggestions:
-      showToolPanel(.aiSuggestions)
+      toolPanelCoordinator.close()
+      chatSidebarVisible = false
+      suggestionsSidebarVisible.toggle()
     case .export:
       showToolPanel(.export)
     case .projects:

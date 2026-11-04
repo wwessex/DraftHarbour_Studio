@@ -1,3 +1,4 @@
+import { StoryBibleEntries } from './StoryBibleEntries';
 import { useState, useMemo, useEffect } from 'react';
 import { Dialog, Button, Input, Textarea, IconButton } from '@/components/UI';
 import { Select } from '@/components/UI/Select';
@@ -50,6 +51,7 @@ function saveEntities<T>(key: string, entities: T[]) {
 
 export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps) {
   const { state, setActiveChapter } = useApp();
+  const [showEntries, setShowEntries] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('characters');
   const [characters, setCharacters] = useState<CharacterEntity[]>(() => loadEntities(STORAGE_KEY_CHARS));
   const [worldEntries, setWorldEntries] = useState<WorldEntry[]>(() => loadEntities(STORAGE_KEY_WORLD));
@@ -157,7 +159,12 @@ export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps)
     ? [selectedEntity.name, ...('aliases' in selectedEntity ? selectedEntity.aliases : [])] : []), [state.chapters, selectedEntity]);
 
   return (
-    <Dialog open={open} onClose={onClose} title="Character & World Bible" size="large">
+    <Dialog open={open} onClose={onClose} title="Story Bible" size="large">
+      <div className={styles.bibleTabs}>
+        <button className={styles.bibleTab} onClick={() => setShowEntries(true)} aria-pressed={showEntries}>Story entries</button>
+        <button className={styles.bibleTab} onClick={() => setShowEntries(false)} aria-pressed={!showEntries}>Characters &amp; World</button>
+      </div>
+      {showEntries ? <StoryBibleEntries key={state.novelId} /> : <>
       <p className={styles.bibleAiNote}>
         <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: 'middle' }}>auto_awesome</span>
         {' '}Entries here are automatically included as context in AI writing prompts.
@@ -267,6 +274,7 @@ export function CharacterBibleModal({ open, onClose }: CharacterBibleModalProps)
           </details>}
         </div>
       </div>
+      </>}
     </Dialog>
   );
 }

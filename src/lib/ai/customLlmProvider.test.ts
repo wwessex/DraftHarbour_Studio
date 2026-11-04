@@ -41,7 +41,8 @@ describe('CustomLlmProvider', () => {
     await provider.execute(makeRequest({ action: 'rewrite', prompt: 'TARGET PASSAGE:\na gull called', context: '' }));
     const payload = JSON.parse(mockFetch.mock.calls[0][1]!.body as string);
     expect(payload.messages[0].content).toContain('Rewrite only the words marked TARGET PASSAGE');
-    expect(payload.messages[1].content).toBe('TARGET PASSAGE:\na gull called');
+    expect(payload.messages[1].content).toContain('Writing style:');
+    expect(payload.messages[1].content).toContain('TARGET PASSAGE:\na gull called');
   });
   beforeEach(() => {
     vi.clearAllMocks();
@@ -399,5 +400,22 @@ describe('testCustomLlmConnection', () => {
     });
     expect(result.ok).toBe(false);
     expect(result.message).toContain('Connection failed');
+  });
+});
+
+
+describe('local AI transport recovery', () => {
+  beforeEach(() => mockFetch.mockReset());
+  it('explains that the configured local service must be started', async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const provider = new CustomLlmProvider(makeConfig({ baseUrl: 'http://127.0.0.1:8890', backend: 'generic-openai' }));
+    await expect(provider.execute(makeRequest())).rejects.toThrow('Start your local model service');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+  it('preserves cancellation instead of misreporting a server failure', async () => {
+    const controller = new AbortController(); controller.abort();
+    mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const provider = new CustomLlmProvider(makeConfig());
+    await expect(provider.execute(makeRequest({ signal: controller.signal }))).rejects.toMatchObject({ name: 'AbortError' });
   });
 });

@@ -1,0 +1,84 @@
+{
+  "bibleEntries": [
+    {
+      "title": "Mara",
+      "category": "character",
+      "status": "canon",
+      "body": "Cannot swim.",
+      "aliases": [
+        "Captain Venn"
+      ],
+      "tags": [
+        "POV"
+      ],
+      "linkedEntryIds": [
+        "quay"
+      ],
+      "fields": {
+        "Goal": "Find the ship"
+      },
+      "provenance": "Manual; Chapter 2",
+      "validFrom": "Chapter 2",
+      "validTo": "Chapter 17",
+      "archived": false,
+      "id": "mara",
+      "novelId": "project-fixture",
+      "createdAt": 1,
+      "updatedAt": 2,
+      "revisions": [
+        {
+          "id": "revision",
+          "createdAt": 1,
+          "reason": "Edited",
+          "state": {
+            "title": "Mara",
+            "category": "character",
+            "status": "draft",
+            "body": "An idea",
+            "aliases": [
+              "Captain Venn"
+            ],
+            "tags": [
+              "POV"
+            ],
+            "linkedEntryIds": [
+              "quay"
+            ],
+            "fields": {
+              "Goal": "Find the ship"
+            },
+            "provenance": "Manual; Chapter 2",
+            "validFrom": "Chapter 2",
+            "validTo": "Chapter 17",
+            "archived": false
+          }
+        }
+      ]
+    },
+    {
+      "title": "Quay",
+      "category": "setting",
+      "status": "canon",
+      "body": "Cannot swim.",
+      "aliases": [
+        "Captain Venn"
+      ],
+      "tags": [
+        "POV"
+      ],
+      "linkedEntryIds": [],
+      "fields": {
+        "Goal": "Find the ship"
+      },
+      "provenance": "Manual; Chapter 2",
+      "validFrom": "Chapter 2",
+      "validTo": "Chapter 17",
+      "archived": false,
+      "id": "quay",
+      "novelId": "project-fixture",
+      "createdAt": 1,
+      "updatedAt": 1,
+      "revisions": []
+    }
+  ]
+}

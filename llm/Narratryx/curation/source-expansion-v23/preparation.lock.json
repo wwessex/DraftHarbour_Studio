@@ -1,0 +1,60 @@
+{
+  "status": "four-source-backed-candidates-preparation-only",
+  "created_on": "2026-11-02",
+  "verification": {
+    "passed": true,
+    "candidates": 4,
+    "new_scoped_records": 3,
+    "unchanged_prior_ledger_records": 15,
+    "new_author_ids": [
+      "alice-moore-dunbar-nelson"
+    ],
+    "scan_backed_revision_pairs": 1,
+    "narrated_dialogue_examples": 1,
+    "complete_paragraph_continuations": 2,
+    "excluded_source_options": 3,
+    "maximum_tokens": 1205,
+    "supervised_tokens": 924,
+    "author_split_verified": true,
+    "prior_artifacts_and_models_unchanged": true,
+    "training_executed": false,
+    "inference_requests": 0,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/source-expansion-v23/acquire.py": "e031590e748cdbe3b7e78cb5f5c128afffbceb685d225fa63498343c6f72e30b",
+    "curation/source-expansion-v23/verify.py": "c8789e8332c1d23e10244ecb60bc61a3ce3bd56cc4d1734e58748a2776e253cf",
+    "curation/source-expansion-v23/prepare.py": "4b05cb20fec6e3f9259ebd600d7301f2c7671afe29464f1c45cc2d151f80b829",
+    "curation/source-expansion-v23/preflight.py": "e8c8c1e40c179a1f84bd1ab7ba02a042f476287a6ec0dcc65a0a730d6106f586",
+    "curation/source-expansion-v23/source-lock.json": "fdf69b85c2cb43593be5be83475d19b502350c83f7696b1add539ac085c838d3",
+    "foundation/scoped_excerpt.py": "b2e8ca3d325d7f4bb5323169583726567fc45b50a31a4bb07936fda332fcd117",
+    "tests/test_scoped_excerpt.py": "a62ce63767bd6b149d0f1a3ea026742fe16dd10792f81ff17801d08e97b6f0f0",
+    "rights/source-expansion-v23.scoped.jsonl": "ecdb727fa8f0d5fc77d6e4ea0e9c5e98152d60b81c47cff744031da1b957156f",
+    "docs/source-expansion-v23-2026-11-02.md": "6ac807807c5b80e106fd8ea1e1182b14837e17bce5a150992ed34f36d20b7e33"
+  },
+  "artifact_hashes": {
+    "artifacts/source-expansion-v23/derivations.jsonl": "943b91e843d2ccda7f60da58abd9de409c294574bec84df028259ddcee3a88a6",
+    "artifacts/source-expansion-v23/tokenizer-preflight.json": "3a18c63729d72b993221bd72a308780554d0a89cdb1836c96b6969ac252bcf38",
+    "artifacts/source-expansion-v23/scope.json": "8374c02b13a4e0a1a5cd662c9062c01a082c47237aaae63258693beb103c9796",
+    "artifacts/source-expansion-v23/ocr-collation.json": "749de402d6f900442e2f9a9a117ba7c4d1788dc87ab4c689c776ee5bd6d74ce8",
+    "artifacts/source-expansion-v23/split-check-only.jsonl": "e347212f596cbf1e70d7044f63219b2afc3f90141e5421add460a346d45f543c",
+    "artifacts/source-expansion-v23/final-verification.json": "a41663b2b69def54c566cf692a51a9db7170fca91a5d9f7332256c685caded46",
+    "artifacts/source-expansion-v23/exclusions.json": "9eda2dc4aa9f6b84a545dc1842114801574d9bbd142d5d9776cfdb4c7b411275",
+    "artifacts/source-expansion-v23/candidates.jsonl": "4f85a5a764aaeed9750ec7783db2a22697ca928e437c2a81fff0959bda61a102",
+    "artifacts/source-expansion-v23/verification.json": "83ec7d69b2fc96660656391cf620ff4f1e1a5ce9af8a9bd6fc1f12d37d65704c",
+    "artifacts/source-expansion-v23/report-verification.json": "a41663b2b69def54c566cf692a51a9db7170fca91a5d9f7332256c685caded46",
+    "artifacts/source-expansion-v23/REVIEW.md": "d31de0012b3936755ffa58e60bb6180f5d2238b1ad3b2c3cead5c5e442da2f0d",
+    "artifacts/source-expansion-v23/additional-inputs.json": "89a41b81d3391898fc795b77810f086cd6f76ed51cee30635dab22f441e2520c"
+  },
+  "tests": {
+    "passed": true,
+    "count": 245,
+    "seconds": 70.742,
+    "log_sha256": "23384e3a7cbb7ee748b04bc37489c63735958c8c32f034ae0de281f98ec00678"
+  },
+  "new_training_runs": 0,
+  "new_inference_requests": 0,
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

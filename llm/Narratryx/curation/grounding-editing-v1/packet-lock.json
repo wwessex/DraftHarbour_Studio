@@ -1,0 +1,28 @@
+{
+  "files": {
+    "artifacts/literary-mix-v2/records.jsonl": "1aba21f3e5b389e03a390e6712623686c69e050ebdb1c5bdc90f969ac4d8a545",
+    "rights/literary-mix-v2.scoped.jsonl": "c33f68c8e951a8cde40f76815529e1b9702895d20ed5ac89c8fdcd8a842ba78a",
+    "artifacts/revision-preflight-v1/records.jsonl": "131fad46874acb47f97867c82695c54e320d0ba8b5866d83907c3859a25b64fc",
+    "rights/revision-preflight-v1.scoped.jsonl": "d6716a36acc3c4305f98b8b0f523af96b802073072dbfaf03b21cec79e802c4d",
+    "rights/raw/substantive-revision-2026-10-26/james-1908.verified.txt": "454ce0b5b2e5a1cd26f70071bc40dafadd57d52c860b782baa770bdf40a0d8c5",
+    "rights/raw/substantive-revision-2026-10-26/james-1881.verified.txt": "ee8cf62e47742a980d116b3f83945b325f9198cfa97022e449d8239946efdf99",
+    "rights/raw/literary-expansion-2026-10-25/wells-time-machine.txt": "2892e919000e17c83e1dac51b30f4675db50536b644d7579fe8a89bb399a9bdc",
+    "rights/raw/craft-expansion-2026-10-20/wharton-writing.txt": "3f6ac6084010b3770445f240dcecb20619e540f51cd6e4520a2459f74de44102",
+    "rights/raw/craft-expansion-2026-10-20/hamilton-manual.txt": "3dfa612ad31bd0cf17ea7802674c1f8ea5efad52dfb5b1414081d15ee8b8f482",
+    "rights/raw/author-revision-candidate-2026-10-25/pg1400.txt": "9a637118af8e953e9764ec603d9b0a032883384d465acac2e27966a80cf1c6f8",
+    "rights/raw/literary-expansion-2026-10-25/doyle-adventures-pg48320.txt": "bf63b19ade817616aa64b5dcaf32e8685592c315fd22e336defe685baa02d419",
+    "rights/raw/clean-source-expansion-2026-10-18/opie-pg49621-full.txt": "c7211c15f1242d55b25f35d02fb39b35be98d1c1e59cff6b9fb80182726801ac",
+    "rights/raw/independent-scenes-2026-10-26/james-1908.verified.txt": "77d0b4f1e962f84af153b7cabd4f049ac768a570a84b863f7cbfa1ccf1fb9042",
+    "rights/raw/independent-expansion-2026-10-26/wilson.verified.txt": "9d66412f6bcdc4ee56c26042256926ec84f229ff96f4db98b339fac6be0e8799",
+    "rights/raw/independent-expansion-2026-10-26/harper-1893.verified.txt": "efaa0872b26699ea621dccb4ca23e7067b4603a90983fbbe0fc1f3d50217d32d",
+    "rights/raw/independent-scenes-2026-10-26/hopkins.verified.txt": "356f08d524d4380205e274baa2ffd2de4f2c63f43ae7349da8055cb9dfae82c2",
+    "curation/grounding-editing-v1/build.py": "b90473805c871b42a67ec598bad5d75201032459d6f24af2ff7d638828182b4b",
+    "curation/grounding-editing-v1/evidence-specs.json": "fef4182cfc32fab111d92f7c5c7e08284d2bf6528d95325bd72dc558855835a0",
+    "foundation/grounding_lessons.py": "e39ae2c0c57646719bcf9f2119e6274864e37615693576879a3188b573498adb",
+    "rights/grounding-editing-v1.scoped.jsonl": "24b665c3c008719dcec9b29a49d048d95f3c5a2634ca13ca7112bac934ceb4ad",
+    "artifacts/grounding-editing-v1/clock-tests.evaluation-only.jsonl": "6e016c98f56f828546977760fdaf432ab4230608da6151fe7de3be8207056fe9",
+    "artifacts/grounding-editing-v1/records.jsonl": "b2fb851c2d980a6bc05e6f32d2ca8a6c614d01c1256445d746f7702f419ade29",
+    "artifacts/grounding-editing-v1/manifest.json": "9e80453b24f5d4ff6da439ad177e50e4f8079da10c6b38f91a70de3872b3c00f",
+    "artifacts/grounding-editing-v1/trace.jsonl": "a07c173bcee91783dca0497e83d4dd3d6455ad6c968e04335a9ab0139062c023"
+  }
+}

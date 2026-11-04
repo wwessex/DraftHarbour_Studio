@@ -1,0 +1,11 @@
+{
+  "created_on": "2026-10-29",
+  "human_approval": false,
+  "files": {
+    "artifacts/grounding-balanced-v1/REVIEW.md": "8b3b416e67ce88e49c7f5935c9d58d5423e8cac91facc761d65d631bb2b75060",
+    "artifacts/grounding-balanced-v1/verification.json": "4449b3b29d043f48e2de53c4f024dd7264ee9e41bb6fa4a2ae2ccad86f28a3a8",
+    "curation/grounding-balanced-v1/review-decisions.json": "0c8f9d0c3ca1695f8506cd25699876bd7dfc34dcf274fb22bf5d8146971bdc8c",
+    "artifacts/grounding-balanced-v1/semantic-reviewed.records.jsonl": "63276a0dc14a5a10b02b5e595e1d773f4b3a3a6548da8209f8cd2a5b42a758f9",
+    "tests/test_balanced_curriculum.py": "c6275534d688b8927d3314d22b23753737113611f7c4ddf03bca8fe6156cd477"
+  }
+}

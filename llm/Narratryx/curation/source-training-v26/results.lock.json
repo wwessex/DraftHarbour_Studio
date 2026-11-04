@@ -1,0 +1,13 @@
+{
+  "artifacts/source-training-v26/protocol.frozen.json": "051352d7d835e0936e9f02830cfd11e2f1162be1e3e4633ae6e98a4eb3d29670",
+  "artifacts/source-training-v26/experiment-complete.json": "c6f4c42e8673dfade5b0d76150e4360653132ec1d8ae3ae86464e5c00e954835",
+  "artifacts/source-training-v26/final-progress.json": "db84ab85ada8f34cbc66c4f29b0bc18773620b2b01efe3495dfa88242e4ca968",
+  "artifacts/source-training-v26/training.phase.json": "e499314ed041ee2d4ba7f1006ce6b24fa5fa6f7e89794e99f277cd7318cbfc70",
+  "artifacts/source-training-v26/scores.json": "26aeb8f51d3cde38e05db7cdcda04c119f46a5941c959d4735e2800a1e6298dd",
+  "artifacts/source-training-v26/REVIEW.md": "ae81e581da96306f568037e655ebe21e61ae6132124dc2c66f36d084cafaa4c4",
+  "artifacts/source-training-v26/human-ballots.blank.jsonl": "5378860a8a6cf83e53d83ce0eeda189a2244d08096018240a52df6fde17890ce",
+  "artifacts/source-training-v26/adapter/adapters.safetensors": "e487aade494ec4177efb1bb6c2c6f55f9b5f0e936e207eac9d89829d6afe80ec",
+  "artifacts/source-training-v26/base.responses.jsonl": "82fc7cca56d8f15019ef543c8ec03a506198115c63c6df9513243ec02bf590dc",
+  "artifacts/source-training-v26/current-craft.responses.jsonl": "acf8d0d2d6562f4f74231ae80e6fc8061ebcd972d5e0e6c71d560a515139258b",
+  "artifacts/source-training-v26/candidate.responses.jsonl": "678c2afac6a76bce624ce4b722b21b75204b56edfc3997a5df43cbe2cd8b1354"
+}

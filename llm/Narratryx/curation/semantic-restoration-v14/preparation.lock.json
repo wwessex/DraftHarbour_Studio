@@ -1,0 +1,38 @@
+{
+  "status": "preparation-only-not-training-recipe",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "source_exact_repair_candidates": 9,
+    "unique_parent_lessons": 9,
+    "new_source_spans": 0,
+    "new_literary_teaching_answers_authored": 0,
+    "new_unrun_evaluation_cases": 8,
+    "old_models_and_experiments_unchanged": true,
+    "human_quality_ratings": 0,
+    "preparation_only": true,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/semantic-restoration-v14/preflight.py": "94ae321e9bc787c8ccc220faf67169392b886ebdceea644803787c60e0c198cd",
+    "curation/semantic-restoration-v14/prepare.py": "e89d180a0af0588ba89ee9f635195bd5b9c381ca1083a98bff79d676dd3d7ebe",
+    "curation/semantic-restoration-v14/verify.py": "c10add5aa1d7f9e15a9439ac327abac81d4dbde38582ee24f02e36722883e84a",
+    "foundation/source_restoration.py": "3ffc6179f0de0efdf0dbab02a8647da573e668fd62baf86e26d8f00676e13801",
+    "tests/test_source_restoration.py": "0ebd44840ed7e98b5b1ade17b15d69b5faac6c67a9e504fd672b3f0d3b505ffc"
+  },
+  "artifact_hashes": {
+    "REVIEW.md": "1e7a23764e4c540efe88f143e8db51b4b21b4953a2176ba067fd4e19d292503f",
+    "candidates.jsonl": "ed955a170f871e8fe2dc02b9b6d54760e82a92c22b4ef39104696920a5ffa409",
+    "cases.frozen.jsonl": "e29e5145e34077a5e440a600e0bc8df9cf30e418a28dc191aa2d8659ae8fc98f",
+    "derivations.jsonl": "b368e071ab38455772f1dd9c57fca1981e4717c5322a3dd78b6bf563502efd5d",
+    "final-verification.json": "16ef3a6c787f045d886a0a7f73624ef32f24d4be7882a24f848e92ddb8a88d6e",
+    "tokenizer-preflight.json": "21bbd6ad669348e466681bf28785ea2385290388da69923302f36d4a52de0a68",
+    "verification.json": "d3b1a7a09648b52686b62d282d337099981a8b488cb41b8e9c3d9c121ad56475"
+  },
+  "tests": {
+    "passed": 204,
+    "elapsed_seconds": 39.319
+  },
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

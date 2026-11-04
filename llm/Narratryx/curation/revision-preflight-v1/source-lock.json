@@ -1,0 +1,55 @@
+{
+  "created_on": "2026-10-26",
+  "method": "AI scan transcription, not generated literary prose. Original1881 pp138\u2013139 leaves152\u2013153 and1908 pp152\u2013153 leaves178\u2013179 visually inspected. Dehyphenate printed line wraps; normalize whitespace around punctuation and em dashes, contractions and quotation glyphs. Omit italic emphasis on not in1908 plain-text representation. No lexical modernization. No human verification recorded.",
+  "images": [
+    {
+      "source": "james-1881",
+      "leaf": 152,
+      "path": "rights/evidence/substantive-revision-2026-10-26/james-1881-leaf-152.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0152.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "27624fde79b72d1c16dc4c7fcd9d29ff6fce4f17b944690c227d1494706f8ccb"
+    },
+    {
+      "source": "james-1881",
+      "leaf": 153,
+      "path": "rights/evidence/substantive-revision-2026-10-26/james-1881-leaf-153.jpg",
+      "url": "https://ia601600.us.archive.org/BookReader/BookReaderImages.php?zip=%2F34%2Fitems%2Fportraitoflady01jamerich%2Fportraitoflady01jamerich_jp2.zip&file=portraitoflady01jamerich_jp2%2Fportraitoflady01jamerich_0153.jp2&id=portraitoflady01jamerich&scale=2&rotate=0",
+      "sha256": "0a049ce1fa8d7dabfb908e2e5377c34a73c5951eaf6d2f85eaadecf0f6f09a0c"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 177,
+      "path": "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-177.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0177.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "dcddef5d88709ac4e26d6f8d68a5d8cb0cadfe260906b677a694c8e03a0f92c3"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 178,
+      "path": "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-178.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0178.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "19a1ca33c028d760ba010656ee81eb5510443cd530d56964586ebaeb0c312eb1"
+    },
+    {
+      "source": "james-1908",
+      "leaf": 179,
+      "path": "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-179.jpg",
+      "url": "https://ia601405.us.archive.org/BookReader/BookReaderImages.php?zip=%2F26%2Fitems%2Fportraitlady103jameuoft%2Fportraitlady103jameuoft_jp2.zip&file=portraitlady103jameuoft_jp2%2Fportraitlady103jameuoft_0179.jp2&id=portraitlady103jameuoft&scale=2&rotate=0",
+      "sha256": "5239515d21382c761508e962b7b512bfbb11f118d3d5423920facbed43fd645c"
+    }
+  ],
+  "files": {
+    "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-177.jpg": "dcddef5d88709ac4e26d6f8d68a5d8cb0cadfe260906b677a694c8e03a0f92c3",
+    "rights/evidence/substantive-revision-2026-10-26/images.manifest.json": "b7ffc1270dcac1ad1b78e8c9e51290daebb04241520edd54c84445888d8c5066",
+    "rights/evidence/substantive-revision-2026-10-26/james-1881-leaf-152.jpg": "27624fde79b72d1c16dc4c7fcd9d29ff6fce4f17b944690c227d1494706f8ccb",
+    "rights/evidence/substantive-revision-2026-10-26/james-1881-leaf-153.jpg": "0a049ce1fa8d7dabfb908e2e5377c34a73c5951eaf6d2f85eaadecf0f6f09a0c",
+    "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-178.jpg": "19a1ca33c028d760ba010656ee81eb5510443cd530d56964586ebaeb0c312eb1",
+    "rights/evidence/substantive-revision-2026-10-26/james-1908-leaf-179.jpg": "5239515d21382c761508e962b7b512bfbb11f118d3d5423920facbed43fd645c",
+    "rights/raw/substantive-revision-2026-10-26/james-1881.verified.txt": "ee8cf62e47742a980d116b3f83945b325f9198cfa97022e449d8239946efdf99",
+    "rights/raw/substantive-revision-2026-10-26/james-1908.verified.txt": "454ce0b5b2e5a1cd26f70071bc40dafadd57d52c860b782baa770bdf40a0d8c5",
+    "rights/independent-curriculum-v1.scoped.jsonl": "00f835548c0f90c1636e11559e1dd51199c453ee6a4bc18b4b150f1af36942ab",
+    "rights/author-revision-followup-v1.scoped.jsonl": "7bef860ca2dd249448987d63cdb273d835b6eac7de9c8f4c21f9c72b76a9396e",
+    "artifacts/author-revision-followup-2026-10-26/selected-spans.json": "39001841fe28530ccf65ae6100431eb5e71cf5a6a8549d93ab3b79ffb438825d",
+    "artifacts/independent-curriculum-v1/records.jsonl": "c55261ae9090381091c2c8eebe1b5cc1608e6d79fcf37df0215ac742c20acf7d"
+  }
+}

@@ -9,11 +9,13 @@ struct WritingAssistantView: View {
   var configure: (() -> Void)?
   @State private var expanded = false
   @State private var direction = ""
+  @State private var sceneFacts = ""
   @State private var providerID = ""
   @State private var task: Task<Void, Never>?
   @State private var generating = false
   @State private var error: String?
   @State private var result = ""
+  @State private var copyeditChanges: [CopyeditChange] = []
   @State private var draft: (plan: WritingPlan, sectionID: String, providerID: String)?
   @State private var undo: (sectionID: String, before: String, after: String)?
   @AppStorage("DraftHarbour.aiSetup.mode") private var aiMode = "existing"
@@ -24,6 +26,10 @@ struct WritingAssistantView: View {
   @State private var rewriteTarget: (source: String, range: NSRange)?
   @FocusState private var instructionsFocused: Bool
 
+  private var unchangedCopyedit: Bool {
+    guard let draft, draft.plan.action == .copyedit else { return false }
+    return result.utf16.elementsEqual((draft.plan.source as NSString).substring(with: draft.plan.range).utf16)
+  }
   private var providers: [AIProviderConfig] { store.envelope.aiProviders.filter(\.enabled) }
   private var selectedProviderID: String { providerID.isEmpty ? providers.first?.id ?? "" : providerID }
   private var originalSelectedPassage: String? {
@@ -41,14 +47,15 @@ struct WritingAssistantView: View {
               captureSelection(); selectedAction = .write; draft = nil; result = ""; error = nil; expanded = true; instructionsFocused = true
             } else { beginAction(action) }
           }
+          .help(action.title + " using the current AI model; review before applying")
           .disabled(generating || showSetup || store.activeSection == nil)
         }
         Spacer(minLength: 0)
         if configuredProvider == nil {
-          Button("AI setup") { task?.cancel(); showSetup.toggle() }
+          Button("AI setup") { task?.cancel(); showSetup.toggle() }.help("Choose and check the AI model")
         }
         if expanded {
-          Button("Close") { task?.cancel(); expanded = false; draft = nil; result = "" }
+          Button("Close") { task?.cancel(); expanded = false; draft = nil; result = ""; sceneFacts = "" }.help("Close the writing preview")
         }
       }
       if showSetup, configuredProvider == nil {
@@ -103,21 +110,36 @@ struct WritingAssistantView: View {
             }
             TextField("Instructions (required for Write)", text: $direction, axis: .vertical)
               .textFieldStyle(.roundedBorder).lineLimit(2...4).focused($instructionsFocused)
-            if selectedAction == .rewrite {
-              Text(rewriteTarget == nil ? "Rewrite target: final paragraph (no text selected)." : "Rewrite target: selected text only.").font(.caption)
+            TextField("Scene facts (optional): form=human, timeline=before", text: $sceneFacts).textFieldStyle(.roundedBorder).disabled(generating)
+            if selectedAction.replacesPassage {
+              Text(rewriteTarget == nil ? "Target: final paragraph (no text selected)." : "Target: selected text only.").font(.caption)
               if let originalSelectedPassage { Text(originalSelectedPassage).font(.callout).textSelection(.enabled) }
             }
-            Text("Rewrite selected text or the final paragraph. Continue adds after the ending. Review before applying.")
+            Text("Uses relevant Story Bible canon when available. Rewrite selected text or the final paragraph. Continue adds after the ending. Review before applying.")
               .font(.caption).foregroundStyle(.secondary)
             if generating {
               HStack { ProgressView().controlSize(.small); Text("Generating…"); Button("Stop") { task?.cancel() } }
             }
             if let error { Text(error).foregroundStyle(.red) }
             if let draft {
-              Text(result).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+              if draft.plan.action == .copyedit {
+                if unchangedCopyedit {
+                  Text("No corrections proposed. The text is unchanged. Use Rewrite for style, pacing or stronger wording.")
+                } else {
+                  Text("\(copyeditChanges.count) correction(s) proposed. Review the exact changes below.")
+                  ForEach(copyeditChanges.indices, id: \.self) { index in
+                    VStack(alignment: .leading) {
+                      Text("Original: ") + Text(quoted(copyeditChanges[index].before)).strikethrough()
+                      Text("Corrected: ") + Text(copyeditChanges[index].after.isEmpty ? "(deleted)" : quoted(copyeditChanges[index].after)).underline().bold()
+                    }.textSelection(.enabled)
+                  }
+                  Text("Corrected passage").font(.caption)
+                }
+              }
+              if !unchangedCopyedit { Text(result).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading) }
               HStack {
-                Button(draft.plan.action == .rewrite ? "Replace Passage" : "Append to Chapter", action: apply)
-                  .disabled(generating)
+                Button(draft.plan.action.replacesPassage ? "Replace Passage" : "Append to Chapter", action: apply)
+                  .disabled(generating || unchangedCopyedit)
                 Button("Discard") { self.draft = nil; result = "" }
               }
             }
@@ -139,6 +161,7 @@ struct WritingAssistantView: View {
       draft = nil
       result = ""
       direction = ""
+      sceneFacts = ""
       undo = nil
       error = nil
       rewriteTarget = nil
@@ -204,12 +227,12 @@ struct WritingAssistantView: View {
     do {
       if !useCapturedTarget { captureSelection(clearIfEmpty: true) }
       let source = section.content ?? ""
-      if action == .rewrite, let target = rewriteTarget, target.source != source {
+      if action.replacesPassage, let target = rewriteTarget, target.source != source {
         throw LocalRuntimeFailure.unavailable("The chapter changed. Select the passage again before rewriting.")
       }
       // Freeze the plan before expanding controls or scheduling an async task.
       let plan = try WritingActions.prepare(action, source: source,
-        selection: action == .rewrite ? rewriteTarget?.range : nil, direction: direction)
+        selection: action.replacesPassage ? rewriteTarget?.range : nil, direction: direction)
       selectedAction = action; expanded = true
       task = Task { await generate(plan, sectionID: section.id) }
     } catch { expanded = true; self.error = error.localizedDescription }
@@ -237,21 +260,29 @@ struct WritingAssistantView: View {
       else { throw DraftHarbourError.providerNotConfigured("Connect an AI model first.") }
       let provider = try NativeAIProviderFactory().provider(from: config)
       let response = try await provider.generate(AIRequest(prompt: plan.prompt,
-        context: plan.action == .rewrite ? nil : AIWorkflowServices.buildStoryContext(envelope: store.envelope, section: section),
+        context: plan.action.replacesPassage ? AIWorkflowServices.storyBibleReferences(envelope: store.envelope, query: plan.prompt, scene: try BibleAccess.sceneFacts(sceneFacts)) : AIWorkflowServices.buildStoryContext(envelope: store.envelope, section: section, scene: try BibleAccess.sceneFacts(sceneFacts)),
         projectType: store.projectType, sectionTitle: section.title, model: config.model))
       guard !Task.isCancelled else { return }
       guard !response.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
         throw DraftHarbourError.providerNotConfigured("The model returned no passage to review.")
       }
-      result = response.text
+      if plan.action == .copyedit {
+        let reviewed = try WritingActions.copyeditReview(plan, json: response.text)
+        result = reviewed.text; copyeditChanges = reviewed.changes
+      } else { result = response.text; copyeditChanges = [] }
       draft = (plan, section.id, response.provider)
     } catch {
       if !Task.isCancelled { self.error = error.localizedDescription }
     }
   }
 
+  private func quoted(_ text: String) -> String {
+    guard let data = try? JSONEncoder().encode(text), let value = String(data: data, encoding: .utf8) else { return text }
+    return value
+  }
+
   private func apply() {
-    guard let draft else { return }
+    guard let draft, !unchangedCopyedit else { return }
     do {
       guard store.activeSection?.id == draft.sectionID else { throw DraftHarbourError.invalidSelection }
       let before = store.activeSection?.content ?? ""

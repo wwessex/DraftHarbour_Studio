@@ -1,0 +1,18 @@
+{
+  "protocol_sha256": "04918460b1a096337b320df052aeff0f9813bdb884c520cb6a41d22af3eae0ad",
+  "report_sha256": "e7c95cc20ac3483b51f90d0a1610115ad7a173b670ba15736237a2471a839e7f",
+  "input_hashes": {
+    "curation/pilot-recipe-v26/freeze.py": "de0f27aaefdd2388558b77ce583bc1351ff1043fbe621e536e72a6b410e76f1b",
+    "artifacts/trainer-audit-v25/installed-audit.json": "beda287e717325ede42bc91d52fc979d18fbb84942a7978e5a821a30f88a5678",
+    "artifacts/curriculum-fit-v24/records.review-only.jsonl": "509fce55420325ee6cff967007b3d51ef65efc47918bdcf7b24af07b99383909",
+    "curation/trainer-audit-v25/manifest.json": "4551c8f8f0676c12329389d4d716d077c1fab97977d6f2e5d995069f7ec72771",
+    "artifacts/trainer-recipe-v21b/primary.cases.frozen.jsonl": "294aa3a799788bba1aa0f1fca3080511804eebe8790e896483b19160f00926f5",
+    "artifacts/trainer-recipe-v21b/seen-fit.cases.frozen.jsonl": "56d1a749679002a144f56b6cb7408bcf6c62c72420d74cca93ca68a0b243f2bb",
+    "configs/narratryx-craft-v1.json": "d217b5d2563b90505af8e925deb1d8fff3a025f96a6fbd3e46a5389864d36889",
+    "artifacts/craft-training-v2/adapter/adapters.safetensors": "09f950e0954105b4b5bf1cdd5c7a4ee882d617742aadad6ec33c1dda5af84688",
+    "artifacts/craft-training-v2/adapter/adapter_config.json": "5a91c4ac9fb321a147835fa27b8155e0e9ce53e5e5335dd7da636288483502ff",
+    "artifacts/pilot-recipe-v26/request.json": "318a0ae1cdd71563cc0d8f523c9bf3ce6be20d7e7ad0ef5b5778ba625e929fc1",
+    "artifacts/pilot-recipe-v26/train.tokens.jsonl": "12877fc61e6a4bef3cd1246594a16c5440eec1ebf8cb941d89e25906b4243b7e",
+    "artifacts/pilot-recipe-v26/validation.tokens.jsonl": "7f070994f111779c96f693e7eb92dba7dc5b9c79c3915319cf97c2d81821aa53"
+  }
+}

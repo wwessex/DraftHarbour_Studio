@@ -172,6 +172,30 @@ describe('integration broker contract envelopes', () => {
     expect(ch?.content).toBe('Remote');
   });
 
+  it('requires an explicit bearer token before using either funded AI route', async () => {
+    vi.stubEnv('BROKER_AI_AUTH_TOKEN', 'broker-test-token');
+    vi.stubEnv('BROKER_OPENAI_API_KEY', 'provider-test-key');
+    vi.stubEnv('BROKER_GROQ_API_KEY', 'provider-test-key');
+    const fetchMock = vi.fn().mockImplementation(async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    for (const path of ['/api/ai/generate', '/api/chat']) {
+      const request = { method: 'POST', path, body: { provider: 'groq', model: 'model', prompt: 'hello' } };
+      expect((await handleBrokerRequest(request))?.status).toBe(401);
+      expect((await handleBrokerRequest({ ...request, authorization: 'Bearer wrong' }))?.status).toBe(401);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    expect((await handleBrokerRequest({
+      method: 'POST', path: '/api/ai/generate', body: { prompt: 'hello' }, authorization: 'Bearer broker-test-token',
+    }))?.status).toBe(200);
+    expect((await handleBrokerRequest({
+      method: 'POST', path: '/api/chat', body: { provider: 'groq', model: 'model', prompt: 'hello', userApiKey: 'own-key' },
+    }))?.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('returns provider unavailable envelope for /api/chat without key', async () => {
     vi.stubEnv('BROKER_GROQ_API_KEY', '');
     vi.stubEnv('BROKER_OPENROUTER_API_KEY', '');

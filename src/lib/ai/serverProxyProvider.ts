@@ -1,3 +1,4 @@
+import { withNaturalWritingStyle } from './writingStyle';
 /**
  * Server proxy provider.
  *
@@ -69,6 +70,7 @@ export class ServerProxyProvider implements AIProvider {
   }
 
   async execute(request: AIRequest): Promise<AIResponse> {
+    request = withNaturalWritingStyle(request);
     const policy = getManagedPolicy();
     if (policy.forceLocalOnly || policy.disableAIProviders || policy.disabledAIProviderTypes?.includes('server-proxy')) {
       throw new Error('Server proxy AI is disabled by managed policy.');

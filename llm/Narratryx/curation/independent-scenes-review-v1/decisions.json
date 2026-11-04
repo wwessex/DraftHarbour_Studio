@@ -1,0 +1,15 @@
+{
+  "reviewer": "Codex AI: informed source fidelity and instruction alignment review",
+  "reviewed_on": "2026-10-26",
+  "review_type": "AI editorial assessment, not independent blinded review, human approval or legal certification",
+  "decisions": [
+    {"id":"hopkins-room","decision":"accept","reason":"Selected wording matches the inspected p98 scan after layout normalization. Practical objects and the stated transformation satisfy the setting brief. Historical period register; no modernisation claimed."},
+    {"id":"hopkins-embroidery","decision":"accept","reason":"Matches inspected pp98–99. Includes four speech paragraphs with reciprocal responses and intervening narration. The offer to teach does not answer where Sappho learned; the narrator explicitly registers this omission. Not a label for an unstated motive."},
+    {"id":"hopkins-work","decision":"accept","reason":"Matches inspected p99. The question and qualified answer form a complete exchange; the chair action supplies a clear ending. Dictator refers to dictation in context. Historical wording is preserved."},
+    {"id":"hopkins-invitation","decision":"accept","reason":"Matches inspected pp101–102. The invitation, matching acceptance and farewell are complete. Half after seven corresponds to the brief’s half past seven. The reply and departure are present; prior religious discourse is outside the selected span."},
+    {"id":"hopkins-host","decision":"accept","reason":"Matches the first two complete sentences of the inspected p102 paragraph. Explicit desire leads to arranging receptions. The brief frames the narrator’s class judgements historically; no claim that this is modern social guidance or a whole paragraph."},
+    {"id":"james-face-1908","decision":"accept","reason":"Both versions match inspected original p4 scans. The changes include syntactic reordering, expression/representation and but/yet. The brief explicitly permits interpretive nuance; suitable only as a narrow stylistic-revision example, not minimal copyediting or evidence that newer prose is superior."},
+    {"id":"james-dogs-1908","decision":"reference-only","reason":"Both versions match the inspected original scans, but the single contemplated/took in substitution has limited incremental value. Keep the authentic pair as reference; exclude from this prospective training selection rather than count it as a substantive revision lesson."}
+  ],
+  "limitations": ["Five accepted examples share a single Hopkins chapter; do not count as five independent stories.","Only one accepted stylistic revision pair; no broad editing curriculum established.","No human literary-quality ratings or model-quality gain established.","AI-written instructions were constructed after reading historical prose; no generated literary answers."]
+}

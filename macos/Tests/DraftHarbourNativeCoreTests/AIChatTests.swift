@@ -1,7 +1,24 @@
 import DraftHarbourNativeCore
 import XCTest
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
 final class AIChatTests: XCTestCase {
+  func testAvailabilityUsesThePublicSDKRatherThanAnInternalMacroModule() {
+    #if canImport(FoundationModels)
+    if #available(macOS 26.0, *) {
+      switch SystemLanguageModel.default.availability {
+      case .available:
+        XCTAssertEqual(AppleFoundationModelsProvider.availabilityStatus(), .available)
+      case .unavailable:
+        XCTAssertNotEqual(AppleFoundationModelsProvider.availabilityStatus(), .available)
+      @unknown default: break
+      }
+    }
+    #endif
+  }
+
   func testAppleFoundationAvailabilityMappingDoesNotRequireAppleIntelligence() {
     XCTAssertEqual(AppleFoundationModelsProvider.availabilityStatus(for: .available), .available)
     XCTAssertEqual(AppleFoundationModelsProvider.availabilityStatus(for: .deviceNotEligible), .deviceNotEligible)

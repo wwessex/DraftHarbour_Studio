@@ -1,0 +1,172 @@
+[
+  {
+    "id": "wells-time-machine",
+    "url": "https://gutenberg.pglaf.org/cache/epub/35/pg35.txt",
+    "path": "rights/raw/literary-expansion-2026-10-25/wells-time-machine.txt",
+    "sha256": "2892e919000e17c83e1dac51b30f4675db50536b644d7579fe8a89bb399a9bdc",
+    "bytes": 204384,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/plain",
+      "last_modified": "Thu, 01 Oct 2026 07:41:17 GMT",
+      "final_url": "https://gutenberg.pglaf.org/cache/epub/35/pg35.txt"
+    }
+  },
+  {
+    "id": "doyle-adventures",
+    "url": "https://gutenberg.pglaf.org/cache/epub/1661/pg1661.txt",
+    "path": "rights/raw/literary-expansion-2026-10-25/doyle-adventures.txt",
+    "sha256": "922e2a12ccb43a4c9544c260b2166c6ad2097aeb5957faeee113f173bb857cd0",
+    "bytes": 607606,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/plain",
+      "last_modified": "Thu, 01 Oct 2026 14:28:28 GMT",
+      "final_url": "https://gutenberg.pglaf.org/cache/epub/1661/pg1661.txt"
+    }
+  },
+  {
+    "id": "wells-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/35",
+    "path": "rights/evidence/literary-expansion-2026-10-25/wells-catalogue.html",
+    "sha256": "5e5f4ee3abd5fa8ac02cf697a130e36cc48dbbf9f3fff72ea35b12476cc376a2",
+    "bytes": 23745,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html;charset=utf-8",
+      "last_modified": null,
+      "final_url": "https://www.gutenberg.org/ebooks/35"
+    }
+  },
+  {
+    "id": "doyle-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/1661",
+    "path": "rights/evidence/literary-expansion-2026-10-25/doyle-catalogue.html",
+    "sha256": "e5da0be992945229a4be9b7d459caad6cc81b5bf70415a8d9474c2feb6fb339f",
+    "bytes": 25125,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html;charset=utf-8",
+      "last_modified": null,
+      "final_url": "https://www.gutenberg.org/ebooks/1661"
+    }
+  },
+  {
+    "id": "uk-term",
+    "url": "https://www.gov.uk/copyright/how-long-copyright-lasts",
+    "path": "rights/evidence/literary-expansion-2026-10-25/uk-term.html",
+    "sha256": "b11d3da417d187cf9c909379c3433e2b96a7ecfa2e9d8748e5edf1579d7e095b",
+    "bytes": 70854,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "last_modified": null,
+      "final_url": "https://www.gov.uk/copyright/how-long-copyright-lasts"
+    }
+  },
+  {
+    "id": "provider-permission",
+    "url": "https://www.gutenberg.org/policy/permission.html",
+    "path": "rights/evidence/literary-expansion-2026-10-25/provider-permission.html",
+    "sha256": "c6df9d5913daf11aab5638744adaae02e2af0b27135a614e02f66260b2fcd8a7",
+    "bytes": 18907,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html",
+      "last_modified": "Fri, 23 Oct 2026 21:41:02 GMT",
+      "final_url": "https://www.gutenberg.org/policy/permission.html"
+    }
+  },
+  {
+    "id": "provider-license",
+    "url": "https://www.gutenberg.org/policy/license.html",
+    "path": "rights/evidence/literary-expansion-2026-10-25/provider-license.html",
+    "sha256": "8a5137aecb0911dc0700e4ff636834326f6eade4beb997229269658a5ccd82f7",
+    "bytes": 32478,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html",
+      "last_modified": "Fri, 23 Oct 2026 21:41:02 GMT",
+      "final_url": "https://www.gutenberg.org/policy/license.html"
+    }
+  },
+  {
+    "id": "provider-terms",
+    "url": "https://www.gutenberg.org/policy/terms_of_use.html",
+    "path": "rights/evidence/literary-expansion-2026-10-25/provider-terms.html",
+    "sha256": "38e45e0cbc6a3f903ef019b3bcbcbce9c3190f9f68f73bf31d2ef58a8ceb679b",
+    "bytes": 12086,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/html",
+      "last_modified": "Fri, 23 Oct 2026 21:41:02 GMT",
+      "final_url": "https://www.gutenberg.org/policy/terms_of_use.html"
+    }
+  },
+  {
+    "id": "provider-mirrors",
+    "url": "https://www.gutenberg.org/MIRRORS.ALL",
+    "path": "rights/evidence/literary-expansion-2026-10-25/provider-mirrors.txt",
+    "sha256": "bc5b36085dc25eed2289dd412617f594ee32b91baa1de4094ef741b63844d797",
+    "bytes": 2922,
+    "retrieved_on": "2026-10-25",
+    "http": {
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "last_modified": "Sun, 25 Oct 2026 06:00:03 GMT",
+      "final_url": "https://www.gutenberg.org/MIRRORS.ALL"
+    }
+  },
+  {
+    "id": "doyle-improved-source",
+    "url": "https://gutenberg.pglaf.org/cache/epub/48320/pg48320.txt",
+    "path": "rights/raw/literary-expansion-2026-10-25/doyle-adventures-pg48320.txt",
+    "sha256": "bf63b19ade817616aa64b5dcaf32e8685592c315fd22e336defe685baa02d419",
+    "bytes": 622091,
+    "retrieved_on": "2026-10-25"
+  },
+  {
+    "id": "wells-edition",
+    "url": "https://en.wikisource.org/w/index.php?title=The_Time_Machine_(Heinemann_text)&oldid=14499179",
+    "path": "rights/evidence/literary-expansion-2026-10-25/wells-edition.html",
+    "sha256": "3c41aebe8435a9d95736374253b54e29457064ec0382ffa0e5ee88d31b47f9a0",
+    "bytes": 131977,
+    "retrieved_on": "2026-10-25",
+    "http_status": 200
+  },
+  {
+    "id": "wells-chapter-1",
+    "url": "https://en.wikisource.org/w/index.php?title=The_Time_Machine_(Heinemann_text)/Chapter_1&oldid=13194353",
+    "path": "rights/evidence/literary-expansion-2026-10-25/wells-chapter-1.html",
+    "sha256": "910c170044747b3969ec791102ece736f19cb0b6c96a8830706e15bcd7c2d17f",
+    "bytes": 81074,
+    "retrieved_on": "2026-10-25",
+    "http_status": 200
+  },
+  {
+    "id": "wells-chapter-2",
+    "url": "https://en.wikisource.org/wiki/The_Time_Machine_(Heinemann_text)/Chapter_2",
+    "path": "rights/evidence/literary-expansion-2026-10-25/wells-chapter-2.html",
+    "sha256": "501024f63fe5770b4f21eed0a032694ad092f3478228b798df04734ad0c84639",
+    "bytes": 72276,
+    "retrieved_on": "2026-10-25",
+    "http_status": 200
+  },
+  {
+    "id": "doyle-improved-catalogue",
+    "url": "https://www.gutenberg.org/ebooks/48320",
+    "path": "rights/evidence/literary-expansion-2026-10-25/doyle-improved-catalogue.html",
+    "sha256": "d5209e9fa93d9c0926ad82ff35dfdefac7d0ce09abf08a07b7474745f8ba6f31",
+    "bytes": 24715,
+    "retrieved_on": "2026-10-25",
+    "http_status": 200
+  }
+]

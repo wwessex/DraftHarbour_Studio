@@ -21,6 +21,7 @@ struct DraftHarbourNativeApp: App {
     DocumentGroup(newDocument: DraftHarbourDocument()) { file in
       NativeDocumentView(document: file.$document, fileURL: file.fileURL)
         .nativeAppearanceBridge()
+        .background(NativeOpeningWindowSizeBridge().frame(width: 0, height: 0))
     }
     .commands {
       DraftHarbourCommands()

@@ -1,0 +1,69 @@
+{
+  "status": "evaluation-only-complete-no-promotion",
+  "created_on": "2026-11-01",
+  "verification": {
+    "evidence_integrity_passed": true,
+    "evaluation_complete": true,
+    "new_requests": 96,
+    "exploratory_cases": 32,
+    "original_prompt_repeats": 1,
+    "conditions": 3,
+    "truncations": 0,
+    "all_scores_recomputed": true,
+    "original_models_and_artifacts_unchanged": true,
+    "initial_service_state_preserved": true,
+    "training_executed": false,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "requests_total": 96,
+  "source_hashes": {
+    "curation/question-ablation-v18/run.py": "49ac9460bc782d7cd8b1cb74e98b54efa3440a235ceb9ec3aca9a7d2a07ac135",
+    "curation/question-ablation-v18/evaluate.py": "a086bc13abb94b471d55c8349ec492be42fa23869a67123d594543dd701bdcb1",
+    "curation/question-ablation-v18/verify.py": "fb7364b58661018e71ff900f841a2c15552cdbaf6b9782875a5e4c302abb62a5",
+    "curation/question-ablation-v18/report.py": "2e74e13fbed4a64f8f4829a8f81d3252e5146e7449d23450ccd6bb91d584eaf3",
+    "curation/question-ablation-v18/prepare.py": "7651867cb3ede194a3253ae16490e7917ded376c02664a1dc9c5bb6c58159ca7",
+    "foundation/question_ablation.py": "2916d0b892b817dd42843958ea9e2f90e8814a80d9cd7dba1626c595d234ba6b",
+    "tests/test_question_ablation.py": "3ee87a17d2f89886c4672b6f85e278faf070027bac546144eff1ec76ed8995f8",
+    "docs/question-ablation-v18-2026-11-01.md": "4e4832620fda5a51c27cb29ea6f72da2efaf9c8c9699da42391663098d23212c"
+  },
+  "artifact_hashes": {
+    "artifacts/question-ablation-v18/experiment-complete.json": "6db38f6ee6892c58fd28c6be3958ddef071809bffdbb5b19314affcd9ccb4b1f",
+    "artifacts/question-ablation-v18/scores.json": "d0748552e3269bad71e04fd074793c920b6cb709b40593bff4e3c0f55b58e8eb",
+    "artifacts/question-ablation-v18/current-craft.log": "fa1c0d0c003f13270db8bd8c1bc4f3ff7365122d42efcc496ab9e9cc87209eb1",
+    "artifacts/question-ablation-v18/current-craft.complete.json": "9dd68294ad516ddb0121692d0325f37f01d573807f1212e69acef484ec60753e",
+    "artifacts/question-ablation-v18/current-craft.phase.json": "1b998c98484186b00daa2c37ea92e5a955844391452eac9a275e9900aabfeaa9",
+    "artifacts/question-ablation-v18/mixed-v16.responses.jsonl": "c058b9fc6d7dc4989faab21847da60a1ce32d02cbae649f4e03442c02dba2bbf",
+    "artifacts/question-ablation-v18/service-final.json": "bbb209a67ab20b475c968bb05cd32d3903ad71ebc2801a18a48b1b4a463945c0",
+    "artifacts/question-ablation-v18/base.log": "0b91116bc11a153abda0ccd944c8bad0082885a1fbc4f1aa15787b2bfef2bc70",
+    "artifacts/question-ablation-v18/counterexamples.json": "382a3c75581715511f91ba72e836e1f207360c8ebf75aebd74ace40150e54434",
+    "artifacts/question-ablation-v18/mixed-v16.log": "81fb2c27cdcabfd244ad57d41842c2a0e6b45485b73ae7b119405c69f198f0e8",
+    "artifacts/question-ablation-v18/protocol.frozen.json": "2f746a7655ee7b9af60089993832f5b5fd02413fe321f37d4596a830062bfd10",
+    "artifacts/question-ablation-v18/base.phase.json": "8ff727b6cfc0d7f9e9418fbbeb73bde9f144e59f7134d636d91e205816729093",
+    "artifacts/question-ablation-v18/base.complete.json": "4854ee05094b6c61a33fe5fdaae4b6a9ed56ae80626df2722818957657ded899",
+    "artifacts/question-ablation-v18/mixed-v16.complete.json": "97e5d4a07600be5c1a1a8d45c8d027d1bccc03fd357e30b6ae7924b8fb6ffd04",
+    "artifacts/question-ablation-v18/verification.json": "f48dd5bac9706c7f4796ec967f93aef0b3c6e638ab1d253c1b4b862feddab386",
+    "artifacts/question-ablation-v18/base.responses.jsonl": "98c96f315bff686a749c2c5f617c92f74ee602460b88e2fdad928ecc1ebbd987",
+    "artifacts/question-ablation-v18/service-initial.json": "1a98a18aae04ccab8090702a5ccee183e4b16631ee452c92f1a7623cb34b70c6",
+    "artifacts/question-ablation-v18/environment.json": "81bf2f185315d8bb1a55cf5e2558e508922f1ff3dbe3867adc0640a9ffe17f5f",
+    "artifacts/question-ablation-v18/current-craft.responses.jsonl": "8b15c9aad9283418957df3a8ed9b92357f6a1be45f2d92662cce536bc98a146b",
+    "artifacts/question-ablation-v18/mixed-v16.phase.json": "b581fbc24fd1a5fc748cba457875c426c935f5541d0a27a2498613664e481453",
+    "artifacts/question-ablation-v18-plan/protocol.proposed.frozen.json": "2a07ead660c4e710c0fa91bc80020d1c3a2726e08ae74f68b98b206fc74b7bae",
+    "artifacts/question-ablation-v18-plan/cases.frozen.jsonl": "6f657238d08cb5123020e93a957b598bbd8caf6e3224170ed1f58a6078859e8b"
+  },
+  "tests": {
+    "final_count": 229,
+    "final_seconds": 70.351,
+    "final_passed": true,
+    "initial_errors": 1,
+    "initial_count": 229,
+    "initial_seconds": 134.359,
+    "logs_sha256": {
+      "question-ablation-v18-tests-2026-11-01.log": "773c33cd01b82d3b92f62efdb2395bc4d60de6a4e4c5e056c3b0fb72e472316f",
+      "question-ablation-v18-tests-rerun-2026-11-01.log": "34b75768cddcf6ff0ea17c4497e1698330790f89fc40a74396e06a7a40e4265f"
+    }
+  },
+  "training_executed": false,
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}
