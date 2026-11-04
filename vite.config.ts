@@ -220,6 +220,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (/\/node_modules\/(?:react|react-dom|scheduler)\//.test(id)) {
+            return 'react-vendor';
+          }
+
           if (
             id.includes('/src/lib/export/')
             || id.includes('/src/components/Modals/ExportModal')
