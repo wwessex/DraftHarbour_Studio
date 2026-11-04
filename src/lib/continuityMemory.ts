@@ -125,7 +125,7 @@ export function buildContinuityMemory(novelId: string, chapters: Chapter[]): Con
     }
 
     // Broadened relationship regex
-    for (const match of chapterText.matchAll(/\b([A-Z][a-zA-Z''-]+(?:[-\s][A-Z][a-zA-Z''-]*)*)\s+(?:is|was)\s+the\s+([a-z\s-]+?)\s+of\s+([A-Z][a-zA-Z''-]+(?:[-\s][A-Z][a-zA-Z''-]*)*)\b/g)) {
+    for (const match of chapterText.matchAll(/\b([A-Z][a-zA-Z'-]+(?:[ -][A-Z][a-zA-Z'-]+)*)\s+(?:is|was)\s+the\s+([a-z\s-]+?)\s+of\s+([A-Z][a-zA-Z'-]+(?:[ -][A-Z][a-zA-Z'-]+)*)\b/g)) {
       const source = ensureCharacter(characters, match[1], chapter.id);
       const relation = `${normalizeToken(match[2])} of ${titleCase(normalizeToken(match[3]))}`;
       if (!source.relationships.includes(relation)) {
