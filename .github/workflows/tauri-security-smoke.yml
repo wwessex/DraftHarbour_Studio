@@ -1,0 +1,79 @@
+name: Tauri security smoke
+on:
+  push:
+    branches: [codex/tauri-security-smoke-20261104]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    name: Tauri executable and launch (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xvfb xdotool imagemagick
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm --prefix desktop ci
+      - name: Build Tauri executable with embedded frontend
+        run: npm run desktop:build:debug -- --no-bundle
+      - name: Launch Linux executable in Xvfb
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p smoke
+          xvfb-run -a bash -euo pipefail -c '
+            desktop/src-tauri/target/debug/draftharbour_desktop >smoke/linux.log 2>&1 &
+            app=$!
+            trap "kill $app 2>/dev/null || true" EXIT
+            window=$(timeout 50s xdotool search --sync --onlyvisible --name "^DraftHarbour Studio$" | head -1)
+            test -n "$window"
+            sleep 5
+            kill -0 "$app"
+            import -window "$window" smoke/linux.png
+            echo "Found visible DraftHarbour Studio window and a live Tauri process."
+          '
+      - name: Launch Windows executable and verify WebView2 renders
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory smoke | Out-Null
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=49231'
+          $process = Start-Process -FilePath ./desktop/src-tauri/target/debug/draftharbour_desktop.exe -PassThru -RedirectStandardOutput smoke/windows.log -RedirectStandardError smoke/windows-error.log
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 45; $attempt++) {
+              $process.Refresh()
+              if ($process.HasExited) { throw "Tauri exited with code $($process.ExitCode)" }
+              try {
+                $page = Invoke-RestMethod http://127.0.0.1:49231/json/list | Where-Object { $_.type -eq 'page' -and $_.title -eq 'DraftHarbour Studio' } | Select-Object -First 1
+                if ($page -and $process.MainWindowHandle -ne 0) {
+                  $env:SMOKE_WS = $page.webSocketDebuggerUrl
+                  node -e 'const s = new WebSocket(process.env.SMOKE_WS); const timer=setTimeout(()=>process.exit(1),5000); s.onopen=()=>s.send(JSON.stringify({id:1,method:"Runtime.evaluate",params:{expression:"Boolean(document.querySelector(\u0027#root button\u0027))",returnByValue:true}})); s.onmessage=({data})=>{const m=JSON.parse(data);if(m.id===1){clearTimeout(timer);s.close();process.exit(m.result?.result?.value===true?0:1)}}; s.onerror=()=>process.exit(1)'
+                  if ($LASTEXITCODE -eq 0) { $ready = $true; break }
+                }
+              } catch { Write-Host 'Waiting for WebView2' }
+              Start-Sleep -Seconds 1
+            }
+            if (!$ready) { throw 'Tauri window and rendered WebView2 UI did not become ready.' }
+            Write-Host 'Found a live Tauri process, native window, and rendered application controls.'
+          } finally {
+            if (!$process.HasExited) { Stop-Process -Id $process.Id }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-${{ runner.os }}
+          path: smoke
+          if-no-files-found: ignore
+          retention-days: 3
