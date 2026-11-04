@@ -1,3 +1,4 @@
+import { developmentBrokerAuth } from './developmentBrokerAuth';
 import { withNaturalWritingStyle } from './writingStyle';
 /**
  * OpenAI-compatible chat completion provider.
@@ -79,9 +80,12 @@ export class OpenAIProvider implements AIProvider {
         );
       }
 
-      const envelope = await fetchEnvelope<{ text: string }>(`${brokerBase}/api/ai/generate`, {
+      const endpoint = `${brokerBase}/api/ai/generate`;
+      const { headers, ...transport } = developmentBrokerAuth(endpoint);
+      const envelope = await fetchEnvelope<{ text: string }>(endpoint, {
+        ...transport,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
         body: JSON.stringify({
           prompt: fullPrompt,
           projectType: request.projectType,

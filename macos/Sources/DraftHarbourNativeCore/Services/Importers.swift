@@ -151,15 +151,16 @@ public struct RTFImporter: Importer {
 }
 
 public struct DOCXImporter: Importer {
+  public static let maxImportBytes = 100 * 1024 * 1024
   public let supportedExtensions = ["docx"]
 
   public init() {}
 
   public func importDocument(data: Data, filename: String, projectId: String, projectType: ProjectType) throws -> ImportResult {
-    let maxBytes = 100 * 1024 * 1024
+    let maxBytes = Self.maxImportBytes
     guard data.count <= maxBytes else { throw CocoaError(.fileReadTooLarge) }
     let archive = try Archive(data: data, accessMode: .read)
-    guard let entry = archive["word/document.xml"] else {
+    guard let entry = archive["word/document.xml"], entry.type == .file else {
       throw DraftHarbourError.unsupportedFormat(filename)
     }
     guard entry.uncompressedSize <= maxBytes else { throw CocoaError(.fileReadTooLarge) }

@@ -4,9 +4,9 @@
   "version": "2.0.0",
   "identifier": "com.draftharbour.studio",
   "build": {
-    "beforeDevCommand": "npm --prefix .. run dev -- --host 127.0.0.1 --port 1420",
+    "beforeDevCommand": "npm --prefix .. run dev -- --host localhost --port 1420",
     "beforeBuildCommand": "npm --prefix .. run build",
-    "devUrl": "http://127.0.0.1:1420",
+    "devUrl": "http://localhost:1420",
     "frontendDist": "../../dist"
   },
   "app": {

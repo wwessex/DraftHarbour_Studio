@@ -449,7 +449,14 @@ struct NativeDocumentView: View {
       var notices: [String] = []
       for url in panel.urls {
         do {
-          let data = try Data(contentsOf: url)
+          let data: Data
+          if url.pathExtension.lowercased() == "docx" {
+            let handle = try FileHandle(forReadingFrom: url)
+            defer { try? handle.close() }
+            data = try handle.read(upToCount: DOCXImporter.maxImportBytes + 1) ?? Data()
+          } else {
+            data = try Data(contentsOf: url)
+          }
           let result = try ImporterRegistry.importer(for: url.lastPathComponent).importDocument(
             data: data,
             filename: url.lastPathComponent,

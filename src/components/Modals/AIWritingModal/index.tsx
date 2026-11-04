@@ -1,3 +1,4 @@
+import { developmentBrokerAuth, getDevelopmentBrokerToken, setDevelopmentBrokerToken } from '@/lib/ai/developmentBrokerAuth';
 import { parseSceneFacts } from '@/lib/ai/bibleAccess';
 import { storyBibleReferences } from '@/lib/ai/storyBibleReferences';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -204,6 +205,8 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
   // AI configuration (provider-aware)
   const [config, setConfig] = useState<AIProviderConfig>(loadAIConfig);
   const [showSettings, setShowSettings] = useState(false);
+  const devBrokerEndpoint = getBrokerEndpoint('/api/chat');
+  const [devBrokerToken, setDevBrokerToken] = useState(() => getDevelopmentBrokerToken(devBrokerEndpoint));
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionResult, setConnectionResult] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
   const [advancedSettingsExpanded, setAdvancedSettingsExpanded] = useState<boolean>(() => {
@@ -764,9 +767,11 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
         prompt: 'Say "Connection successful" in exactly two words.',
         projectType: 'book',
       };
-      const res = await fetch(getBrokerEndpoint('/api/chat'), {
+      const { headers, ...transport } = developmentBrokerAuth(devBrokerEndpoint);
+      const res = await fetch(devBrokerEndpoint, {
+        ...transport,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
         body: JSON.stringify(body),
         signal: abortSignal,
       });
@@ -1006,6 +1011,21 @@ export function AIWritingModal({ open, onClose, presentation = 'modal', actionRe
             <span className="material-symbols-rounded">tune</span>
             AI Configuration
           </h4>
+
+          {import.meta.env.DEV && (
+            <label className={styles.aiLabel}>
+              Local development broker token
+              <Input
+                type="password"
+                autoComplete="off"
+                value={devBrokerToken}
+                onChange={event => {
+                  setDevBrokerToken(event.target.value);
+                  setDevelopmentBrokerToken(devBrokerEndpoint, event.target.value);
+                }}
+              />
+            </label>
+          )}
 
           <div className={styles.aiPrivacyNote}>
             <span className="material-symbols-rounded">auto_awesome</span>

@@ -253,9 +253,11 @@ export const scrivenerAdapter: IntegrationAdapter = {
 
     // Read content for each text item
     const remoteDocs: ProviderDocument[] = [];
-    const readContents = new Map<string, string>();
+    const seenItems = new Set<string>();
     for (let i = 0; i < textItems.length; i++) {
       const item = textItems[i];
+      if (seenItems.has(item.uuid)) throw new Error('Invalid Scrivener project: duplicate binder identifier.');
+      seenItems.add(item.uuid);
       let body = '';
 
       // Try multiple content file locations (Scrivener uses different structures)
@@ -269,11 +271,7 @@ export const scrivenerAdapter: IntegrationAdapter = {
       for (const contentPath of contentPaths) {
         const entry = zip.file(contentPath);
         if (!entry) continue;
-        let fileContent = readContents.get(contentPath);
-        if (fileContent === undefined) {
-          fileContent = await readText(entry);
-          readContents.set(contentPath, fileContent);
-        }
+        const fileContent = await readText(entry);
         if (fileContent) {
           body = contentPath.endsWith('.rtf') ? rtfToPlainText(fileContent) : fileContent;
           break;

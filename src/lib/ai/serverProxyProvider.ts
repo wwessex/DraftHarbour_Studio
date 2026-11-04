@@ -1,3 +1,4 @@
+import { developmentBrokerAuth } from './developmentBrokerAuth';
 import { withNaturalWritingStyle } from './writingStyle';
 /**
  * Server proxy provider.
@@ -237,14 +238,17 @@ export class ServerProxyProvider implements AIProvider {
       body.userApiKey = userApiKey;
     }
 
+    const endpoint = getBrokerEndpoint('/api/chat');
+    const { headers, ...transport } = developmentBrokerAuth(endpoint);
     const envelope = await fetchEnvelope<{
       text: string;
       model: string;
       provider: string;
       usage?: { promptTokens?: number; completionTokens?: number };
-    }>(getBrokerEndpoint('/api/chat'), {
+    }>(endpoint, {
+      ...transport,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
       body: JSON.stringify(body),
       signal: request.signal,
     });
