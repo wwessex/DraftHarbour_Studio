@@ -20,7 +20,8 @@ struct WritingAssistantView: View {
   @State private var undo: (sectionID: String, before: String, after: String)?
   @AppStorage("DraftHarbour.aiSetup.mode") private var aiMode = "existing"
   @State private var showSetup = false
-  @State private var localStatus = "Local model package has not been checked."
+  @State private var packageState: LocalAISetup.PackageState = .unchecked
+  @State private var localStatus = ""
   @State private var checkingLocal = false
   @State private var selectedAction: WritingAction = .write
   @State private var rewriteTarget: (source: String, range: NSRange)?
@@ -52,48 +53,23 @@ struct WritingAssistantView: View {
         }
         Spacer(minLength: 0)
         if configuredProvider == nil {
-          Button("AI setup") { task?.cancel(); showSetup.toggle() }.help("Choose and check the AI model")
+          Button("AI setup") { task?.cancel(); showSetup.toggle(); if showSetup { checkLocalPackage() } }.help("Choose and check the AI model")
         }
         if expanded {
           Button("Close") { task?.cancel(); expanded = false; draft = nil; result = ""; sceneFacts = "" }.help("Close the writing preview")
         }
       }
       if showSetup, configuredProvider == nil {
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Choose how AI runs. Your writing stays on this computer unless you explicitly use an online connection.").font(.caption)
-          HStack {
-            Button("On this computer") {
-              task?.cancel(); aiMode = "local"; checkingLocal = true
-              Task {
-                do {
-                  let model = try await NativeLocalModelRuntime.shared.inspect()
-                  localStatus = "Verified \(model). Starts when you request a draft."
-                } catch { localStatus = "Local AI unavailable: \(error.localizedDescription) No text was sent online." }
-                checkingLocal = false
-              }
-            }.disabled(checkingLocal)
-            Button("Online AI — coming soon") {}.disabled(true)
-            Button("Decide later") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "later" }
-              .disabled(checkingLocal)
-          }
-          HStack {
-            Button("Install local package…", action: installPackage).disabled(checkingLocal || generating)
-            Button("Restore previous package…", action: restorePackage).disabled(checkingLocal || generating)
-          }
-          Text(localStatus).font(.caption)
-          if checkingLocal { ProgressView().controlSize(.small) }
-          if aiMode == "later" { Text("AI is off. You can keep writing and return to setup at any time.").font(.caption) }
-          Text("Install only a reviewed local package. Online sign-in is still in development. No training or user-entered key is required by the managed local runtime.").font(.caption).foregroundStyle(.secondary)
-          if let configure {
-            Button("Use an existing connection…") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "existing"; configure() }.disabled(checkingLocal)
-          }
-        }
+        localSetupPanel
       }
       if !expanded, configuredProvider == nil, aiMode == "existing", let chosen = providers.first(where: { $0.id == selectedProviderID }) {
         Text("Model: \(chosen.label)").font(.caption).foregroundStyle(.secondary)
       }
       if configuredProvider == nil, aiMode == "local" {
         Text("On this computer · verifies and starts when you request a draft").font(.caption).foregroundStyle(.secondary)
+      }
+      if configuredProvider == nil, aiMode == "later" {
+        Text("AI is off. Keep writing, or open AI setup whenever you are ready.").font(.caption).foregroundStyle(.secondary)
       }
       if expanded {
         ScrollView {
@@ -167,13 +143,75 @@ struct WritingAssistantView: View {
       rewriteTarget = nil
       selectedAction = .write
     }
+    .onAppear {
+      guard configuredProvider == nil else { return }
+      if LocalAISetup.needsFirstRun(storedMode: UserDefaults.standard.string(forKey: "DraftHarbour.aiSetup.mode"), hasEnabledProviders: !providers.isEmpty) {
+        aiMode = "later"; showSetup = true; checkLocalPackage()
+      }
+    }
+    .onChange(of: aiMode) { _, _ in
+      task?.cancel(); draft = nil; result = ""; expanded = false
+    }
     .onDisappear { task?.cancel() }
+  }
+
+  private var localSetupPanel: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 8) {
+          Text("Local AI setup").font(.headline)
+          Text("Writing works without AI. Setup never changes your manuscript or enables an online provider.").font(.caption)
+          Text(LocalAISetup.requirements).font(.caption)
+          Text(LocalAISetup.resources).font(.caption).foregroundStyle(.secondary)
+          Text(packageState.message).font(.caption).accessibilityIdentifier("localAI.packageStatus")
+          HStack {
+            Button("Install local package…", action: installPackage).disabled(checkingLocal || generating)
+            Button("Check installed package", action: checkLocalPackage).disabled(checkingLocal || generating)
+            Button("Restore previous package…", action: restorePackage).disabled(checkingLocal || generating)
+          }
+          if !localStatus.isEmpty { Text(localStatus).font(.caption).textSelection(.enabled) }
+          if checkingLocal { ProgressView("Checking local package…").controlSize(.small) }
+          HStack {
+            Button("Use Narratryx on this computer") {
+              task?.cancel(); draft = nil; result = ""; expanded = false
+              aiMode = "local"; showSetup = false
+            }.disabled(checkingLocal || !packageState.canEnable || generating)
+            Button("Online AI — coming soon") {}.disabled(true)
+          }
+          Text(aiMode == "local" ? "Local mode selected. No online fallback is used; requests verify the package again." : "Installing or restoring a package does not enable AI. Choose Use Narratryx on this computer after verification.").font(.caption)
+          Text(LocalAISetup.recovery).font(.caption).foregroundStyle(.secondary)
+          if let configure {
+            Button("Use an existing connection…") { task?.cancel(); NativeLocalModelRuntime.shared.stopNow(); aiMode = "existing"; configure() }.disabled(checkingLocal)
+          }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+      }.frame(maxHeight: 300)
+      Button("Continue writing without AI") {
+        task?.cancel(); NativeLocalModelRuntime.shared.stopNow()
+        draft = nil; result = ""; expanded = false; aiMode = "later"; showSetup = false
+      }
+    }
+  }
+
+  @MainActor
+  private func refreshPackageState() async {
+    packageState = await Task.detached { LocalAISetup.inspect() }.value
+  }
+
+  @MainActor
+  private func checkLocalPackage() {
+    guard !checkingLocal else { return }
+    checkingLocal = true; localStatus = ""
+    Task { @MainActor in
+      await refreshPackageState()
+      checkingLocal = false
+    }
   }
 
   @MainActor
   private func installPackage() {
     let picker = NSOpenPanel()
-    picker.title = "Choose a verified local model folder"
+    picker.title = "Choose an already obtained verified Narratryx package"
+    picker.message = "Select the complete package folder containing manifest.json. The model is not bundled with the app; this does not download it."
     picker.canChooseFiles = false; picker.canChooseDirectories = true; picker.allowsMultipleSelection = false
     guard picker.runModal() == .OK, let source = picker.url else { return }
     checkingLocal = true; localStatus = "Verifying package and checking storage…"
@@ -183,14 +221,18 @@ struct WritingAssistantView: View {
         let plan = try await Task.detached { try LocalModelInstaller.plan(source: source) }.value
         let alert = NSAlert()
         alert.messageText = "Install verified local AI package?"
-        alert.informativeText = "Model: \(plan.model)\nCopy: \(ByteCountFormatter.string(fromByteCount: Int64(plan.packageBytes), countStyle: .file)); free: \(ByteCountFormatter.string(fromByteCount: Int64(plan.availableBytes), countStyle: .file)).\nRAM: \(plan.physicalMemory / 1_073_741_824) GiB (8 GiB floor; tested on a 16 GB Mac).\n\nReplace the active package and retain one verified previous package? Keep the app open during installation. No training or key entry is needed."
+        alert.informativeText = "Model: \(plan.model)\nCopy: \(ByteCountFormatter.string(fromByteCount: Int64(plan.packageBytes), countStyle: .file)); free: \(ByteCountFormatter.string(fromByteCount: Int64(plan.availableBytes), countStyle: .file)).\nRequired free space: \(ByteCountFormatter.string(fromByteCount: Int64(plan.requiredBytes), countStyle: .file)) (copy plus reserve).\nRAM: \(plan.physicalMemory / 1_073_741_824) GiB (8 GiB rejection floor; tested on one 16 GB Mac, not a performance guarantee).\n\nInstall this copy and retain an existing verified package for recovery? The source folder is kept. AI is not enabled by installation. Keep the app open during installation. No training or key entry is needed."
         alert.addButton(withTitle: "Install"); alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { localStatus = "Installation cancelled. The installed package is unchanged."; return }
         localStatus = "Copying and verifying the local package…"
         let model = try await NativeLocalModelRuntime.shared.install(from: source)
         draft = nil; result = ""
-        localStatus = "Installed \(model). Choose On this computer to use it."
-      } catch { localStatus = "Installation unavailable: \(error.localizedDescription)" }
+        await refreshPackageState()
+        localStatus = "Installed \(model). Choose Use Narratryx on this computer to enable it, or continue writing without AI."
+      } catch {
+        await refreshPackageState()
+        localStatus = "Installation failed: \(error.localizedDescription) " + LocalAISetup.recovery
+      }
     }
   }
 
@@ -207,8 +249,13 @@ struct WritingAssistantView: View {
         alert.addButton(withTitle: "Restore"); alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { localStatus = "Restore cancelled. The installed package is unchanged."; return }
         _ = try await NativeLocalModelRuntime.shared.restorePrevious()
-        draft = nil; result = ""; localStatus = "Restored \(model). Choose On this computer to use it."
-      } catch { localStatus = "Restore unavailable: \(error.localizedDescription)" }
+        draft = nil; result = ""
+        await refreshPackageState()
+        localStatus = "Restored \(model). Installation does not change your AI mode."
+      } catch {
+        await refreshPackageState()
+        localStatus = "Restore unavailable: \(error.localizedDescription) " + LocalAISetup.recovery
+      }
     }
   }
 

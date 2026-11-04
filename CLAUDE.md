@@ -38,6 +38,7 @@ The root package declares React 19, TypeScript 5.6, Vite 6, CodeMirror 6, Dexie 
 | Tauri | `desktop/src-tauri/src/main.rs`, `writing_engine.rs`, `tauri.conf.json` |
 | Native macOS UI | `macos/Sources/DraftHarbourNative/` — app, document, views |
 | Native macOS logic | `macos/Sources/DraftHarbourNativeCore/` — models, providers, codecs, safety, sync, analysis |
+| Native local-AI onboarding | `macos/Sources/DraftHarbourNative/Views/WritingAssistantView.swift`, core `Services/LocalAISetup.swift` and `Services/LocalModelInstaller.swift` |
 | Native tests | `macos/Tests/DraftHarbourNativeCoreTests/` |
 | Model research | `llm/Narratryx/` — independent of application runtime |
 
@@ -60,6 +61,10 @@ Writing controls freeze the highlighted source/range before focus changes. Rewri
 App-owned inference uses `desktop/src-tauri/src/local_runtime.rs` with the renderer's `DesktopLocalProvider`, and independent native `LocalModelRuntime.swift`/`ManagedLocalAIProvider`. Both own the child and internal authentication. Main writing UI exposes AI setup. Read [the managed local trial](docs/managed-local-ai-trial.md) for Mac-only artifact availability, tests and release gaps; no hosted sign-in or automatic model installer exists yet.
 
 Offline package selection/replacement/restore is implemented in `desktop/src-tauri/src/local_install.rs` and native `LocalModelInstaller.swift`. The native picker and confirmation precede staged copying/verification; prior verified files are retained. No remote download or arbitrary catalog/executable input is accepted from the renderer. See the trial guide for resource floors and failure-recovery limits.
+
+Native macOS first-run setup uses `LocalAISetup.needsFirstRun` only when no device choice or enabled connection exists; it starts with AI off and checks package state on a worker without loading inference. `PackageState` distinguishes unchecked, missing, verified, rejected and unsupported states. The UI requires verified readiness before local activation, keeps writing without AI accessible, and refreshes status after install/restore failures. Reuse the installer rather than creating a parallel acquisition path. No model is bundled in the DMG or publicly downloadable through setup.
+
+On 4 November 2026, this native-only change compiled and all 138 Swift tests passed, including six setup regressions in `LocalModelRuntimeTests.swift`. A separate trial app with fresh preferences displayed first-run setup and generated a real local preview after explicit Narratryx activation; no passage was accepted and the manuscript stayed at zero words. This is Mac development evidence, not Windows/Linux/iOS parity, universal memory/performance qualification, literary-quality acceptance or distribution approval. The [trial report](docs/managed-local-ai-trial.md#native-macos-first-run-setup--4-november-2026) records the external-cache/native-build-engine workaround and remaining release decisions.
 
 Local/online setup direction is recorded in [the implementation plan](docs/ai-local-and-online-setup-plan.md). `llm/Narratryx/runtime/packaging/` exports and verifies a separate GGUF development bundle; the [24 October runtime report](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) records Mac-only inference evidence. This harness does not implement native app setup, model downloads or an online account service.
 
