@@ -1,0 +1,10 @@
+{
+  "artifacts/source-training-v48/protocol.frozen.json": "f0e33409803593fe12cba0be04ab7456df5f6fd9e4283eba6027786e6b962f34",
+  "artifacts/source-training-v48/batch-audit.json": "8d423c440dbbca3bfdce7baf3b954d28965291cd7d3566994ee2b4eba4e5eb4d",
+  "artifacts/source-training-v48/final-progress.json": "37e086da2e89e56724e673b15b81e1f15de0bc56253c84f8e05fd5e30b61349c",
+  "artifacts/source-training-v48/candidate.responses.jsonl": "c6da02163f03aede413290611162382d72b91a738ba0760e127d6f514a5be085",
+  "artifacts/source-training-v48/automatic-decision.json": "258627bd17ff98ec4244fe88750122fe428cedd7c0fd9bd1125dc0d3c3e069ab",
+  "artifacts/source-training-v48/adapter/adapters.safetensors": "6ad474fe5094f2af01b12651316cca065ce9bb34d734a24efc7332f189643e20",
+  "artifacts/stylistic-screen-v48/current-craft.responses.jsonl": "66c1835e40f6b749b5dd92d30a8589e8c75f1dea845ed72179b4419efddd2f9b",
+  "artifacts/stylistic-screen-v48/candidate.responses.jsonl": "115459b2048018b3d6409f63ac1917e74023a23285632f19a8a8effc1c0726d6"
+}

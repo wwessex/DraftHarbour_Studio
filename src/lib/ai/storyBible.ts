@@ -1,10 +1,12 @@
+import { controlledBibleNames, inferenceBibleEntry } from './bibleAccess';
+import { loadBibleEntries } from '@/lib/storyBibleEntries';
 /**
  * Story Bible — runtime context assembly for AI inference.
  *
  * Bridges the app's continuity memory, chapter data, and user-defined
  * entities into a structured context payload that can be injected into
- * AI prompts. Enforces a token budget so context never exceeds the
- * model's capacity.
+ * AI prompts. Uses an approximate character-based token budget; providers must still
+ * enforce their actual tokenizer/context limits.
  *
  * This module is the runtime counterpart of the Narratryx training
  * pipeline's Story Bible concept (llm/Narratryx/docs/architecture.md).
@@ -77,7 +79,7 @@ export function loadCharacterBibleEntities(novelId: string): StoryBibleEntity[] 
         .filter(c => c.novelId === novelId);
       for (const c of characters) {
         const keywords = [c.name.toLowerCase(), ...c.aliases.map(a => a.toLowerCase())];
-        const descParts = [c.description, c.role !== 'other' ? c.role : ''].filter(Boolean);
+        const descParts = [c.description, c.role !== 'other' ? c.role : '', c.notes].filter(Boolean);
         if (c.traits.length > 0) descParts.push(`traits: ${c.traits.join(', ')}`);
         entities.push({
           name: c.name,
@@ -99,13 +101,24 @@ export function loadCharacterBibleEntities(novelId: string): StoryBibleEntity[] 
         entities.push({
           name: w.name,
           type: WORLD_CATEGORY_TO_ENTITY_TYPE[w.category] ?? 'concept',
-          description: w.description || `${w.category} in the story`,
+          description: [w.description, w.notes].filter(Boolean).join('. ') || `${w.category} in the story`,
           triggerKeywords: keywords,
         });
       }
     }
   } catch { /* ignore malformed data */ }
 
+  try {
+    const all = loadBibleEntries(novelId);
+    const controlled = controlledBibleNames(all);
+    for (let i = entities.length - 1; i >= 0; i--) if (controlled.has(entities[i].name.trim().toLowerCase())) entities.splice(i, 1);
+    for (const entry of all.map(e => inferenceBibleEntry(e)).filter(e => e !== null)) {
+      // Temporal notes are retained verbatim, never inferred as current truth.
+      entities.push({ name: entry.title, type: entry.category === 'character' ? 'character' : entry.category === 'setting' ? 'location' : 'concept',
+        description: [entry.body, ...Object.entries(entry.fields).filter(([, v]) => v.trim()).map(([k, v]) => `${k}: ${v}`), entry.validFrom || entry.validTo ? `Validity: ${entry.validFrom || 'unspecified'} to ${entry.validTo || 'unspecified'}` : ''].filter(Boolean).join('. '),
+        triggerKeywords: [entry.title, ...entry.aliases].filter(Boolean).map(s => s.toLowerCase()) });
+    }
+  } catch { return []; /* Offline drafting remains available; omit unreadable references. */ }
   return entities;
 }
 
@@ -199,13 +212,15 @@ export function assembleStoryBibleContext(
   // Merge entities: Character Bible + stored bible + auto-extracted from continuity
   // Character Bible entries take priority as they are user-curated
   const characterBibleEntities = loadCharacterBibleEntities(novelId);
-  let allEntities: StoryBibleEntity[] = [...characterBibleEntities, ...(stored?.entities ?? [])];
+  let controlled = new Set<string>();
+  try { controlled = controlledBibleNames(loadBibleEntries(novelId)); } catch { return { entities: [], styleNotes: '', recentSceneSummaries: [], tokenBudget }; }
+  let allEntities: StoryBibleEntity[] = [...characterBibleEntities, ...(stored?.entities ?? []).filter(e => !controlled.has(e.name.trim().toLowerCase()))];
   const existingNames = new Set(allEntities.map(e => e.name.toLowerCase()));
 
   if (continuitySnapshot) {
     const continuityEntities = extractEntitiesFromContinuity(continuitySnapshot);
     for (const ce of continuityEntities) {
-      if (!existingNames.has(ce.name.toLowerCase())) {
+      if (!existingNames.has(ce.name.toLowerCase()) && !controlled.has(ce.name.trim().toLowerCase())) {
         allEntities.push(ce);
         existingNames.add(ce.name.toLowerCase());
       }

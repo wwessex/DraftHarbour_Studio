@@ -1,0 +1,8 @@
+{
+  "created_on": "2026-10-29",
+  "files": {
+    "artifacts/grounding-editing-restraint-v1/records.jsonl": "db5ca2caa512d2eb684b3d9013d2b13f2e53fd8fd4c6aa49639ebbae8ccc9e5e",
+    "artifacts/revision-preflight-v1/records.jsonl": "131fad46874acb47f97867c82695c54e320d0ba8b5866d83907c3859a25b64fc",
+    "rights/grounding-editing-v1.scoped.jsonl": "24b665c3c008719dcec9b29a49d048d95f3c5a2634ca13ca7112bac934ceb4ad"
+  }
+}

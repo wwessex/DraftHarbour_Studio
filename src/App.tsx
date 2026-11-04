@@ -425,6 +425,8 @@ function AppScene({
         sidebarImportBackup={() => fileInputRef.current?.click()}
         onExportBackup={handleExportBackup}
         onToggleSidebar={() => dispatch({ type: "TOGGLE_SIDEBAR" })}
+        aiChatOpen={modals.aiChat}
+        closeAiChat={() => closeModal("aiChat")}
         aiPanelOpen={modals.aiPanel}
         closeAiPanel={() => closeModal("aiPanel")}
         editor={editor}

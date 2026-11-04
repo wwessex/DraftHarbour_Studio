@@ -1,0 +1,33 @@
+{
+  "status": "informed-ai-review-complete-not-human-or-independent",
+  "created_on": "2026-11-02",
+  "verification": {
+    "passed": true,
+    "reviewed_pairs": 21,
+    "all_evidence_anchors_verified": true,
+    "original_run_artifacts_unchanged": true,
+    "unchanged_blank_human_ballots": 42,
+    "blinded": false,
+    "independent": false,
+    "human_quality_ratings": 0,
+    "training_eligible": false,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/source-training-v22-ai-review/build.py": "d5d1183d1308451ab1e52673e9e07916bc1fd390da61d39f4b1365b9fe663b14",
+    "curation/source-training-v22-ai-review/verify.py": "2a3aeb6817d072c984ae6cec6d3b71297d99914ddcf959b93247d8c1ac39145c",
+    "docs/source-training-v22-ai-review-2026-11-02.md": "1c0e77ba9b38ae54d4d270deb6b56be408cdc03b72be0f2a47c319be01fe0f61"
+  },
+  "artifact_hashes": {
+    "artifacts/source-training-v22-ai-review/final-verification.json": "d82bc778ae695f0d2789ad20cc2aa204b88f085782841c7d6070bd09dc2f7044",
+    "artifacts/source-training-v22-ai-review/ai-review.jsonl": "bd12c6197bd833bdfd07e73741100236230ab8515b587cf2f90e4415ba7d994c",
+    "artifacts/source-training-v22-ai-review/verification.json": "cda6898c5295bc1bd8092b564541b0c3219da53f35cda2fea7a8bceb9432640a",
+    "artifacts/source-training-v22-ai-review/REVIEW.md": "d30174735405ce57ebeb08ff0c2179ac4bbf8807e43eafdeb76f852198284aae",
+    "artifacts/source-training-v22-review-notes.json": "d65c944402c35f4cd2e11d9b4b15fc155bc760a93cceace11a8caee3a61a570e"
+  },
+  "new_inference_requests": 0,
+  "new_training_runs": 0,
+  "human_quality_ratings": 0,
+  "training_eligible": false,
+  "model_promoted": false
+}

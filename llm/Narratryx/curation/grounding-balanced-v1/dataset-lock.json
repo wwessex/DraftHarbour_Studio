@@ -1,0 +1,27 @@
+{
+  "files": {
+    "curation/grounding-editing-v1/packet-lock.json": "2bd9073711272da889f96001cdfd9dc85b402d0a5254019dcc5cc6a5e8fc1026",
+    "curation/grounding-editing-v1/token-lock.json": "7bf35a5e401efbe9993faa6ec43d335642a85e1c498e4c94d24458a8547ea890",
+    "curation/grounding-editing-v1/review-lock.json": "5dd21bf686546a94b66469814a8fd982b43449023efa8ff30cb316825dbbd478",
+    "curation/grounding-editing-v1/support-lock.json": "9d756f13962fc639c477c91c739d09c78f60e27ac0739f145c14c99bcb0b387d",
+    "curation/grounding-editing-v1/restraint-lock.json": "730834bce5a0b44935f0c45fa887ff30549f979c1d0194c83e68fb57159002f1",
+    "artifacts/revision-preflight-v1/records.jsonl": "131fad46874acb47f97867c82695c54e320d0ba8b5866d83907c3859a25b64fc",
+    "rights/revision-preflight-v1.scoped.jsonl": "d6716a36acc3c4305f98b8b0f523af96b802073072dbfaf03b21cec79e802c4d",
+    "artifacts/literary-mix-v2/records.jsonl": "1aba21f3e5b389e03a390e6712623686c69e050ebdb1c5bdc90f969ac4d8a545",
+    "rights/literary-mix-v2.scoped.jsonl": "c33f68c8e951a8cde40f76815529e1b9702895d20ed5ac89c8fdcd8a842ba78a",
+    "artifacts/grounding-editing-v1/records.jsonl": "b2fb851c2d980a6bc05e6f32d2ca8a6c614d01c1256445d746f7702f419ade29",
+    "rights/grounding-editing-v1.scoped.jsonl": "24b665c3c008719dcec9b29a49d048d95f3c5a2634ca13ca7112bac934ceb4ad",
+    "artifacts/grounding-editing-restraint-v1/records.jsonl": "db5ca2caa512d2eb684b3d9013d2b13f2e53fd8fd4c6aa49639ebbae8ccc9e5e",
+    "artifacts/grounding-editing-v1/prose-transfer.evaluation-only.jsonl": "52c34dd0075010a7462fff5f66ee75b6d8863804250ec95df0464fe3c4cf79b4",
+    "artifacts/grounding-editing-v1/clock-tests.evaluation-only.jsonl": "6e016c98f56f828546977760fdaf432ab4230608da6151fe7de3be8207056fe9",
+    "curation/grounding-balanced-v1/build.py": "9e942b9ce06156a2d4ae475e0016c2e2d287db73b6b3553beffbc46bcdf4cd7f",
+    "curation/grounding-balanced-v1/review-decisions.json": "0c8f9d0c3ca1695f8506cd25699876bd7dfc34dcf274fb22bf5d8146971bdc8c",
+    "foundation/balanced_curriculum.py": "cceb82cf30b7f99da5c4e31a3e030e6c5a3a73bb26d9ea5265370cb17c2bf286",
+    "rights/grounding-balanced-v1.scoped.jsonl": "ba5ac71a42c7fb628edfb8605e34aafddb6d2c9eb3a91e978feca0a0740baaad",
+    "artifacts/grounding-balanced-v1/semantic-reviewed.records.jsonl": "63276a0dc14a5a10b02b5e595e1d773f4b3a3a6548da8209f8cd2a5b42a758f9",
+    "artifacts/grounding-balanced-v1/evaluation.cases.frozen.jsonl": "af28d7bf20edd1ae5c5a9cea88bcdff05b07c83451c47a86aefd6b650640972f",
+    "artifacts/grounding-balanced-v1/records.jsonl": "cffc58a0e8b4fbdeb59fda6d026aa486893b4e57e19337346f86d8fbabc44989",
+    "artifacts/grounding-balanced-v1/selection.json": "1b953672b24493d4a707d29bea58d9329577ac269f5f6a5e4707255985bf46f3",
+    "artifacts/grounding-balanced-v1/trace.jsonl": "c71d8a328316a3f94c23836b38122597d03c99ad463f02cb19d9c2d988bd1792"
+  }
+}

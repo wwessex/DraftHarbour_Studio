@@ -1,3 +1,5 @@
+import { createZipTextReader, MAX_ZIP_IMPORT_BYTES } from '@/lib/zipImport';
+import { BIBLE_ENTRIES_KEY, readBibleEntries, loadBibleEntries, isBibleEntry } from '@/lib/storyBibleEntries';
 import Dexie, { type EntityTable } from 'dexie';
 import type { Novel, Chapter, Snapshot, BackupData, BackupDataV3, LegacyBackupData, ProjectType, CommentThread, DhprojData, DhprojManifest, AppSettings, CharacterEntity, WorldEntry, DhprojIntegrations, IntegrationType, PersistedIntegrationConfig, StoryBlueprint, ProjectBackup, TrashEntry } from '@/types';
 import type { ProgressData, DailyProgress } from '@/lib/progressTracker';
@@ -44,6 +46,14 @@ export function mergeImportedSettings(existingRaw: string | null, importedSettin
   // device's authentication settings. Those belong to the local installation.
   if (current.sync) merged.sync = current.sync as AppSettings['sync'];
   else delete merged.sync;
+  const portableAssist = isRecord(imported.assist) ? { ...imported.assist } : {};
+  delete portableAssist.languageToolEnabled;
+  delete portableAssist.languageToolUrl;
+  if (isRecord(current.assist) || isRecord(imported.assist)) {
+    merged.assist = { ...(isRecord(current.assist) ? current.assist : {}), ...portableAssist };
+  } else {
+    delete merged.assist;
+  }
   return isRecord(existing.data) ? { ...existing, data: merged } : merged;
 }
 
@@ -408,6 +418,7 @@ export async function exportBackup(novelId: string, includeSnapshots: boolean = 
     exportedAt: Date.now(),
     characters: loadStoredEntities<CharacterEntity>(CHARACTERS_STORAGE_KEY).filter(isCharacterEntity).filter(item => item.novelId === novelId),
     worldEntries: loadStoredEntities<WorldEntry>(WORLD_ENTRIES_STORAGE_KEY).filter(isWorldEntry).filter(item => item.novelId === novelId),
+    bibleEntries: loadBibleEntries(novelId),
     storyBlueprint: getStoryBlueprint(novelId),
   };
 }
@@ -672,6 +683,17 @@ function buildImportedAuxiliaryWrites(data: BackupDataV3, novelId: string, threa
       linkedCharacters: item.linkedCharacters.filter(id => characterIds.has(id)).map(id => characterIds.get(id)!),
     }; }),
   ]));
+  if (data.bibleEntries) {
+    if (!Array.isArray(data.bibleEntries) || !data.bibleEntries.every(isBibleEntry)) throw new Error('Invalid Story Bible entries');
+    const entries = data.bibleEntries.filter(item => item.novelId === data.project.id);
+    if (new Set(entries.map(item => item.id)).size !== entries.length) throw new Error('Duplicate Story Bible IDs');
+    for (const entry of entries) ids.set(entry.id, generateId());
+    const remapState = <T extends { linkedEntryIds: string[] }>(state: T): T => ({ ...state, linkedEntryIds: state.linkedEntryIds.filter(id => entries.some(e => e.id === id)).map(id => ids.get(id)!) });
+    writes.set(BIBLE_ENTRIES_KEY, JSON.stringify([...readBibleEntries(), ...entries.map(entry => ({
+      ...remapState(entry), id: ids.get(entry.id)!, novelId,
+      revisions: entry.revisions.map(revision => ({ ...revision, id: generateId(), state: remapState(revision.state) })),
+    }))]));
+  }
   if (data.storyBlueprint) writes.set(STORY_BLUEPRINTS_STORAGE_KEY, JSON.stringify({ ...loadStoryBlueprints(), [novelId]: data.storyBlueprint }));
   for (const thread of threads) {
     const key = `${COMMENT_THREADS_STORAGE_PREFIX}${thread.chapterId}`;
@@ -722,6 +744,7 @@ export async function clearAllData(): Promise<void> {
   localStorage.removeItem(STORY_BLUEPRINTS_STORAGE_KEY);
   localStorage.removeItem('draftharbour_characters');
   localStorage.removeItem('draftharbour_world');
+  localStorage.removeItem(BIBLE_ENTRIES_KEY);
 }
 
 
@@ -936,6 +959,7 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
     integrations,
     characters,
     worldEntries,
+    bibleEntries: loadBibleEntries(novelId),
     storyBlueprint: getStoryBlueprint(novelId),
   };
 
@@ -948,7 +972,7 @@ export async function exportDhproj(novelId: string, options: DhprojExportOptions
 }
 
 export async function importDhproj(file: File): Promise<Novel> {
-  if (file.size > 100 * 1024 * 1024) throw new Error('Project file exceeds the 100 MiB import limit.');
+  if (file.size > MAX_ZIP_IMPORT_BYTES) throw new Error('Project file exceeds the 100 MiB import limit.');
   const bytes = await new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as ArrayBuffer);
@@ -963,17 +987,19 @@ export async function importDhproj(file: File): Promise<Novel> {
   } else {
     const JSZip = (await import('jszip')).default;
     const zip = await JSZip.loadAsync(bytes);
+    const readText = createZipTextReader();
     const manifestFile = zip.file('manifest.json');
     if (manifestFile) {
       let manifest: Partial<DhprojManifest>;
-      try { manifest = JSON.parse(await manifestFile.async('string')); }
+      const manifestText = await readText(manifestFile);
+      try { manifest = JSON.parse(manifestText); }
       catch { throw new Error('Invalid .dhproj file: malformed manifest.json'); }
       if (!manifest || manifest.format !== 'dhproj') throw new Error('Invalid .dhproj file: manifest format must be "dhproj"');
       if (!SUPPORTED_DHPROJ_VERSIONS.has(Number(manifest.version))) throw new Error(`Unsupported .dhproj version: ${String(manifest.version)}`);
     }
     const projectFile = zip.file('project.json');
     if (!projectFile) throw new Error('Invalid .dhproj file: missing project.json');
-    raw = await projectFile.async('string');
+    raw = await readText(projectFile);
   }
 
   let parsed: unknown;
@@ -1045,6 +1071,7 @@ export async function importDhproj(file: File): Promise<Novel> {
     commentThreads: data.commentThreads,
     characters: data.characters,
     worldEntries: data.worldEntries,
+    bibleEntries: data.bibleEntries,
     storyBlueprint: data.storyBlueprint,
     exportedAt: Date.now(),
   });

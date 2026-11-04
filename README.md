@@ -2,7 +2,7 @@
 
 An offline-first application for novels and screenplays, combining chapter/scene editing, planning, manuscript protection, export and optional AI/cloud services. Core drafting requires no model, training environment or paid AI provider, and remains usable offline after installation/caching.
 
-Documentation reviewed against this checkout on **20 October 2026**. Manifests/workflows define current commands; historical reports are dated evidence, not a claim every platform was retested today.
+Documentation reviewed against this checkout on **4 November 2026**. Manifests/workflows define current commands; historical reports are dated evidence, not a claim every platform was retested today.
 
 ## Applications
 
@@ -24,6 +24,8 @@ macOS desktop distribution uses Swift, not Tauri. Shared React changes do not up
 - Manuscript DOCX, PDF, RTF and text-only EPUB; screenplay PDF and Fountain. Follow project-specific export choices and preflight warnings.
 
 Automatic project backups retain ten changed versions; manual copies can be retained separately. Local backups do not protect against device loss or cleared browser storage. Retain external copies through project backup/export workflows. Native project-file deletion also involves the operating system's Trash and differs from browser project trash.
+
+The [Story Bible guide](docs/story-bible.md) explains author-controlled AI field visibility and explicit scene conditions. Copyedit previews validated small corrections; creative Rewrite remains available. See the [25 October integration checks](docs/reviews/copyedit-context-integration-2026-10-25.md) for current platform limits.
 
 ## Web setup
 
@@ -80,9 +82,9 @@ Existing providers support capable on-device facilities, a configured managed br
 
 [Narratryx](llm/Narratryx/README.md) is an **independent model-development workspace**, containing rights evidence, curation, validation, evaluation and experimental adapters. It is not imported into app startup or required to install/use DraftHarbour.
 
-The [latest craft pilot](llm/Narratryx/docs/craft-source-pilot-2026-10-20.md) completed five local updates on twenty source-only craft answers and sixteen matched before/after tasks. Results are mixed; better literary quality is unproven. The adapter is not a promoted production model. Human quality review and substantive author-revision training pairs remain outstanding.
+Craft v1 remains the selected experimental profile. The v57 rewrite specialist tied the base model and Craft v1 on six fresh prompts. In v62, explicit timing instructions helped some scene actions, while viewpoint errors persisted and all 16 drafts exceeded the requested word cap. The source-backed rewrite reserve now has 11 pairs across four authors. See the [development log](llm/Narratryx/CONTINUOUS_DEVELOPMENT.md) for current results, rights scope and training decisions.
 
-**An opt-in experimental integration is implemented across all maintained apps.** The main manuscript interface includes visible **Write**, **Rewrite** and **Continue** buttons with inline instructions, preview and passage-scoped acceptance. Settings only configures the connection. Use **Set up Narratryx (experimental)** in the shared Local AI settings or native macOS AI provider tools. A separate authenticated service pins the exact craft adapter; live base/candidate HTTP requests and the actual shared provider path passed locally. See the [setup and validation guide](docs/narratryx-app-trial.md) for limits, token handling, rollback and platform test boundaries. Literary improvement remains unproven.
+**An opt-in experimental integration is implemented across all maintained apps.** The main manuscript interface includes visible **Write**, **Rewrite**, **Copyedit** and **Continue** buttons with inline instructions, preview and passage-scoped acceptance. Settings only configures the connection. Use **Set up Narratryx (experimental)** in the shared Local AI settings or native macOS AI provider tools. A separate authenticated service pins the exact craft adapter; live base/candidate HTTP requests and the actual shared provider path passed locally. See the [setup and validation guide](docs/narratryx-app-trial.md) for limits, token handling, rollback and platform test boundaries. Literary improvement remains unproven.
 
 The accepted [setup plan](docs/ai-local-and-online-setup-plan.md) offers **On this computer**, **Online AI** and **Decide later**, with offline drafting available throughout and no end-user training. The [app-managed local trial](docs/managed-local-ai-trial.md) now implements native Rust/Swift process ownership and AI setup beside the writing controls. A staged [2.71 GB Mac ARM64 development bundle](llm/Narratryx/docs/portable-local-runtime-2026-10-24.md) works in the native app without endpoint/key entry; the existing manual service remains available. Windows/Linux package availability, automatic downloads, complete onboarding and hosted online sign-in remain release work. Browser/iOS setup does not install a desktop model.
 

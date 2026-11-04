@@ -14,7 +14,7 @@ import { OpenAIProvider } from './openaiProvider';
 import { ServerProxyProvider } from './serverProxyProvider';
 import { CustomLlmProvider } from './customLlmProvider';
 import { DesktopLocalProvider } from './desktopLocalProvider';
-import { getAISetupMode, setAISetupMode } from './setupPreferences';
+import { AI_SETUP_CHANGED, getAISetupMode, setAISetupMode } from './setupPreferences';
 import { FallbackProvider, buildFallbackChain } from './fallbackProvider';
 import { isChromeAIAvailable, isChromeBrowser, detectLocalLlmServer } from './availability';
 import { deleteSecret, getSecret, isDesktop, setSecret } from '@/lib/desktopSecrets';
@@ -131,6 +131,7 @@ export function saveAIConfig(config: AIProviderConfig): void {
     customLlm: safeCustomLlm,
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(safeConfig));
+  window.dispatchEvent(new Event(AI_SETUP_CHANGED));
 }
 
 /**

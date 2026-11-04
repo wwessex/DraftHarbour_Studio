@@ -22,7 +22,8 @@ describe('app-owned local provider', () => {
     vi.mocked(getTauriRuntime).mockResolvedValue({ invoke, listen: vi.fn() });
     const result = await new DesktopLocalProvider().execute(input);
     expect(result.text).toBe('The quay fell silent.');
-    expect(invoke).toHaveBeenCalledWith('local_ai_generate', { prompt: 'A gull called.\n\nContinue briefly.' });
+    expect(invoke.mock.calls[0][1].prompt).toContain('Continue briefly.');
+    expect(invoke).toHaveBeenCalledWith('local_ai_generate', { prompt: expect.stringContaining('A gull called.\n\nWriting style:') });
   });
   it('never falls back to HTTP or cloud when native inference fails', async () => {
     const invoke = vi.fn().mockRejectedValue(new Error('Missing verified package'));

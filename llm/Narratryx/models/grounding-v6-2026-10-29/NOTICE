@@ -1,0 +1,9 @@
+Narratryx experimental MLX LoRA adapters
+
+Base model: Qwen/Qwen3.5-4B, Qwen Team, converted to MLX 8-bit by mlx-community.
+Base weights are not included. These adapters are modifications trained by the DraftHarbour project. No upstream or source-provider endorsement is claimed.
+
+Upstream Apache-2.0 licence source: https://huggingface.co/Qwen/Qwen3.5-4B/resolve/851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a/LICENSE
+Quantised base model card: https://huggingface.co/mlx-community/Qwen3.5-4B-MLX-8bit/blob/5319bbbe4f1cbe6c0b3c80f4f7de4f0338c3906d/README.md
+
+Only adapter weights and their configuration are distributed. No source books, provider notices/branding, scans, teaching examples, user manuscripts, tokens or private review keys are distributed.

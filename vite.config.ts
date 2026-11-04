@@ -1,46 +1,98 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import { handleBrokerRequest } from './src/server/integrationBroker';
 
-function integrationBrokerPlugin() {
+const MAX_BROKER_BODY_BYTES = 16 * 1024 * 1024;
+const MAX_BROKER_REQUESTS = 4;
+const BROKER_BODY_TIMEOUT_MS = 15_000;
+
+function integrationBrokerPlugin(): Plugin {
   return {
     name: 'integration-broker',
-    configureServer(server: { middlewares: { use: (handler: (req: { method?: string; url?: string; on: (event: string, cb: (chunk?: unknown) => void) => void }, res: { statusCode: number; setHeader: (name: string, value: string) => void; end: (body: string) => void }, next: () => void) => void) => void } }) {
+    configureServer(server) {
+      let activeRequests = 0;
       server.middlewares.use((req, res, next) => {
-        const method = req.method || 'GET';
-        const url = req.url || '/';
-        const pathOnly = url.split('?')[0];
-
-        if (!pathOnly.startsWith('/api/')) {
+        const route = (req.url || '/').split('?')[0];
+        if (req.method !== 'POST' || !/^\/api\/(?:ai\/generate|chat|integrations\/[^/]+\/(?:connect|push|pull))$/.test(route)) {
           next();
           return;
         }
 
-        let raw = '';
-        req.on('data', (chunk) => {
-          const textChunk = typeof chunk === 'string' ? chunk : String(chunk ?? '');
-          raw += textChunk;
-        });
-        req.on('end', async () => {
-          let body: unknown = {};
-          try {
-            body = raw ? JSON.parse(raw) : {};
-          } catch {
-            body = {};
-          }
+        const reject = (status: number) => {
+          res.writeHead(status, { Connection: 'close' });
+          res.end();
+        };
+        if (Number(req.headers['content-length']) > MAX_BROKER_BODY_BYTES) {
+          reject(413);
+          return;
+        }
+        if (activeRequests >= MAX_BROKER_REQUESTS) {
+          reject(503);
+          return;
+        }
 
-          const result = await handleBrokerRequest({ method, path: pathOnly, body });
-          if (!result) {
-            next();
+        activeRequests++;
+        let reading = true;
+        let bytes = 0;
+        const chunks: Buffer[] = [];
+        const finishRead = () => {
+          if (!reading) return false;
+          reading = false;
+          clearTimeout(deadline);
+          return true;
+        };
+        const abandonRead = () => {
+          if (!finishRead()) return false;
+          activeRequests--;
+          chunks.length = 0;
+          return true;
+        };
+        const deadline = setTimeout(() => {
+          if (abandonRead()) reject(408);
+        }, BROKER_BODY_TIMEOUT_MS);
+        req.on('close', abandonRead);
+        req.on('error', abandonRead);
+        req.on('data', (chunk: Buffer) => {
+          if (!reading) return;
+          bytes += chunk.length;
+          if (bytes > MAX_BROKER_BODY_BYTES) {
+            if (abandonRead()) reject(413);
             return;
           }
+          chunks.push(chunk);
+        });
+        req.on('end', async () => {
+          if (!finishRead()) return;
+          try {
+            let body: unknown;
+            try {
+              body = bytes ? JSON.parse(Buffer.concat(chunks, bytes).toString('utf8')) : {};
+            } catch {
+              reject(400);
+              return;
+            } finally {
+              chunks.length = 0;
+            }
 
-          res.statusCode = result.status;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(result.body));
+            const result = await handleBrokerRequest({
+              method: 'POST',
+              path: route,
+              body,
+              authorization: req.headers.authorization,
+            });
+            if (!result) {
+              next();
+              return;
+            }
+            res.statusCode = result.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(result.body));
+          } finally {
+            activeRequests--;
+          }
         });
       });
     },
@@ -168,6 +220,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (/\/node_modules\/(?:react|react-dom|scheduler)\//.test(id)) {
+            return 'react-vendor';
+          }
+
           if (
             id.includes('/src/lib/export/')
             || id.includes('/src/components/Modals/ExportModal')

@@ -1,0 +1,49 @@
+{
+  "created_on": "2026-11-02",
+  "method": "Five newly inspected original scan pages; AI canonical transcription with OCR differences audited. PG answers are unchanged LF-normalized substrings, not scan-collated facsimiles. Retained source notices excluded from all teaching targets.",
+  "file_hashes": {
+    "rights/evidence/source-expansion-2026-11-02/speaker-pages.xml": "a3e638ea032d1a52278584399ca9666b390842b19603047e640cfce9a5ca05ff",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-leaf-13.jpg": "6129e665dda04c0d3e7cb570f45545df6ec8f34877a568a856a0d3e6fb4ae87e",
+    "rights/raw/source-expansion-2026-11-02/james-1881-reaction.verified.txt": "a4d6cfe6170df28d69387bc61db065321ce00b7fa540cc8cf2365ddcba1fc8be",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-leaf-7.jpg": "997cac49ec32d4f95d5faf8ead34ca526c02955ea2f098b1e4dc2d9c363c5545",
+    "rights/evidence/source-expansion-2026-11-02/pg-permission.html": "c6df9d5913daf11aab5638744adaae02e2af0b27135a614e02f66260b2fcd8a7",
+    "rights/raw/source-expansion-2026-11-02/speaker.txt": "65ff2f6d4e56471257b987c7cc22d0cd12b9c20002b5638c3a1093c7df2e073c",
+    "rights/raw/source-expansion-2026-11-02/pg688.txt": "87bd779c11b37c780e23e2a428ef011c5830dcf2622b45b8eab2c7422f14ce32",
+    "rights/evidence/source-expansion-2026-11-02/pg-terms.html": "38e45e0cbc6a3f903ef019b3bcbcbce9c3190f9f68f73bf31d2ef58a8ceb679b",
+    "rights/evidence/source-expansion-2026-11-02/gb-copyright.html": "1015cc6816304d4e8e30d86cf89fd814882bb2fd64dfe0fddbc884fb3bc9b9ef",
+    "rights/evidence/source-expansion-2026-11-02/dunbar-speaker-metadata.json": "f6d98b75c610e10088e77a5f729fbc6075726f1571a8d280dcee22663f76e477",
+    "rights/evidence/source-expansion-2026-11-02/james-1908-leaf-181.jpg": "ee717a0088c32aaddcad003ed587f0a7cd12c252c67d4cafe03cb3af2fe266d3",
+    "rights/evidence/source-expansion-2026-11-02/james-1908-leaf-182.jpg": "a10ef8fdf364860a871689e9d454a02e2d2c0974c9b7368129d527625a05230c",
+    "rights/raw/source-expansion-2026-11-02/james-1908-reaction.verified.txt": "d6614a62c8758a076b992edfb42b619bbb7f567362acd5c5f1a3ea78cb152031",
+    "rights/evidence/independent-scenes-2026-10-26/james-1881-metadata.json": "f4bdbb1dd19b5eb3c4956b44d87b679928927487f45741883dc99d97ade73ef0",
+    "rights/evidence/source-expansion-2026-11-02/james-1908-leaf-183.jpg": "03dc0b80de82fd5f5cdf95f5f63f45287c69d724accb1d2d066f8870139d383a",
+    "rights/evidence/source-expansion-2026-11-02/speaker-acquisition.json": "e4b4175b753d07f0ea03147d11b7d13301213920f20eec1f9b2b44776a6245b0",
+    "rights/evidence/source-expansion-2026-11-02/james-1881-leaf-156.jpg": "8db5c8874b2534a12fd6ecfe6f0a42595dc41e66dda0ffd8694f4a6133691bcd",
+    "rights/evidence/independent-scenes-2026-10-26/james-1908-metadata.json": "349d35880f3af62efa18e347c8633f81265111ebecb8375a95c518dfe095761d",
+    "rights/evidence/source-expansion-2026-11-02/james-1881-leaf-155.jpg": "9bee745ee44fc1166a36ae0e91dd6a90088ca4719671ed2b295a71bbda1cf04b",
+    "rights/evidence/source-expansion-2026-11-02/pg688-catalog.html": "462726dcd751bbfe3ce2e6231d12e16c5e1369002f83d65510368ad5218fed18",
+    "rights/evidence/source-expansion-2026-11-02/acquisition.json": "16d2811cef86f7585cf8fb36530a4507af9c68b9673a6b348aaa0d6020885932"
+  },
+  "scope_sha256": "8374c02b13a4e0a1a5cd662c9062c01a082c47237aaae63258693beb103c9796",
+  "transcription_human_verified": false,
+  "excluded_candidates": [
+    {
+      "source": "Mine Eyes Have Seen, undated Delaware typescript",
+      "status": "discovery-only-training-ineligible",
+      "reason": "Autograph corrections are attractive for revision study, but undated manuscript publication and GB term status are not resolved. US-only NoC label does not clear all jurisdictions.",
+      "url": "https://udspace.udel.edu/items/70811104-6a69-4610-ba55-dd61cf91a340/full"
+    },
+    {
+      "source": "Mine Eyes Have Seen, MJP1918 digital issue",
+      "status": "discovery-only-training-ineligible",
+      "reason": "MJP labels underlying contents US public domain, but has separate digital-object commercial reuse permission wording. Applicability to extracted prose was not resolved; no material from this edition is selected.",
+      "url": "https://modjourn.org/issue/bdr511177/"
+    },
+    {
+      "source": "Mine Eyes Have Seen, Google-scanned1920 Dunbar Speaker",
+      "status": "discovery-only-training-ineligible",
+      "reason": "Retained OCR begins with non-commercial-file and automated-query usage guidance. No model data is extracted; no conclusion about legal enforceability is invented. Anthology introduction and other authors are not cleared.",
+      "url": "https://archive.org/details/dunbarspeakeran00hillgoog"
+    }
+  ]
+}

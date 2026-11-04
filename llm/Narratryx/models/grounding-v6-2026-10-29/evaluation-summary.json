@@ -1,0 +1,415 @@
+{
+  "verification": {
+    "passed": true,
+    "matched_responses": 192,
+    "training_steps": 20,
+    "training_elapsed_seconds": 299.8899980420001,
+    "peak_mlx_gb": 7.16695535,
+    "frozen_inputs_unchanged": true,
+    "protected_artifacts_unchanged": true,
+    "base_weights_unchanged": true,
+    "initial_service_state_preserved": true,
+    "selected_model_unchanged": true,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "learning_rate": "5e-5",
+  "previous_learning_rate": "5e-6",
+  "human_quality_ratings": 0,
+  "evaluation_status": "All cases exposed; diagnostic only",
+  "mechanical_summary": {
+    "base": {
+      "exposed-retention": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 4,
+          "total": 4
+        },
+        "word_limits": {
+          "chronology-rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "continue": {
+            "passed": 3,
+            "total": 4
+          },
+          "dialogue": {
+            "passed": 3,
+            "total": 4
+          },
+          "grounded-analysis": {
+            "passed": 4,
+            "total": 4
+          },
+          "minimal-copyedit": {
+            "passed": 4,
+            "total": 4
+          },
+          "pacing": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "new-clock": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 6,
+          "total": 24
+        },
+        "exact_repair": {
+          "passed": 0,
+          "total": 0
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "clock-state": {
+            "passed": 24,
+            "total": 24
+          }
+        }
+      },
+      "new-prose-transfer": {
+        "requests": 16,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "analysis": {
+            "passed": 4,
+            "total": 4
+          },
+          "continue": {
+            "passed": 2,
+            "total": 4
+          },
+          "rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "selected-edit": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    },
+    "current-craft": {
+      "exposed-retention": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 4,
+          "total": 4
+        },
+        "word_limits": {
+          "chronology-rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "continue": {
+            "passed": 4,
+            "total": 4
+          },
+          "dialogue": {
+            "passed": 1,
+            "total": 4
+          },
+          "grounded-analysis": {
+            "passed": 4,
+            "total": 4
+          },
+          "minimal-copyedit": {
+            "passed": 4,
+            "total": 4
+          },
+          "pacing": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "new-clock": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 6,
+          "total": 24
+        },
+        "exact_repair": {
+          "passed": 0,
+          "total": 0
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "clock-state": {
+            "passed": 24,
+            "total": 24
+          }
+        }
+      },
+      "new-prose-transfer": {
+        "requests": 16,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "analysis": {
+            "passed": 3,
+            "total": 4
+          },
+          "continue": {
+            "passed": 3,
+            "total": 4
+          },
+          "rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "selected-edit": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    },
+    "candidate": {
+      "exposed-retention": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 4,
+          "total": 4
+        },
+        "word_limits": {
+          "chronology-rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "continue": {
+            "passed": 3,
+            "total": 4
+          },
+          "dialogue": {
+            "passed": 4,
+            "total": 4
+          },
+          "grounded-analysis": {
+            "passed": 4,
+            "total": 4
+          },
+          "minimal-copyedit": {
+            "passed": 4,
+            "total": 4
+          },
+          "pacing": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      },
+      "new-clock": {
+        "requests": 24,
+        "clock_exact": {
+          "passed": 5,
+          "total": 24
+        },
+        "exact_repair": {
+          "passed": 0,
+          "total": 0
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "clock-state": {
+            "passed": 24,
+            "total": 24
+          }
+        }
+      },
+      "new-prose-transfer": {
+        "requests": 16,
+        "clock_exact": {
+          "passed": 0,
+          "total": 0
+        },
+        "exact_repair": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue_turn_proxy": {
+          "passed": 0,
+          "total": 0
+        },
+        "word_limits": {
+          "analysis": {
+            "passed": 3,
+            "total": 4
+          },
+          "continue": {
+            "passed": 1,
+            "total": 4
+          },
+          "rewrite": {
+            "passed": 4,
+            "total": 4
+          },
+          "selected-edit": {
+            "passed": 4,
+            "total": 4
+          }
+        }
+      }
+    }
+  },
+  "previous_candidate_summary": {
+    "exposed-retention": {
+      "requests": 24,
+      "clock_exact": {
+        "passed": 0,
+        "total": 0
+      },
+      "exact_repair": {
+        "passed": 4,
+        "total": 4
+      },
+      "dialogue_turn_proxy": {
+        "passed": 4,
+        "total": 4
+      },
+      "word_limits": {
+        "chronology-rewrite": {
+          "passed": 4,
+          "total": 4
+        },
+        "continue": {
+          "passed": 4,
+          "total": 4
+        },
+        "dialogue": {
+          "passed": 1,
+          "total": 4
+        },
+        "grounded-analysis": {
+          "passed": 4,
+          "total": 4
+        },
+        "minimal-copyedit": {
+          "passed": 4,
+          "total": 4
+        },
+        "pacing": {
+          "passed": 4,
+          "total": 4
+        }
+      }
+    },
+    "new-clock": {
+      "requests": 24,
+      "clock_exact": {
+        "passed": 6,
+        "total": 24
+      },
+      "exact_repair": {
+        "passed": 0,
+        "total": 0
+      },
+      "dialogue_turn_proxy": {
+        "passed": 0,
+        "total": 0
+      },
+      "word_limits": {
+        "clock-state": {
+          "passed": 24,
+          "total": 24
+        }
+      }
+    },
+    "new-prose-transfer": {
+      "requests": 16,
+      "clock_exact": {
+        "passed": 0,
+        "total": 0
+      },
+      "exact_repair": {
+        "passed": 4,
+        "total": 4
+      },
+      "dialogue_turn_proxy": {
+        "passed": 0,
+        "total": 0
+      },
+      "word_limits": {
+        "analysis": {
+          "passed": 3,
+          "total": 4
+        },
+        "continue": {
+          "passed": 2,
+          "total": 4
+        },
+        "rewrite": {
+          "passed": 4,
+          "total": 4
+        },
+        "selected-edit": {
+          "passed": 4,
+          "total": 4
+        }
+      }
+    }
+  },
+  "cpu_tests": {
+    "passed": 166,
+    "elapsed_seconds": 162.822
+  },
+  "promoted": false
+}

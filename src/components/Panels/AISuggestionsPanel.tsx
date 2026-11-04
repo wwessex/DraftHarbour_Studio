@@ -1,10 +1,12 @@
+import { storyBibleReferences } from '@/lib/ai/storyBibleReferences';
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { EditorAdapter } from '@/lib/editor';
 import { useApp } from '@/context/AppContext';
 import { editorToPlainText, generateId } from '@/lib/utils';
-import { loadAIConfig, createProvider } from '@/lib/ai';
+import { loadAIConfig, createProvider, hydrateDesktopSecrets } from '@/lib/ai';
 import type { AIProviderConfig } from '@/lib/ai';
 import { recordTelemetryEvent, isTelemetryOptedIn } from '@/lib/telemetry';
+import { AI_SETUP_CHANGED, AI_SETUP_MODE_KEY } from '@/lib/ai/setupPreferences';
 import styles from './Panels.module.css';
 
 interface AISuggestionsPanelProps {
@@ -79,6 +81,19 @@ export function AISuggestionsPanel({ open, onClose, editor }: AISuggestionsPanel
     return available;
   }, [config]);
 
+  useEffect(() => {
+    const refresh = () => setConfigVersion(version => version + 1);
+    const stored = (event: StorageEvent) => {
+      if (event.key === 'draftharbour_ai_config' || event.key === AI_SETUP_MODE_KEY || event.key === null) refresh();
+    };
+    window.addEventListener(AI_SETUP_CHANGED, refresh);
+    window.addEventListener('storage', stored);
+    return () => {
+      window.removeEventListener(AI_SETUP_CHANGED, refresh);
+      window.removeEventListener('storage', stored);
+    };
+  }, []);
+
   const selectedText = editor?.getSelectedText() || '';
 
   const hasSelection = selectedText.trim().length > 0;
@@ -109,13 +124,15 @@ export function AISuggestionsPanel({ open, onClose, editor }: AISuggestionsPanel
     setLoading(true);
 
     const startTime = Date.now();
-    const aiProvider = createProvider(config);
+    let aiProvider;
 
     try {
+      aiProvider = createProvider(await hydrateDesktopSecrets(loadAIConfig()));
+      controller.signal.throwIfAborted();
       const result = await aiProvider.execute({
         action: actionId || type,
         prompt,
-        context: contextSnippet,
+        context: [storyBibleReferences(state.novelId, prompt + '\n' + contextSnippet), contextSnippet].filter(Boolean).join('\n\n'),
         projectType: state.projectType,
         sectionTitle: activeChapter.title,
         signal: controller.signal,
@@ -160,9 +177,9 @@ export function AISuggestionsPanel({ open, onClose, editor }: AISuggestionsPanel
       }
     } finally {
       setLoading(false);
-      aiProvider.destroy();
+      aiProvider?.destroy();
     }
-  }, [isConfigured, activeChapter, config, state.projectType]);
+  }, [isConfigured, activeChapter, config, state.projectType, state.novelId]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {
@@ -201,7 +218,7 @@ export function AISuggestionsPanel({ open, onClose, editor }: AISuggestionsPanel
           {isConfigured && (
             <span className={styles.aiPanel__providerBadge}>
               <span className="material-symbols-rounded">
-                {config.provider === 'chrome-ai' ? 'memory' : config.provider === 'server-proxy' ? 'dns' : 'cloud'}
+                {config.provider === 'chrome-ai' ? 'memory' : config.provider === 'server-proxy' ? 'dns' : config.provider === 'custom-llm' ? 'computer' : 'cloud'}
               </span>
             </span>
           )}

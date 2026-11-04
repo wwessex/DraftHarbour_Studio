@@ -1,3 +1,5 @@
+import { StoryBibleEntries } from './StoryBibleEntries';
+import { newBibleEntry, persistBibleEntry, loadBibleEntries } from '@/lib/storyBibleEntries';
 /** @vitest-environment jsdom */
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -62,6 +64,7 @@ it('links story-bible evidence to chapters and reloads entries on project change
   chapter.content = 'Alice waited at the Quay.';
   localStorage.setItem('draftharbour_characters', JSON.stringify([{ id: 'alice', novelId: 'n1', name: 'Alice', aliases: [], description: '', role: 'supporting', traits: [], notes: '', relationships: [], createdAt: 1, updatedAt: 1 }, { id: 'other', novelId: 'n2', name: 'Private other character', aliases: [], description: '', role: 'supporting', traits: [], notes: '', relationships: [], createdAt: 1, updatedAt: 1 }]));
   await act(async () => root.render(<CharacterBibleModal open onClose={mocks.close} />));
+  await click('Characters & World');
   expect(document.body.textContent).not.toContain('Private other character');
   const alice = [...document.querySelectorAll('span')].find(item => item.textContent === 'Alice')!;
   await act(async () => alice.click());
@@ -91,4 +94,55 @@ it('records EPUB handoff history and removes history without affecting manuscrip
   await act(async () => (document.querySelector('[aria-label="Remove from history"]') as HTMLButtonElement).click());
   expect(document.body.textContent).toContain('No exports recorded yet');
   expect(chapter.id).toBe(state.chapters[0].id);
+});
+
+it('edits, searches, archives and restores Story Bible entries without altering manuscripts', async () => {
+  await act(async () => root.render(<CharacterBibleModal open onClose={mocks.close} />));
+  await click('New entry');
+  const title = [...document.querySelectorAll('label')].find(e => e.firstChild?.textContent === 'Title')!.querySelector('input')!;
+  const setTitle = async (value: string) => act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(title, value);
+    title.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await setTitle('Mara Venn');
+  await click('Save entry');
+  expect(localStorage.getItem('draftharbour_bible_entries')).toContain('Mara Venn');
+  await setTitle('Captain Venn');
+  await click('Save entry');
+  await click('Restore this version');
+  expect(title.value).toBe('Mara Venn');
+  expect(JSON.parse(localStorage.getItem('draftharbour_bible_entries')!)[0].revisions).toHaveLength(2);
+  await click('Archive entry');
+  expect(JSON.parse(localStorage.getItem('draftharbour_bible_entries')!)[0].archived).toBe(true);
+  await click('Unarchive entry');
+  expect(JSON.parse(localStorage.getItem('draftharbour_bible_entries')!)[0].archived).toBe(false);
+  expect(mocks.update).not.toHaveBeenCalled();
+});
+
+it('saves AI field controls, hides renamed custom fields and retains policy history', async () => {
+  localStorage.removeItem('draftharbour_bible_entries');
+  const entry = { ...newBibleEntry('n1'), title: 'Policy case', status: 'canon' as const, fields: { Voice: 'Soft' } };
+  persistBibleEntry(entry);
+  await act(async () => root.render(<StoryBibleEntries />));
+  await click('Policy case');
+  const field = [...host.querySelectorAll('textarea')].find(input => input.placeholder === 'Goal: Find the missing ship')!;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!.call(field, 'Voice: Soft\nForm: Human hands');
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  const checkbox = (label: string) => [...host.querySelectorAll('label')].find(node => node.textContent === label)?.querySelector('input') as HTMLInputElement;
+  expect(checkbox(' Allow Form').checked).toBe(false);
+  await act(async () => checkbox(' Allow Form').click());
+  await act(async () => checkbox(' Allow Notes').click());
+  const condition = [...host.querySelectorAll('label')].find(node => node.textContent === 'Only use Form when')!.querySelector('input')!;
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(condition, 'form=human');
+    condition.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await click('Save entry');
+  const saved = loadBibleEntries('n1')[0];
+  expect(saved.aiAccess?.hiddenFields).toContain('body');
+  expect(saved.aiAccess?.hiddenFields).not.toContain('field:Form');
+  expect(saved.aiAccess?.conditions?.['field:Form']).toBe('form=human');
+  expect(saved.revisions[0].state.aiAccess).toBeUndefined();
 });

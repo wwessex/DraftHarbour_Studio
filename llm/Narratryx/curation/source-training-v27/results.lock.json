@@ -1,0 +1,10 @@
+{
+  "artifacts/source-training-v27/protocol.frozen.json": "2e984cf26a7b382da2328e3c6a53d13260c60a7f3e1aaf187c0275ee832bf605",
+  "artifacts/source-training-v27/final-progress.json": "480a1a484242edf8453caf9ec4f80ff9c30224e884e064287dd010667137b0b1",
+  "artifacts/source-training-v27/training.phase.json": "00b7c2e3de8f2cb1047bf068823bc3ffb42d669c17837fba2ad56885a6b04968",
+  "artifacts/source-training-v27/candidate.responses.jsonl": "e073dfefe610496d1bfbdfa7cf3fad93c6b520042b547cc086012a1da7bd4327",
+  "artifacts/source-training-v27/scores.json": "da135feeda2dfb6da61be3bf3a35b1f115dca598130d46072f5e7c50e49477a6",
+  "artifacts/source-training-v27/automatic-decision.json": "5bb8ef3f7f8be5eef6aff53f0a3e3f15fb395d40a5a3ec8112e5225e0758f91a",
+  "artifacts/source-training-v27/experiment-complete.json": "17f12e4f0119992fd876eb48cfc4a3a09ff16bc52f83f3a863898b17ca3c6d48",
+  "artifacts/source-training-v27/adapter/adapters.safetensors": "2cb15cb4b3c004186b19ec8d55178cc99b147f1c2aada36bf1445efd738779c6"
+}

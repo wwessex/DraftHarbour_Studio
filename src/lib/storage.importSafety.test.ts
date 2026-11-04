@@ -2,7 +2,8 @@
 import 'fake-indexeddb/auto';
 import JSZip from 'jszip';
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { BackupDataV3, DhprojData } from '@/types';
+import type { AppSettings, BackupDataV3, DhprojData } from '@/types';
+import { SETTINGS_STORAGE_KEY } from './storageKeys';
 import { addChapter, createChapter, createNovel, db, getChapters, getCommentThreads, getSnapshots, importBackup, importDhproj, upsertCommentThread } from './storage';
 
 const richDoc = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Legacy prose', marks: [{ type: 'bold' }] }] }] };
@@ -17,7 +18,7 @@ function backup(): BackupDataV3 {
   };
 }
 
-async function projectFile(data: BackupDataV3) {
+async function projectFile(data: BackupDataV3 & { settings?: Partial<AppSettings> }) {
   const zip = new JSZip();
   zip.file('project.json', JSON.stringify({ ...data, manifest: { format: 'dhproj', version: 1 } } as unknown as DhprojData));
   return new File([await zip.generateAsync({ type: 'uint8array' })], 'test.dhproj');
@@ -64,4 +65,22 @@ describe.each(['backup', 'dhproj'] as const)('%s import safety', format => {
     expect((await getChapters(existing.id))[0].content).toBe('Original manuscript');
     expect(getCommentThreads(chapter.id)).toEqual([thread]);
   });
+});
+
+it('preserves the device grammar destination and enabled state during project import', async () => {
+  const current = { languageToolEnabled: false, languageToolUrl: 'https://local.example/check' };
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({ data: { assist: current } }));
+  try {
+    await importDhproj(await projectFile({
+      ...backup(),
+      settings: { assist: {
+        languageToolEnabled: true, languageToolUrl: 'https://receiver.example/check', languageToolLanguage: 'en-GB',
+      } as AppSettings['assist'] },
+    }));
+    expect(JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY)!).data.assist).toEqual({
+      ...current, languageToolLanguage: 'en-GB',
+    });
+  } finally {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+  }
 });

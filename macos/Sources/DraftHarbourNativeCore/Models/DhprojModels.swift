@@ -389,6 +389,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
   public var progress: ProgressData?
   public var integrations: [IntegrationType: IntegrationConfig]?
   public var characters: [CharacterEntity]
+  public var bibleEntries: [BibleEntry]
   public var worldEntries: [WorldEntry]
   public var storyBlueprint: StoryBlueprint?
   public var exportHistory: [ExportHistoryRecord]
@@ -410,6 +411,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     case progress
     case integrations
     case characters
+    case bibleEntries
     case worldEntries
     case storyBlueprint
     case exportHistory
@@ -433,6 +435,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     integrations: [IntegrationType: IntegrationConfig]? = nil,
     characters: [CharacterEntity] = [],
     worldEntries: [WorldEntry] = [],
+    bibleEntries: [BibleEntry] = [],
     storyBlueprint: StoryBlueprint? = nil,
     exportHistory: [ExportHistoryRecord] = [],
     aiProviders: [AIProviderConfig] = [],
@@ -453,6 +456,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     self.integrations = integrations
     self.characters = characters
     self.worldEntries = worldEntries
+    self.bibleEntries = bibleEntries
     self.storyBlueprint = storyBlueprint
     self.exportHistory = exportHistory
     self.aiProviders = aiProviders
@@ -476,6 +480,7 @@ public struct DhprojEnvelope: Codable, Equatable, Sendable {
     progress = try container.decodeIfPresent(ProgressData.self, forKey: .progress)
     integrations = try container.decodeIfPresent([IntegrationType: IntegrationConfig].self, forKey: .integrations)
     characters = try container.decodeIfPresent([CharacterEntity].self, forKey: .characters) ?? []
+    bibleEntries = try container.decodeIfPresent([BibleEntry].self, forKey: .bibleEntries) ?? []
     worldEntries = try container.decodeIfPresent([WorldEntry].self, forKey: .worldEntries) ?? []
     storyBlueprint = try container.decodeIfPresent(StoryBlueprint.self, forKey: .storyBlueprint)
     exportHistory = try container.decodeIfPresent([ExportHistoryRecord].self, forKey: .exportHistory) ?? []

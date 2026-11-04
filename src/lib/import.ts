@@ -1,3 +1,4 @@
+import { createZipTextReader, MAX_ZIP_IMPORT_BYTES } from '@/lib/zipImport';
 import type { ProjectType, ScreenplayBlockType } from '@/types';
 import { ContentErrors, reportAppError } from '@/lib/errors';
 
@@ -339,11 +340,12 @@ function parseFountain(text: string): ImportResult {
  * Import DOCX file
  */
 export async function importDocx(file: File): Promise<ParsedChapter[]> {
+  if (file.size > MAX_ZIP_IMPORT_BYTES) throw new Error('DOCX exceeds the 100 MiB import limit.');
   const JSZip = (await import('jszip')).default;
 
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
   const documentFile = zip.file('word/document.xml') ?? zip.file(/^word\/document\d*\.xml$/i)?.[0];
-  const docXml = await documentFile?.async('string');
+  const docXml = documentFile ? await createZipTextReader()(documentFile) : undefined;
 
   if (!docXml) {
     const error = new Error('Invalid DOCX file');

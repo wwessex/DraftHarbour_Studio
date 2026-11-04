@@ -50,7 +50,7 @@ final class WelcomeWindowCoordinator: NSObject, NSWindowDelegate {
     let hostingController = NSHostingController(rootView: makeWelcomeView(showingProjectSetup: showingProjectSetup))
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 760, height: 500),
-      styleMask: [.titled, .closable, .miniaturizable],
+      styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false
     )
@@ -62,6 +62,7 @@ final class WelcomeWindowCoordinator: NSObject, NSWindowDelegate {
 
     self.hostingController = hostingController
     self.window = window
+    NativeOpeningWindowSize.fillUsableScreen(window)
     window.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)
   }

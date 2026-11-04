@@ -1,0 +1,52 @@
+{
+  "status": "corrected-mixed-proposal-not-executed",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "corrected_proposal": "mixed-curriculum-v15b",
+    "training_records": 22,
+    "broader_prose": 14,
+    "semantic_repairs": 5,
+    "structural_edits": 3,
+    "monitor_records": 16,
+    "no_overlapping_training_source_spans": true,
+    "supervised_tokens": 2449,
+    "primary_cases": 44,
+    "new_unrun_primary_cases": 8,
+    "exposed_primary_cases": 36,
+    "seen_training_fit_cases": 5,
+    "proposed_requests": 147,
+    "old_models_and_artifacts_unchanged": true,
+    "training_executed": false,
+    "inference_executed": false,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/mixed-curriculum-v15/preflight.py": "95984a020549fa234d6d0b4febe187d2a540dbc141642a5e9736c257428faab9",
+    "curation/mixed-curriculum-v15/prepare.py": "f9b71fc9ac09f31751a8cc98749139dcc30b6ff6166dfeb50d9e38136fa4128c",
+    "curation/mixed-curriculum-v15/verify.py": "4b1342ff0968ee5f11de858eda9a1e2db76611d0194c721180a6e33374c5f462",
+    "foundation/mixed_curriculum.py": "64e26e4438360b66fa747e3fbab1f62ea76c6135506453f87af60efd8d4d1d8a",
+    "tests/test_mixed_curriculum.py": "80fc00c17e0852678c2a07216c08754cdbe8aaef56174feabafac88c76dc4e54"
+  },
+  "artifact_hashes": {
+    "REVIEW.md": "b1239e3797763e4dfd98facafb2f5e24c4ce2548fa7410be1518e16e56a37ade",
+    "final-verification.json": "c8b339fd2666d1dd317d3827a81d88710db98a6dc55b74d9266935c30b5972e8",
+    "primary.cases.frozen.jsonl": "7f55094751924789c2b7f03874e84d80567d7f3a79ea3215be4f904348c9e034",
+    "protocol.proposed.frozen.json": "cd9266f86efa7fdb6481aff9d55f1aa1ac3f646d2ca2de4bc681bb2d3ebfd8b9",
+    "records.proposed.jsonl": "4952d0c703d2dd3b6dd445863d16430ad497f72593a5cee5dfc860285020d14f",
+    "request.proposed.json": "7e90ab1135829a311dab4437e4d0f6b02b71ecf97497c6cce773b52c2c30e4db",
+    "seen-fit.cases.frozen.jsonl": "56d1a749679002a144f56b6cb7408bcf6c62c72420d74cca93ca68a0b243f2bb",
+    "selection.jsonl": "4e234595dbdd72b91276aa549e1d47ca809b52c6c2ca11cbc921b1d9ffed23e2",
+    "tokenizer-collation-preflight.json": "424f013518a005e5684b33c22fd54583810139bc2317d60c4b269d4911aa4154",
+    "train.tokens.jsonl": "556c5d5cd86f3b917223c34916965d59126dcbe7f753ce8ba82534ccac8fa92d",
+    "validation.tokens.jsonl": "e6122e8e5f312b285b27e408f9e67eb573693f65748b4a4c876665382fe92977",
+    "verification.json": "35371f073a44c10915a742fc174ac277a288064fe33b8a508d4858946028914a"
+  },
+  "tests": {
+    "passed": 209,
+    "elapsed_seconds": 39.119
+  },
+  "human_quality_ratings": 0,
+  "model_promoted": false
+}

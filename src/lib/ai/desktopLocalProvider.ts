@@ -1,3 +1,4 @@
+import { withNaturalWritingStyle } from './writingStyle';
 import { getTauriRuntime } from '@/lib/tauriRuntime';
 import { getManagedPolicy } from '@/lib/policy';
 import type { AIProvider, AIRequest, AIResponse } from './types';
@@ -36,6 +37,7 @@ export class DesktopLocalProvider implements AIProvider {
   readonly supportsStreaming = false;
   isAvailable() { return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window); }
   async execute(request: AIRequest): Promise<AIResponse> {
+    request = withNaturalWritingStyle(request);
     assertLocalAIAllowed();
     const runtime = await getTauriRuntime();
     if (!runtime) throw new Error('Managed local AI requires the desktop app. No text was sent online.');

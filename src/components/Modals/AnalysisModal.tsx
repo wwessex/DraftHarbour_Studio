@@ -1,3 +1,4 @@
+import { LocalAnalysisReview } from './LocalAnalysisReview';
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, Button } from '@/components/UI';
 import { useToast } from '@/components/UI';
@@ -76,6 +77,7 @@ export function AnalysisModal({ open, onClose }: AnalysisModalProps) {
   if (!activeChapter) {
     return (
       <Dialog open={open} onClose={onClose} title="Writing Analysis" size="large">
+        <LocalAnalysisReview open={open} />
         <div className={styles.analysisEmptyState}>
           <span className={`material-symbols-rounded ${styles.analysisEmptyState__icon}`}>analytics</span>
           <p className={styles.emptyMessage}>Select a {sectionLabel} to analyse</p>
@@ -108,6 +110,7 @@ export function AnalysisModal({ open, onClose }: AnalysisModalProps) {
         </div>
       }
     >
+      <LocalAnalysisReview open={open} />
       <div className={styles.analysisGrid}>
         {/* Readability Card */}
         <div className={styles.analysisCard}>

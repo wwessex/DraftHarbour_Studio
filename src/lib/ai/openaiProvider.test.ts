@@ -1,3 +1,4 @@
+import { NATURAL_WRITING_STYLE } from './writingStyle';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { OpenAIProvider } from './openaiProvider';
 import type { AIProviderConfig, AIRequest } from './types';
@@ -185,7 +186,7 @@ describe('OpenAIProvider', () => {
       await provider.execute(makeRequest({ context: '' }));
 
       const body = JSON.parse(mockFetchWithPolicy.mock.calls[0][1]!.body as string);
-      expect(body.messages[1].content).toBe('Continue the story.');
+      expect(body.messages[1].content).toBe(NATURAL_WRITING_STYLE + '\n\nContinue the story.');
     });
 
     it('throws descriptive error when not configured (missing endpoint and key)', async () => {
@@ -205,4 +206,31 @@ describe('OpenAIProvider', () => {
       expect(() => provider.destroy()).not.toThrow();
     });
   });
+});
+
+describe('explicit local-only OpenAI-compatible requests', () => {
+  beforeEach(() => { vi.clearAllMocks(); mockGetManagedPolicy.mockReturnValue({}); });
+  it('uses a tokenless loopback endpoint directly even when a cloud broker is configured', async () => {
+    mockGetBrokerBaseUrl.mockReturnValue('https://broker.example');
+    mockFetchWithPolicy.mockResolvedValue(new Response(JSON.stringify({ choices: [{ message: { content: 'Local reply' } }] }), { status: 200 }));
+    const provider = new OpenAIProvider(makeConfig({ endpoint: 'http://localhost:8080/v1/chat/completions', sessionToken: undefined }), true);
+    const response = await provider.execute(makeRequest());
+    expect(response.text).toBe('Local reply');
+    expect(mockFetchWithPolicy).toHaveBeenCalledWith('http://localhost:8080/v1/chat/completions', expect.objectContaining({ redirect: 'error' }));
+    const { fetchEnvelope } = await import('@/lib/integrations/providerClient');
+    expect(fetchEnvelope).not.toHaveBeenCalled();
+  });
+  it('rejects a remote endpoint in local-only mode', async () => {
+    const provider = new OpenAIProvider(makeConfig(), true);
+    await expect(provider.execute(makeRequest())).rejects.toThrow('loopback');
+    expect(mockFetchWithPolicy).not.toHaveBeenCalled();
+  });
+});
+
+
+it('provides recovery guidance for an unreachable local OpenAI-compatible model', async () => {
+  mockGetManagedPolicy.mockReturnValue({});
+  mockFetchWithPolicy.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+  const provider = new OpenAIProvider(makeConfig({ endpoint: 'http://127.0.0.1:8890/v1/chat/completions' }), true);
+  await expect(provider.execute(makeRequest())).rejects.toThrow('Cannot reach the local AI server at http://127.0.0.1:8890');
 });

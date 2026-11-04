@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Editor } from '@/components/Editor';
 import { Inspector } from '@/components/Inspector';
 import { PanelErrorBoundary } from '@/components/PanelErrorBoundary';
+import { AIChatSidebar } from '@/components/Panels/AIChatSidebar';
 import { AISuggestionsPanel } from '@/components/Panels';
 import { Tooltip } from '@/components/UI/Tooltip';
 import type { VoiceSimilarityAlert } from '@/lib/voiceFingerprint';
@@ -27,6 +28,8 @@ interface AppShellProps {
   sidebarImportBackup: () => void;
   onExportBackup: () => void;
   onToggleSidebar: () => void;
+  aiChatOpen?: boolean;
+  closeAiChat?: () => void;
   aiPanelOpen: boolean;
   closeAiPanel: () => void;
   editor: EditorAdapter | null;
@@ -46,6 +49,8 @@ export function AppShell({
   sidebarImportBackup,
   onExportBackup,
   onToggleSidebar,
+  aiChatOpen = false,
+  closeAiChat = () => {},
   aiPanelOpen,
   closeAiPanel,
   editor: tiptapEditor,
@@ -102,13 +107,15 @@ export function AppShell({
         <PanelErrorBoundary panel="inspector">
           <Inspector open={inspectorOpen} onClose={() => setInspectorOpen(false)} voiceAlerts={voiceAlerts} />
         </PanelErrorBoundary>
+        <AIChatSidebar open={aiChatOpen} onClose={closeAiChat} />
         <AISuggestionsPanel open={aiPanelOpen} onClose={closeAiPanel} editor={tiptapEditor} />
       </main>
 
       <nav className={styles.mobileNav} aria-label={`${appLabel} mobile navigation`}>
         <button
-          className={`${styles.mobileNav__tab} ${!state.settings.sidebarHidden ? styles['mobileNav__tab--active'] : ''}`}
+          className={`${styles.mobileNav__tab} ${!aiChatOpen && !state.settings.sidebarHidden ? styles['mobileNav__tab--active'] : ''}`}
           onClick={() => {
+            closeAiChat();
             if (state.settings.sidebarHidden) onToggleSidebar();
             setInspectorOpen(false);
           }}
@@ -117,8 +124,9 @@ export function AppShell({
           <span>Outline</span>
         </button>
         <button
-          className={`${styles.mobileNav__tab} ${state.settings.sidebarHidden && !inspectorOpen ? styles['mobileNav__tab--active'] : ''}`}
+          className={`${styles.mobileNav__tab} ${!aiChatOpen && state.settings.sidebarHidden && !inspectorOpen ? styles['mobileNav__tab--active'] : ''}`}
           onClick={() => {
+            closeAiChat();
             if (!state.settings.sidebarHidden) onToggleSidebar();
             setInspectorOpen(false);
           }}
@@ -127,14 +135,23 @@ export function AppShell({
           <span>Write</span>
         </button>
         <button
-          className={`${styles.mobileNav__tab} ${inspectorOpen ? styles['mobileNav__tab--active'] : ''}`}
+          className={`${styles.mobileNav__tab} ${!aiChatOpen && inspectorOpen ? styles['mobileNav__tab--active'] : ''}`}
           onClick={() => {
+            closeAiChat();
             if (!state.settings.sidebarHidden) onToggleSidebar();
             setInspectorOpen(prev => !prev);
           }}
         >
           <span className="material-symbols-rounded">info</span>
           <span>Inspector</span>
+        </button>
+        <button
+          className={`${styles.mobileNav__tab} ${aiChatOpen ? styles['mobileNav__tab--active'] : ''}`}
+          onClick={() => onAction(COMMAND_IDS.AI_CHAT)}
+          aria-pressed={aiChatOpen}
+        >
+          <span className="material-symbols-rounded">chat</span>
+          <span>AI Chat</span>
         </button>
       </nav>
     </>

@@ -1,0 +1,11 @@
+{
+  "artifacts/source-training-v45/protocol.frozen.json": "0456e100279c7ed779828e91acd4e4f85e912ad1234884e13a611f34b6a9bc9d",
+  "artifacts/source-training-v45/batch-audit.json": "8b0bfd54937b3674686db253eb76b277ce344626222230538421f030804403c3",
+  "artifacts/source-training-v45/final-progress.json": "8448bd783702097d05ba6b16511ee65bdf91063d1f42dcdbdb81188bf3e7edd8",
+  "artifacts/source-training-v45/candidate.responses.jsonl": "d4284c6b57cee7fa12996cfd0f1bd756c81daf69fa36d5f18d619414d633b94d",
+  "artifacts/source-training-v45/automatic-decision.json": "4b0eda9da5de5e2f2cdc324d11abca3f7f5e1ee1420bf7fe1df695673ba46958",
+  "artifacts/source-training-v45/scores.json": "dd9fe56d1ba2cebf8d32cc2f4af5b2cf7aeb9cb7fa04cb25f933d2aa249fdf53",
+  "artifacts/source-training-v45/adapter/adapters.safetensors": "d8c4eaaf6dc73c1c1716d18ffd8482e1463b469b85ea6a819dce7b2635e26eb9",
+  "artifacts/limited-observation-v45/comparison.json": "3aee64bf22e27152796bf08fddac10131cb1df142f1e5d6b0359b1756c70fd85",
+  "artifacts/limited-observation-v45/candidate.responses.jsonl": "ee9210e8f3a99ded581c6da77336e9d1c24fd910bd3f0c456e45c34d2bffc78b"
+}

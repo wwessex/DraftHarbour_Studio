@@ -72,6 +72,7 @@ struct ToolPanelView: View {
   @State private var storyTab = StoryCardTab.all
   @State private var storySearch = ""
   @State private var expandedStoryCardID: String?
+  @State private var showStoryEntries = true
   @State private var selectedCharacterID: String?
   @State private var selectedWorldEntryID: String?
   @State private var replyDrafts: [String: String] = [:]
@@ -258,11 +259,11 @@ struct ToolPanelView: View {
     case .integrations:
       integrationsContent
     case .aiChat:
-      AIChatPanelView(store: store, focusEditProposal: focusEditProposal)
+      Button("Open AI Chat Sidebar") { runCommand(.aiChat) }
     case .ai:
       aiContent
     case .aiSuggestions:
-      aiSuggestionsContent
+      Button("Open AI Suggestions Sidebar") { runCommand(.aiSuggestions) }
     case .publishingAssistant:
       publishingAssistantContent
     case .gettingStarted:
@@ -851,6 +852,7 @@ struct ToolPanelView: View {
     ]
 
     return VStack(alignment: .leading, spacing: 16) {
+      LocalAnalysisReviewView(store: store)
       if store.activeSection == nil {
         ContentUnavailableView("No Section Selected", systemImage: "doc.text.magnifyingglass")
       } else {
@@ -1211,6 +1213,17 @@ struct ToolPanelView: View {
   }
 
   private var characterBibleContent: some View {
+    VStack(alignment: .leading) {
+      Picker("Story Bible", selection: $showStoryEntries) {
+        Text("Story entries").tag(true)
+        Text("Characters & World").tag(false)
+      }.pickerStyle(.segmented)
+      if showStoryEntries { StoryBibleView(store: store) }
+      else { legacyCharacterBibleContent }
+    }
+  }
+
+  private var legacyCharacterBibleContent: some View {
     HStack(alignment: .top, spacing: 18) {
       storyBibleListColumn(
         title: "Characters",
@@ -1946,70 +1959,9 @@ struct ToolPanelView: View {
     }
   }
 
-  private var aiSuggestionsContent: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      writingActionsContent
-
-      GroupBox("Quick Actions") {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 10)], spacing: 10) {
-          aiSuggestionButton("Revise", systemImage: "wand.and.stars", stageID: "revise")
-          aiSuggestionButton("Strengthen", systemImage: "bolt", stageID: "revise", prompt: "Make the current section more vivid with stronger verbs, sensory details, and clearer stakes.")
-          aiSuggestionButton("Shorten", systemImage: "arrow.down.forward.and.arrow.up.backward", stageID: "revise", prompt: "Tighten the current section to half its length without losing meaning.")
-          aiSuggestionButton("Brainstorm Plot", systemImage: "lightbulb", stageID: "continue", prompt: "Suggest three surprising plot developments that could happen next.")
-          aiSuggestionButton("Scene Outline", systemImage: "list.number", stageID: "continue", prompt: "Create a five-beat outline for the current scene.")
-        }
-      }
-
-      GroupBox("Custom Prompt") {
-        VStack(alignment: .leading, spacing: 10) {
-          TextField("Ask for a rewrite, brainstorm, critique, or continuation", text: $aiPrompt, axis: .vertical)
-            .lineLimit(3...6)
-          HStack {
-            Picker("Insertion", selection: $insertionMode) {
-              ForEach(PipelineInsertionMode.allCases, id: \.self) { mode in
-                Text(mode.rawValue.capitalized).tag(mode)
-              }
-            }
-            .frame(width: 220)
-            Button(isGenerating ? "Generating..." : "Run Prompt") {
-              selectedStageID = "continue"
-              Task { await runAIWorkflow() }
-            }
-            .disabled(isGenerating || store.activeSection == nil)
-          }
-        }
-      }
-
-      if !aiResult.isEmpty {
-        GroupBox("Latest Suggestion") {
-          Text(aiResult)
-            .textSelection(.enabled)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-      }
-
-      if let aiError {
-        Text(aiError)
-          .foregroundStyle(.red)
-      }
-    }
-  }
-
   private var writingActionsContent: some View {
     WritingAssistantView(store: store, editorSelection: editorSelection,
       configuredProvider: { try saveAIProviderConfig() })
-  }
-
-  private func aiSuggestionButton(_ title: String, systemImage: String, stageID: String, prompt: String = "") -> some View {
-    Button {
-      selectedStageID = stageID
-      aiPrompt = prompt
-      Task { await runAIWorkflow() }
-    } label: {
-      Label(title, systemImage: systemImage)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    .disabled(isGenerating || store.activeSection == nil)
   }
 
   private var publishingAssistantContent: some View {
@@ -2396,8 +2348,7 @@ struct ToolPanelView: View {
       account: config.accessTokenKeychainAccount,
       tokenStore: KeychainClient.shared
     )) ?? ""
-    let scrivenerConfig = store.integrationConfig(for: .scrivener)
-    scrivenerPath = scrivenerConfig.syncFolderPath ?? scrivenerConfig.folderId ?? UserDefaults.standard.string(forKey: "DraftHarbour.scrivener.path") ?? ""
+    scrivenerPath = UserDefaults.standard.string(forKey: "DraftHarbour.scrivener.localPath") ?? ""
     let googleConfig = store.integrationConfig(for: .googleDrive)
     googleDriveClientID = googleConfig.clientId ?? UserDefaults.standard.string(forKey: "DraftHarbour.googleDrive.clientId") ?? NativeOAuthDefaults.googleClientID
     let dropboxConfig = store.integrationConfig(for: .dropbox)
@@ -2439,7 +2390,7 @@ struct ToolPanelView: View {
   }
 
   private func saveScrivenerConfig(status: String? = nil) -> IntegrationConfig {
-    UserDefaults.standard.set(scrivenerPath, forKey: "DraftHarbour.scrivener.path")
+    UserDefaults.standard.set(scrivenerPath, forKey: "DraftHarbour.scrivener.localPath")
     let config = IntegrationConfig(
       type: .scrivener,
       enabled: !scrivenerPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -2678,19 +2629,21 @@ struct ToolPanelView: View {
 
     let id = selectedAIProviderID ?? makeIdentifier()
     let existing = store.envelope.aiProviders.first { $0.id == id }
-    let keychainAccount = aiAPIKey.isEmpty ? existing?.keychainAccount : "ai-provider-\(id)"
-    if !aiAPIKey.isEmpty, let keychainAccount {
-      try KeychainClient.shared.setSecret(aiAPIKey, account: keychainAccount)
-    }
     let label = aiProviderLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Native AI" : aiProviderLabel
-    let config = AIProviderConfig(
+    var config = AIProviderConfig(
       id: id,
       provider: aiProviderType,
       label: label,
       endpoint: aiEndpoint,
       model: aiModel,
-      keychainAccount: keychainAccount
+      keychainAccount: existing?.keychainAccount
     )
+    if !aiAPIKey.isEmpty {
+      let account = NativeAIProviderFactory.credentialAccount(for: config)
+      try KeychainClient.aiCredentials.setSecret(aiAPIKey, account: account)
+      config.keychainAccount = account
+      aiAPIKey = ""
+    }
     store.upsertAIProvider(config)
     selectedAIProviderID = config.id
     return config
@@ -2782,10 +2735,10 @@ struct ToolPanelView: View {
       let response = try await provider.generate(
         AIRequest(
           prompt: prompt,
-          context: section.content,
+          context: AIWorkflowServices.storyBibleReferences(envelope: store.envelope, query: String((section.content ?? "").suffix(2000))),
           projectType: store.projectType,
           sectionTitle: section.title,
-          model: aiModel
+          model: config.model
         )
       )
       aiResult = response.text

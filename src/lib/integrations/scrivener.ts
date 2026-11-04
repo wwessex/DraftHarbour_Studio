@@ -4,6 +4,7 @@
  * reading content files. Exports chapters as a .scriv-compatible ZIP.
  */
 
+import { createZipTextReader, MAX_ZIP_IMPORT_BYTES } from '@/lib/zipImport';
 import type { Chapter, IntegrationConfig } from '@/types';
 import { normalizeProviderPullResponse } from './orchestration';
 import type { IntegrationAdapter, ProviderDocument, ProviderPayload, RemoteRevision } from './types';
@@ -128,30 +129,6 @@ function pickScrivFile(): Promise<File> {
 }
 
 /**
- * Read entries from a ZIP file using the browser's native capabilities.
- * Falls back to manual ZIP parsing for basic .scriv structures.
- */
-async function readZipEntries(file: File): Promise<Map<string, string>> {
-  // Use JSZip if available (it's already a project dependency)
-  const JSZip = (await import('jszip')).default;
-  const zip = await JSZip.loadAsync(file);
-
-  const entries = new Map<string, string>();
-  const fileEntries = Object.entries(zip.files).filter(([, entry]) => !entry.dir);
-
-  for (const [path, entry] of fileEntries) {
-    try {
-      const content = await entry.async('string');
-      entries.set(path, content);
-    } catch {
-      // Skip binary files that can't be read as text
-    }
-  }
-
-  return entries;
-}
-
-/**
  * Generate a .scriv-compatible ZIP for export.
  */
 async function generateScrivZip(
@@ -249,23 +226,18 @@ export const scrivenerAdapter: IntegrationAdapter = {
     // Open file picker for the user to select a .scriv ZIP
     const file = await pickScrivFile();
 
-    // Read the ZIP contents
-    const entries = await readZipEntries(file);
+    if (file.size > MAX_ZIP_IMPORT_BYTES) throw new Error('Scrivener archive exceeds the 100 MiB import limit.');
+    const JSZip = (await import('jszip')).default;
+    const zip = await JSZip.loadAsync(file);
+    const readText = createZipTextReader();
 
-    // Find the .scrivx manifest file
-    let scrivxContent: string | null = null;
-    let basePath = '';
-    for (const [path, content] of entries) {
-      if (path.endsWith('.scrivx')) {
-        scrivxContent = content;
-        basePath = path.substring(0, path.lastIndexOf('/') + 1);
-        break;
-      }
-    }
-
-    if (!scrivxContent) {
+    const manifest = zip.file(/\.scrivx$/)[0];
+    if (!manifest) {
       throw new Error('Invalid Scrivener project: no .scrivx manifest found in the ZIP file.');
     }
+    const scrivxContent = await readText(manifest);
+    if (!scrivxContent) throw new Error('Invalid Scrivener project: empty .scrivx manifest.');
+    const basePath = manifest.name.slice(0, manifest.name.lastIndexOf('/') + 1);
 
     // Parse the binder structure
     const binderItems = parseScrivxBinder(scrivxContent);
@@ -281,8 +253,11 @@ export const scrivenerAdapter: IntegrationAdapter = {
 
     // Read content for each text item
     const remoteDocs: ProviderDocument[] = [];
+    const seenItems = new Set<string>();
     for (let i = 0; i < textItems.length; i++) {
       const item = textItems[i];
+      if (seenItems.has(item.uuid)) throw new Error('Invalid Scrivener project: duplicate binder identifier.');
+      seenItems.add(item.uuid);
       let body = '';
 
       // Try multiple content file locations (Scrivener uses different structures)
@@ -294,7 +269,9 @@ export const scrivenerAdapter: IntegrationAdapter = {
       ];
 
       for (const contentPath of contentPaths) {
-        const fileContent = entries.get(contentPath);
+        const entry = zip.file(contentPath);
+        if (!entry) continue;
+        const fileContent = await readText(entry);
         if (fileContent) {
           body = contentPath.endsWith('.rtf') ? rtfToPlainText(fileContent) : fileContent;
           break;

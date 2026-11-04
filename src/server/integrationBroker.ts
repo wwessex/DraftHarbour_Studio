@@ -1,8 +1,9 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { Chapter, IntegrationConfig } from '../types';
 import type { ProviderErrorCode, ProviderErrorPayload, ProviderPayload, ProviderResponseEnvelope } from '../lib/integrations/types';
 import { DEFAULT_RETRY_POLICY, fetchWithPolicy, mapStatusToProviderError } from '../lib/integrations/providerClient';
 
-interface BrokerRequest { method: string; path: string; body: unknown; }
+interface BrokerRequest { method: string; path: string; body: unknown; authorization?: string; }
 interface BrokerResponse { status: number; body: unknown; }
 
 class BrokerError extends Error {
@@ -358,9 +359,18 @@ async function dropboxPull(config: IntegrationConfig, localChapters: Chapter[]) 
   return simpleMergePull(localChapters, remoteDocs, 'dropbox-broker');
 }
 
-async function generateAI(body: Record<string, unknown>) {
-  const apiKey = process.env.BROKER_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+function requireFundedAccess(authorization: string | undefined) {
+  const token = process.env.BROKER_AI_AUTH_TOKEN;
+  const digest = (value: string) => createHash('sha256').update(value).digest();
+  if (!token || !authorization || !timingSafeEqual(digest(authorization), digest(`Bearer ${token}`))) {
+    throw brokerError(401, 'Server-funded development AI requires an authorized bearer token.');
+  }
+}
+
+async function generateAI(body: Record<string, unknown>, authorization?: string) {
+  const apiKey = process.env.BROKER_OPENAI_API_KEY;
   if (!apiKey) throw brokerError(503, 'Server AI key is not configured.', 'PROVIDER_UNAVAILABLE');
+  requireFundedAccess(authorization);
   const response = await fetchWithPolicy('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -373,12 +383,12 @@ async function generateAI(body: Record<string, unknown>) {
 
 const MAX_INPUT_CHARS = 12000;
 
-async function generateServerProxy(body: Record<string, unknown>) {
+async function generateServerProxy(body: Record<string, unknown>, authorization?: string) {
   const provider = body.provider as string;
   const model = body.model as string;
   const prompt = body.prompt as string;
   const projectType = (body.projectType as string) || 'book';
-  const userApiKey = body.userApiKey as string | undefined;
+  const userApiKey = typeof body.userApiKey === 'string' ? body.userApiKey.trim() : '';
 
   if (!provider || !model || !prompt) throw brokerError(400, 'Missing required fields: provider, prompt, model.');
   if (prompt.length > MAX_INPUT_CHARS) throw brokerError(400, `Input exceeds maximum length of ${MAX_INPUT_CHARS} characters.`);
@@ -390,6 +400,7 @@ async function generateServerProxy(body: Record<string, unknown>) {
   const resolveKey = (envVar: string): string => {
     const key = userApiKey || process.env[envVar];
     if (!key) throw brokerError(503, `No API key configured for ${provider}. Set ${envVar} env variable or provide your own key.`, 'PROVIDER_UNAVAILABLE');
+    if (!userApiKey) requireFundedAccess(authorization);
     return key;
   };
 
@@ -471,8 +482,8 @@ export async function handleBrokerRequest(request: BrokerRequest): Promise<Broke
       }
       throw brokerError(404, `Unsupported provider: ${provider}`, 'NOT_FOUND');
     }
-    if (request.path === '/api/ai/generate') return { status: 200, body: toSuccess(await generateAI(body)) };
-    if (request.path === '/api/chat') return { status: 200, body: toSuccess(await generateServerProxy(body)) };
+    if (request.path === '/api/ai/generate') return { status: 200, body: toSuccess(await generateAI(body, request.authorization)) };
+    if (request.path === '/api/chat') return { status: 200, body: toSuccess(await generateServerProxy(body, request.authorization)) };
     return null;
   } catch (error) {
     if (error instanceof BrokerError) return { status: error.error.status, body: toError(error.error) };

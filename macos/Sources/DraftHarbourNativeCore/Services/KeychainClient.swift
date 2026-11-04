@@ -4,6 +4,8 @@ import Security
 public final class KeychainClient: @unchecked Sendable {
   public static let shared = KeychainClient(service: "DraftHarbourNative")
 
+  public static let aiCredentials = KeychainClient(service: "DraftHarbourNative.AI")
+
   private let service: String
 
   public init(service: String) {

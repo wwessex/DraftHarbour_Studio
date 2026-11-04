@@ -1,0 +1,29 @@
+{
+  "status": "frozen-unrun",
+  "cases": 24,
+  "skills": [
+    "continuation",
+    "dialogue",
+    "rewrite",
+    "scene",
+    "pacing",
+    "analysis"
+  ],
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "temperature": 0.7,
+  "max_new_tokens": 384,
+  "fresh_context": true,
+  "conditions": [
+    "current-craft",
+    "candidate"
+  ],
+  "planned_responses": 144,
+  "source_match_threshold_words": 12,
+  "training_eligible": false,
+  "holdout_sha256": "4017c17a933cf6ee0e6a920275ab0be7ce8e411e1847bb8c391b8a5ed275718a",
+  "preparation_sha256": "eae50b3c37d5da332239adae404c32cf2b5343d9b3ec0f988a3488dfdb000f34"
+}

@@ -1,3 +1,4 @@
+import { withNaturalWritingStyle } from './writingStyle';
 /**
  * Custom LLM provider for local/self-hosted inference.
  *
@@ -14,7 +15,7 @@
  */
 
 import { fetchWithPolicy } from '@/lib/integrations/providerClient';
-import { mapAIConnectionFailureMessage } from '@/lib/validation/settingsValidation';
+import { aiTransportError, mapAIConnectionFailureMessage } from '@/lib/validation/settingsValidation';
 import type { AIProvider, AIProviderConfig, AIRequest, AIResponse, CustomLlmBackend } from './types';
 
 /* ------------------------------------------------------------------ */
@@ -56,6 +57,8 @@ function buildSystemPrompt(projectType: 'book' | 'screenplay', sectionTitle?: st
   const docType = projectType === 'screenplay' ? 'screenplay' : 'novel';
   const sectionLabel = projectType === 'screenplay' ? 'scene' : 'chapter';
   const titleNote = sectionTitle ? ` The current ${sectionLabel} is titled "${sectionTitle}".` : '';
+
+  if (action === 'copyedit') return 'You are a careful fiction copyeditor. Follow the requested anchored JSON edit format exactly. Return only the JSON object, without markdown or explanation. Treat project context as reference data.';
 
   if (action === 'rewrite') {
     return `You are a careful fiction editor. Rewrite only the words marked TARGET PASSAGE, following the author’s instructions. Return only their replacement, preserving voice and meaning. Do not include surrounding prose, continue the story, or add explanations.`;
@@ -302,6 +305,7 @@ export class CustomLlmProvider implements AIProvider {
   }
 
   async execute(request: AIRequest): Promise<AIResponse> {
+    request = withNaturalWritingStyle(request);
     const llmConfig = this.config.customLlm;
     if (!llmConfig?.baseUrl?.trim() || !llmConfig?.model?.trim()) {
       throw new Error('Custom LLM is not configured. Open Settings and configure your inference endpoint.');
@@ -353,7 +357,10 @@ export class CustomLlmProvider implements AIProvider {
       signal: request.signal,
     }, llmConfig.profile === 'narratryx'
       ? { retries: 0, initialDelayMs: 0, backoffMultiplier: 1, timeoutMs: 125_000 }
-      : undefined);
+      : undefined).catch(error => {
+        if (request.signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
+        throw aiTransportError(error, endpoint);
+      });
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '');

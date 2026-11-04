@@ -1,8 +1,43 @@
+import ZIPFoundation
 import AppKit
 import DraftHarbourNativeCore
 import XCTest
 
 final class ImportExportParityTests: XCTestCase {
+  func testScrivenerExportContainsTitleAndIdentifierPaths() throws {
+    let parent = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: parent) }
+    let output = parent.appendingPathComponent("package", isDirectory: true)
+    var envelope = DhprojCodec.newProject(title: "Scrivener")
+    envelope.sections[0].id = "../victim"
+    envelope.sections[0].title = ""
+    envelope.sections[0].content = "Safe text"
+
+    try ScrivenerPackageExporter().exportPlainTextFiles(envelope, to: output)
+    XCTAssertFalse(FileManager.default.fileExists(atPath: parent.appendingPathComponent("victim.txt").path))
+    XCTAssertEqual(try String(contentsOf: output.appendingPathComponent("..-victim.txt"), encoding: .utf8), "Safe text")
+
+    envelope.sections[0].title = "Chapter One"
+    try ScrivenerPackageExporter().exportPlainTextFiles(envelope, to: output)
+    XCTAssertEqual(try String(contentsOf: output.appendingPathComponent("Chapter One.txt"), encoding: .utf8), "Safe text")
+  }
+
+  func testDOCXRejectsOversizedCompressedXML() throws {
+    let archive = try Archive(data: Data(), accessMode: .create)
+    let oversized = 100 * 1024 * 1024 + 1
+    try archive.addEntry(with: "word/document.xml", type: .file,
+                         uncompressedSize: Int64(oversized), compressionMethod: .deflate) { _, size in
+      Data(repeating: 65, count: size)
+    }
+    let data = try XCTUnwrap(archive.data)
+    XCTAssertLessThan(data.count, oversized)
+    XCTAssertThrowsError(try DOCXImporter().importDocument(
+      data: data, filename: "oversized.docx", projectId: "project", projectType: .book
+    )) { error in
+      XCTAssertEqual((error as? CocoaError)?.code, .fileReadTooLarge)
+    }
+  }
+
   func testSupportedImportsAppendSectionsAndPreserveProjectMetadata() throws {
     let store = ProjectStore(envelope: DhprojCodec.newProject(title: "Import", projectType: .book))
     let projectId = store.envelope.project.id

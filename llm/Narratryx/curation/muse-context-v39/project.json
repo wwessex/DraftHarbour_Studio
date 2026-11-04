@@ -1,0 +1,23 @@
+{
+  "id": "muse-context-v39-harbour",
+  "training_eligible": false,
+  "chapters": [
+    {"title": "The exchange", "text": "Ada carried the brass token down to the harbour. She traded it to Ilan for the red dispatch ribbon and watched him leave with the token. She tucked the ribbon inside her cuff."},
+    {"title": "The night crossing", "text": "Ilan left before the tide turned. The harbour clerk reminded Ada that a red dispatch ribbon can summon the ferry but does not grant boarding. Ada promised to show the ribbon and wait for the ferryman's answer."},
+    {"title": "The waiting boat", "text": "Ada stepped out of the rain. The boat waited beyond the rail. A lamp moved inside its cabin."}
+  ],
+  "entries": [
+    {"title": "Ada", "aliases": ["Ada"], "body": "Ada traded away the brass token. She still has the red dispatch ribbon in her cuff.", "hidden": false},
+    {"title": "Clerk's rule", "aliases": ["ferryman", "ribbon"], "body": "A red dispatch ribbon can summon the ferry but does not grant boarding. Ada must wait for the ferryman’s answer.", "hidden": false},
+    {"title": "Ilan", "aliases": [], "body": "Ilan left before the tide turned and carries the brass token.", "hidden": false},
+    {"title": "Author's reveal", "aliases": ["Ada", "ferryman"], "body": "PRIVATE_V39: the ferryman is Ada’s missing brother.", "hidden": true},
+    {"title": "Night signal", "aliases": ["lamp"], "body": "NIGHT_V39: after dark, a lamp held low asks the ferryman to wait.", "condition": "light=night", "hidden": false},
+    {"title": "Day signal", "aliases": ["lamp"], "body": "DAY_V39: in daylight, a yellow pennant requests a cargo inspection.", "condition": "light=day", "hidden": false},
+    {"title": "Market customs", "aliases": [], "body": "The market sells candles on Thursdays. A different clerk keeps the inventory.", "hidden": false}
+  ],
+  "cases": [
+    {"id": "v39-continue", "action": "continue", "scene": {"light": "night"}, "query": "Ada uses the red ribbon to summon the ferryman.", "brief": "Continue the current chapter in one paragraph of 80–120 words. Have Ada complete one permitted action and leave boarding undecided. Keep viewpoint on Ada.", "required": [0, 1], "quality": "The ribbon is used to signal. Ada neither uses the traded token nor boards without an answer."},
+    {"id": "v39-write", "action": "write", "scene": {"light": "night"}, "query": "Write a scene with Ada and the lamp at the waiting boat.", "brief": "Write a 100–150 word scene with Ada at the rail. Use a feasible signal and an observable reaction from the boat, leaving the ferryman’s decision open.", "required": [0, 1, 4], "quality": "The action matches the night signal and Ada's established resources. The scene leaves permission and identity open."},
+    {"id": "v39-rewrite", "action": "rewrite", "scene": {}, "query": "Rewrite Ada's encounter with the boat for restrained tension.", "brief": "Rewrite the selected passage for restrained tension. Preserve viewpoint and the unknown source of the lamp movement. Return only the revised paragraph.", "required": [0], "quality": "The paragraph changes cadence while preserving the unknown identity. No conditional signals or hidden information appear."}
+  ]
+}

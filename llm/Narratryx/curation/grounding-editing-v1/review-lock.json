@@ -1,0 +1,8 @@
+{
+  "files": {
+    "artifacts/grounding-editing-v1/REVIEW.md": "672c6b715689ba530fbbc682d76da36fa5c8f348a13b404d1eb5eef8041d14ea",
+    "artifacts/grounding-editing-v1/prose-transfer.evaluation-only.jsonl": "52c34dd0075010a7462fff5f66ee75b6d8863804250ec95df0464fe3c4cf79b4"
+  },
+  "created_on": "2026-10-29",
+  "training": false
+}

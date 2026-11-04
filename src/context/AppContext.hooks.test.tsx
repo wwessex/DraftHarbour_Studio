@@ -207,6 +207,38 @@ describe('AppContext setActiveChapter auto-snapshot', () => {
     );
   });
 
+  it('snapshots and saves an approved inactive-chapter edit without changing selection', async () => {
+    await act(async () => { await app.loadNovel(); app.setActiveChapter('ch-1'); });
+    mocks.createSnapshotMock.mockClear();
+    let saved = false;
+    await act(async () => { saved = await app.applyAIChatEdit('ch-2', 'Chapter two content.', 'Revised chapter two.'); });
+    expect(saved).toBe(true);
+    expect(app.state.activeChapterId).toBe('ch-1');
+    expect(app.state.chapters.find(chapter => chapter.id === 'ch-2')?.content).toBe('Revised chapter two.');
+    expect(mocks.createSnapshotMock).toHaveBeenCalledWith('ch-2', 'Chapter two content.', 'Before AI Chat edit');
+  });
+
+  it('blocks a stale approval and snapshot failures without altering text', async () => {
+    await act(async () => { await app.loadNovel(); });
+    mocks.createSnapshotMock.mockClear();
+    await expect(app.applyAIChatEdit('ch-2', 'Outdated source', 'Replacement')).rejects.toThrow('changed');
+    expect(mocks.createSnapshotMock).not.toHaveBeenCalled();
+    mocks.createSnapshotMock.mockRejectedValueOnce(new Error('Disk unavailable'));
+    await expect(app.applyAIChatEdit('ch-2', 'Chapter two content.', 'Replacement')).rejects.toThrow('Disk unavailable');
+    expect(app.state.chapters.find(chapter => chapter.id === 'ch-2')?.content).toBe('Chapter two content.');
+  });
+
+  it('rechecks source after asynchronous snapshot creation', async () => {
+    await act(async () => { await app.loadNovel(); });
+    let finishSnapshot!: () => void;
+    mocks.createSnapshotMock.mockImplementationOnce(() => new Promise(resolve => { finishSnapshot = () => resolve({ id: 'snap-race', chapterId: 'ch-2', createdAt: Date.now(), doc: 'Chapter two content.' }); }));
+    const pending = app.applyAIChatEdit('ch-2', 'Chapter two content.', 'AI replacement');
+    await act(async () => { app.updateChapter('ch-2', { content: 'Author edited while saving.' }); });
+    const rejected = expect(pending).rejects.toThrow('changed while saving');
+    await act(async () => { finishSnapshot(); await rejected; });
+    expect(app.state.chapters.find(chapter => chapter.id === 'ch-2')?.content).toBe('Author edited while saving.');
+  });
+
   it('updateSettings dispatches SET_SETTINGS', async () => {
     await act(async () => { await app.loadNovel(); });
     const originalGoal = app.state.settings.dailyWordGoal;

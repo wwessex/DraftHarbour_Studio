@@ -1,0 +1,41 @@
+{
+  "status": "preparation-only",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "exact_contiguous_candidates": 5,
+    "one_paragraph_candidates": 4,
+    "three_turn_dialogue_candidates": 1,
+    "full_scene_parents_replaced": 4,
+    "proposal_training_records": 25,
+    "exposed_monitor_records": 16,
+    "answers_are_exact_source_substrings": true,
+    "new_scoped_source_spans": 0,
+    "protected_inputs_and_models_unchanged": true,
+    "new_evaluation_cases_run": 0,
+    "preparation_only": true,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/paragraph-dialogue-v12/preflight.py": "d9bef34dce92bf9571c16629d87fcaf932ba4b9c7a45f6f4f0568e67fccf9985",
+    "curation/paragraph-dialogue-v12/prepare.py": "e682a6f3f1f2fb2532be8d73347360dcb9f1ab3582484a9eb5461fe928abd2a5",
+    "curation/paragraph-dialogue-v12/verify.py": "bb21cc0e3894639396ba4d776716ccdebf611c4bc02f99544727fd350912fe7e",
+    "foundation/paragraph_lessons.py": "091511633003a1527c29b42311b6dfe08f528bc1a206a56ab530155a477251fc",
+    "tests/test_paragraph_lessons.py": "6bf080409b4d0abeb4addb13e202ba1e68c2dedb61f9d367448ae032c1c9a054"
+  },
+  "artifact_hashes": {
+    "REVIEW.md": "ae9b5a97de772654f26f650da602db79da859696c084f4a7fde4565ee7c4f320",
+    "candidates.jsonl": "d4a18e5c888f0f41d6e4253c55489913bb825d89603803fcf3290fcc9a80fc09",
+    "derivations.jsonl": "4c22ebb15378da5005ec77cbd3a4131f72b762ed473c1eec0c1990e7ff1f2193",
+    "final-verification.json": "55c365478f84b531132a6b1c8888bf51adb47357feb6a3fa088ec9ac5e1a7e4f",
+    "records.proposed.jsonl": "da6d1dff420fbd0c9d46d650a9ab57491905fefc1f5fae708b28c303e24ca4b4",
+    "tokenizer-preflight.json": "8ddc465d0cd0c9c1dc8d8c956c2f5a999ef3b8d7a91c02b8908c338402a004af",
+    "verification.json": "f748bdcdf65c2cb5e7a38040dbab894c948bc2bc0d07667bdb503be5988e8e39"
+  },
+  "tests": {
+    "passed": 196,
+    "elapsed_seconds": 39.777
+  },
+  "model_promoted": false
+}

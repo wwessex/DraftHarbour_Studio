@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "url": "https://github.com/wwessex/DraftHarbour_Studio/releases/tag/narratryx-experimental-2026-10-29",
+  "public_prerelease": true,
+  "assets": [
+    {
+      "asset": "narratryx-craft-v1-mlx-adapter.zip",
+      "remote_download_verified": true,
+      "sha256": "1ea95d43b0ea84ef09425cb6e29ac8d310bcddc94e9bcfec97f9bb5c1cedeac1"
+    },
+    {
+      "asset": "narratryx-grounding-v5-mlx-adapter.zip",
+      "remote_download_verified": true,
+      "sha256": "7dc8785c96af50f7443295c7950b1f5099f217534a5a86214f1a5a5315771ee4"
+    }
+  ],
+  "raw_corpus_uploaded": false,
+  "app_defaults_changed": false
+}

@@ -106,3 +106,15 @@ export function mapAIConnectionFailureMessage(details: { status?: number; errorT
 
   return 'Connection failed. Check base URL, model, and credentials.';
 }
+
+/** Turn transport failures into recovery guidance without exposing credentials. */
+export function aiTransportError(error: unknown, endpoint: string): Error {
+  if (!(error instanceof Error)) return new Error('AI request failed. Try again.');
+  if (error.name === 'AbortError') return error;
+  if (!/failed to fetch|fetch failed|networkerror|network request failed|load failed|econnrefused|enotfound/i.test(error.message)) return error;
+  const url = parseHttpUrl(endpoint);
+  const local = url && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  return new Error(local
+    ? `Cannot reach the local AI server at ${url.origin}. Start your local model service, then retry. If it is running, check that its browser access settings allow this app's address. On iOS, this address refers to the iPhone or simulator.`
+    : 'Cannot reach the AI server. Check your connection and endpoint in Settings > AI. If the server is running, check its browser access settings.');
+}

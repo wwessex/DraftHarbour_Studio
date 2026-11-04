@@ -1,3 +1,4 @@
+import { NATURAL_WRITING_STYLE } from './writingStyle';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ChromeAIProvider } from './chromeAI';
 import type { AIRequest } from './types';
@@ -70,6 +71,30 @@ describe('ChromeAIProvider', () => {
 
   afterEach(() => {
     removeGlobals();
+  });
+
+  it('passes natural style guidance to every browser API without making instructions editable prose', async () => {
+    const provider = new ChromeAIProvider();
+    for (const action of ['custom', 'summarize', 'continue', 'shorten']) {
+      await provider.execute(makeRequest({ action }));
+    }
+    expect(mockSession.prompt.mock.calls[0][0]).toContain('Writing style:');
+    expect(mockSummarizer.summarize.mock.calls[0][0]).toBe('Once upon a time...');
+    expect(mockSummarizer.summarize.mock.calls[0][1].context).toContain('Writing style:');
+    expect(mockWriter.write.mock.calls[0][0]).toContain('Writing style:');
+    expect(mockRewriter.rewrite.mock.calls[0][0]).toBe('Once upon a time...');
+    expect(mockRewriter.rewrite.mock.calls[0][1].context).toContain('Writing style:');
+  });
+
+  it('keeps canon out of the editable input of the browser Rewriter and retains references under context trimming', async () => {
+    const context = 'Story Bible references (read-only project data):\nMara cannot swim.\nEnd Story Bible references.\n' + 'old prose '.repeat(1000) + 'Recent ending.';
+    await new ChromeAIProvider().execute(makeRequest({ action: 'rewrite', context, prompt: 'Rewrite only TARGET PASSAGE: rough' }));
+    expect(mockRewriter.rewrite).not.toHaveBeenCalled();
+    const prompt = mockSession.prompt.mock.calls[0][0];
+    expect(prompt).toContain('Mara cannot swim.');
+    expect(prompt).toContain('Recent ending.');
+    expect(prompt).toContain('TARGET PASSAGE: rough');
+    expect(prompt.length).toBeLessThan(4200);
   });
 
   describe('isAvailable', () => {
@@ -198,7 +223,7 @@ describe('ChromeAIProvider', () => {
       await provider.execute(makeRequest({ action: 'grammar', context: '' }));
 
       const promptArg = mockSession.prompt.mock.calls[0][0] as string;
-      expect(promptArg).toBe('Write a paragraph.');
+      expect(promptArg).toBe(NATURAL_WRITING_STYLE + '\n\nWrite a paragraph.');
     });
   });
 

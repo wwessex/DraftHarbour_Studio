@@ -49,6 +49,7 @@ interface AppContextType {
   createChapter: () => Promise<void>;
   deleteChapter: (id: string) => Promise<void>;
   updateChapter: (id: string, updates: Partial<Chapter>) => void;
+  applyAIChatEdit: (chapterId: string, expectedSource: string, replacement: string) => Promise<boolean>;
   updateChapterImmediate: (id: string, updates: Partial<Chapter>) => Promise<void>;
   setActiveChapter: (id: string) => void;
   reorderChapters: (ids: string[]) => Promise<void>;
@@ -302,6 +303,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateChapter: (id: string, updates: Partial<Chapter>) => {
       dispatch({ type: 'UPDATE_CHAPTER', payload: { id, updates } });
       saveQueue.enqueue(id, updates);
+    },
+
+    applyAIChatEdit: async (chapterId: string, expectedSource: string, replacement: string): Promise<boolean> => {
+      const projectId = stateRef.current.novelId;
+      const unchanged = () => stateRef.current.novelId === projectId && stateRef.current.chapters.some(chapter => chapter.id === chapterId && (chapter.content ?? '') === expectedSource);
+      if (!unchanged()) throw new Error('The chapter changed after generation. Generate a fresh proposal.');
+      await storage.createSnapshot(chapterId, expectedSource, 'Before AI Chat edit');
+      if (!unchanged()) throw new Error('The chapter changed while saving its snapshot. Generate a fresh proposal.');
+      const updates = { content: replacement, updatedAt: Date.now() };
+      dispatch({ type: 'UPDATE_CHAPTER', payload: { id: chapterId, updates } });
+      saveQueue.enqueue(chapterId, updates);
+      try { await saveQueue.flush(); return true; }
+      catch (cause) { reportStorageError(`applyAIChatEdit(${chapterId})`, cause); return false; }
     },
 
     updateChapterImmediate: async (id: string, updates: Partial<Chapter>) => {

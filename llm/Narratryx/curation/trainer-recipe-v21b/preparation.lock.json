@@ -1,0 +1,46 @@
+{
+  "status": "explicit-environment-amendment-audited-not-trained",
+  "created_on": "2026-11-01",
+  "verification": {
+    "passed": true,
+    "training_records": 28,
+    "monitor_records": 16,
+    "proposed_max_updates": 28,
+    "supervised_train_tokens": 3033,
+    "supervised_monitor_tokens": 1709,
+    "maximum_record_tokens": 499,
+    "primary_cases": 44,
+    "all_primary_exposed": true,
+    "seen_fit_cases": 5,
+    "proposed_requests": 147,
+    "installed_source_hashes_match": true,
+    "cached_tokenizer_metadata_pinned": true,
+    "exact_token_masks_and_records_verified": true,
+    "prior_evidence_and_models_unchanged": true,
+    "worker_started": false,
+    "weights_loaded": false,
+    "training_executed": false,
+    "inference_requests": 0,
+    "human_quality_ratings": 0,
+    "model_promoted": false
+  },
+  "source_hashes": {
+    "curation/trainer-recipe-v21b/pin_tokenizer.py": "caae29a47a820940c2b3f8651b29c1572ca59e4d61ae921eb4d1a5a5418fd6ce",
+    "curation/trainer-recipe-v21b/verify.py": "4976251df62fafc3085ec53844c3116ac31eab5c8270ed2c567ec15b63845344",
+    "curation/trainer-recipe-v21b/prepare.py": "55d0f48dd0b9df8393a2de878363fc61eb78c171c1ff90a4abbf75c3012daa7c"
+  },
+  "artifact_hashes": {
+    "artifacts/trainer-recipe-v21b/installed-audit.json": "596c2688085cb8ad36365d1a66fd57bf1800f9eb4d3179a167fa5dd5da6de9ea",
+    "artifacts/trainer-recipe-v21b/protocol.proposed.frozen.json": "15cfdba4305ed027194691e60dc6db9c165a2cd29fa939f600335019bd95b506",
+    "artifacts/trainer-recipe-v21b/request.proposed.json": "cd4f3bce524c69f2ee544c83c642ecc741505ca7c13e6406aa2bd403dbc10adf",
+    "artifacts/trainer-recipe-v21b/model-metadata.pins.json": "cc3188b4b2c6646688edc45da722b4bf053eafa976e649ba7306f7151c828f58",
+    "artifacts/trainer-recipe-v21b/worker-config.proposed.json": "c2f66885ff0fd182d1c0da671c8f2160961d3c2fa35041a6c693ca30497fb3cb",
+    "artifacts/trainer-recipe-v21b/seen-fit.cases.frozen.jsonl": "56d1a749679002a144f56b6cb7408bcf6c62c72420d74cca93ca68a0b243f2bb",
+    "artifacts/trainer-recipe-v21b/primary.cases.frozen.jsonl": "294aa3a799788bba1aa0f1fca3080511804eebe8790e896483b19160f00926f5",
+    "artifacts/trainer-recipe-v21b/train.tokens.jsonl": "00d7ebee0ada761d36c8392c19b72e119cbd41a8d948966b5649c2ac9e4db8ac",
+    "artifacts/trainer-recipe-v21b/environment-amendment.json": "65d5aef4fc0c8a84560aef2b28472ca6cf54b093ad7d1bb10a8c0a33539b762f",
+    "artifacts/trainer-recipe-v21b/validation.tokens.jsonl": "e6122e8e5f312b285b27e408f9e67eb573693f65748b4a4c876665382fe92977"
+  },
+  "training_executed": false,
+  "inference_requests": 0
+}

@@ -1,3 +1,4 @@
+import { withNaturalWritingStyle } from './writingStyle';
 /**
  * Chrome Built-in AI provider (Gemini Nano, on-device).
  *
@@ -64,11 +65,21 @@ export class ChromeAIProvider implements AIProvider {
   }
 
   async execute(request: AIRequest): Promise<AIResponse> {
+    request = withNaturalWritingStyle(request);
     const start = Date.now();
-    const route = ACTION_ROUTES[request.action] || 'prompt';
+    // Task-specific browser APIs treat context as editable/summarizable source.
+    // Use the general Prompt API when context contains separate canon references.
+    const hasBibleReferences = request.context.startsWith('Story Bible references (read-only project data):');
+    const route = hasBibleReferences ? 'prompt' : ACTION_ROUTES[request.action] || 'prompt';
 
     // Truncate context for the smaller on-device model
-    const trimmedContext = request.context.slice(-MAX_CONTEXT_CHARS);
+    const referenceEnd = hasBibleReferences ? request.context.indexOf('End Story Bible references.') + 'End Story Bible references.'.length : 0;
+    const references = referenceEnd > 0 ? request.context.slice(0, referenceEnd) : '';
+    const contextBudget = Math.max(0, MAX_CONTEXT_CHARS - request.prompt.length);
+    const remaining = Math.max(0, contextBudget - references.length - 2);
+    const trimmedContext = references
+      ? references + (remaining ? '\n\n' + request.context.slice(referenceEnd).slice(-remaining) : '')
+      : (contextBudget ? request.context.slice(-contextBudget) : '');
     const req: AIRequest = { ...request, context: trimmedContext };
 
     let text: string;
@@ -134,7 +145,7 @@ export class ChromeAIProvider implements AIProvider {
     try {
       return await summarizer.summarize(
         request.context || request.prompt,
-        { signal: request.signal },
+        { signal: request.signal, context: request.prompt },
       );
     } finally {
       summarizer.destroy();

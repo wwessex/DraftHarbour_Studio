@@ -8,3 +8,17 @@ evaluation/runs/
 # Retain downloaded third-party evidence locally; publish only its URL/hash metadata.
 rights/evidence/craft-expansion-2026-10-20/*.html
 rights/evidence/craft-expansion-2026-10-20/*.pdf
+
+# Historical scans/OCR and legal source snapshots remain local.
+rights/evidence/author-revision-followup-2026-10-25/
+rights/evidence/hopkins-candidate-2026-10-26/
+rights/evidence/independent-scenes-2026-10-26/
+rights/evidence/independent-expansion-2026-10-26/
+rights/evidence/substantive-revision-2026-10-26/
+# Exact teaching quotations remain local; tracked packet locks retain their hashes.
+curation/grounding-editing-v1/evidence-specs.json
+
+# Source-expansion scans and provider evidence remain local.
+rights/evidence/source-expansion-2026-11-02/
+# Curriculum-fit source and bibliographic evidence remain local.
+rights/evidence/curriculum-fit-2026-11-02/

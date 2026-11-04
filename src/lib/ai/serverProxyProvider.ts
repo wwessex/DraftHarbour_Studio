@@ -1,3 +1,5 @@
+import { developmentBrokerAuth } from './developmentBrokerAuth';
+import { withNaturalWritingStyle } from './writingStyle';
 /**
  * Server proxy provider.
  *
@@ -69,6 +71,7 @@ export class ServerProxyProvider implements AIProvider {
   }
 
   async execute(request: AIRequest): Promise<AIResponse> {
+    request = withNaturalWritingStyle(request);
     const policy = getManagedPolicy();
     if (policy.forceLocalOnly || policy.disableAIProviders || policy.disabledAIProviderTypes?.includes('server-proxy')) {
       throw new Error('Server proxy AI is disabled by managed policy.');
@@ -235,14 +238,17 @@ export class ServerProxyProvider implements AIProvider {
       body.userApiKey = userApiKey;
     }
 
+    const endpoint = getBrokerEndpoint('/api/chat');
+    const { headers, ...transport } = developmentBrokerAuth(endpoint);
     const envelope = await fetchEnvelope<{
       text: string;
       model: string;
       provider: string;
       usage?: { promptTokens?: number; completionTokens?: number };
-    }>(getBrokerEndpoint('/api/chat'), {
+    }>(endpoint, {
+      ...transport,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
       body: JSON.stringify(body),
       signal: request.signal,
     });

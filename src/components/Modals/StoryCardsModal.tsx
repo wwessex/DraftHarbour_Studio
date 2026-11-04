@@ -208,7 +208,7 @@ export function StoryCardsModal({ open, onClose }: StoryCardsModalProps) {
             <span className="material-symbols-rounded">contact_page</span>
             <p>
               {characters.length === 0 && worldEntries.length === 0
-                ? 'No characters or world entries yet. Add them via the Character & World Bible.'
+                ? 'No characters or world entries yet. Add them via the Story Bible.'
                 : 'No results match your search or filters.'}
             </p>
           </div>
