@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-22.04, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,30 +30,57 @@ jobs:
         run: |
           npm run build
           cargo build --locked --manifest-path desktop/src-tauri/Cargo.toml
-      - name: Launch Windows executable and verify WebView2 renders
+      - name: Launch Linux executable and capture native window
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p smoke
+          timeout 75s xvfb-run -a bash -euo pipefail -c '
+            desktop/src-tauri/target/debug/draftharbour_desktop >smoke/linux.log 2>&1 &
+            app=$!
+            trap "kill $app 2>/dev/null || true" EXIT
+            window=""
+            for attempt in $(seq 1 30); do
+              kill -0 "$app"
+              window=$(xdotool search --onlyvisible --name "^DraftHarbour Studio$" | head -1 || true)
+              if test -n "$window"; then break; fi
+              sleep 1
+            done
+            test -n "$window"
+            sleep 5
+            kill -0 "$app"
+            import -window "$window" smoke/linux.png
+            echo "Found visible DraftHarbour Studio window and a live Tauri process."
+          '
+      - name: Launch Windows executable and capture native window
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -ItemType Directory smoke | Out-Null
-          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=49231'
           $process = Start-Process -FilePath ./desktop/src-tauri/target/debug/draftharbour_desktop.exe -PassThru -RedirectStandardOutput smoke/windows.log -RedirectStandardError smoke/windows-error.log
           try {
-            $ready = $false
-            for ($attempt = 0; $attempt -lt 45; $attempt++) {
+            for ($attempt = 0; $attempt -lt 35; $attempt++) {
               $process.Refresh()
               if ($process.HasExited) { throw "Tauri exited with code $($process.ExitCode)" }
-              try {
-                $page = Invoke-RestMethod http://127.0.0.1:49231/json/list | Where-Object { $_.type -eq 'page' -and $_.title -eq 'DraftHarbour Studio' } | Select-Object -First 1
-                if ($page -and $process.MainWindowHandle -ne 0) {
-                  $env:SMOKE_WS = $page.webSocketDebuggerUrl
-                  node .github/scripts/tauri-webview-smoke.cjs
-                  if ($LASTEXITCODE -eq 0) { $ready = $true; break }
-                }
-              } catch { Write-Host 'Waiting for WebView2' }
+              if ($process.MainWindowTitle -eq 'DraftHarbour Studio' -and $process.MainWindowHandle -ne 0) { break }
               Start-Sleep -Seconds 1
             }
-            if (!$ready) { throw 'Tauri window and rendered WebView2 UI did not become ready.' }
-            Write-Host 'Found a live Tauri process, native window, and rendered application controls.'
+            if ($process.MainWindowTitle -ne 'DraftHarbour Studio') { throw 'Native Tauri window did not become ready.' }
+            Start-Sleep -Seconds 5
+            $process.Refresh()
+            if ($process.HasExited) { throw "Tauri exited with code $($process.ExitCode)" }
+            Write-Host "Found live process $($process.Id) with window $($process.MainWindowTitle)."
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
+            $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $image = [System.Drawing.Bitmap]::new($bounds.Width, $bounds.Height)
+            $graphics = [System.Drawing.Graphics]::FromImage($image)
+            try {
+              $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+              $image.Save((Join-Path $PWD 'smoke/windows.png'))
+            } finally {
+              $graphics.Dispose()
+              $image.Dispose()
+            }
           } finally {
             if (!$process.HasExited) { Stop-Process -Id $process.Id }
           }
