@@ -67,3 +67,90 @@ Follow-up local checks: **1,476 frontend tests** and the frontend CI chain passe
 5. Finish first-run onboarding and multi-window lifecycle checks, then validate on target Windows/Linux/iOS devices. Existing on-device Chrome/Apple providers are not relabelled as the Narratryx adapter. Desktop loopback never means a model on a different computer.
 
 These release gaps do not prevent offline drafting. They must be resolved before advertising a plug-and-play service to ordinary users.
+
+## Native macOS first-run setup — 4 November 2026
+
+The independent native macOS writing assistant now opens local-AI setup when
+there is neither a saved device setup choice nor an enabled existing connection.
+It records AI off (`later`); returning users keep their explicit choice and
+existing connections. **Continue writing without AI** closes setup, and AI setup
+can be reopened later. This change is scoped to the independent native macOS app;
+web/PWA, Windows/Linux Tauri and Capacitor iOS onboarding are unchanged.
+
+Setup checks the installed package off the UI thread without starting inference.
+It distinguishes unchecked, missing, verified, rejected and unsupported packages.
+**Use Narratryx on this computer** is available only after verification and the
+physical-memory check. Generation still performs the runtime's own verification,
+policy and identity checks. Choosing local mode never selects a remote provider
+or falls back online. Existing manual connections require a separate explicit
+choice. Installation and restore do not change the selected provider or model.
+
+The screen explains that the approximately 2.71 GB experimental Craft v1 package
+must already have been obtained separately: it is not bundled in the app/DMG,
+and setup offers no public download. The existing **Install local package…**
+folder picker, verifier, resource checks, confirmation and staged installer are
+reused. Select the complete directory containing `manifest.json`, not an archive
+or a lone weight file. Confirmation reports the actual copy size, required free
+space including the 256 MiB reserve, available disk space and physical memory.
+The 8 GiB rejection floor is not a qualification claim; the existing real-model
+evidence is for one 16 GB development Mac, not every Apple Silicon MacBook Air.
+
+Failures retain the installer error and offer rechecking, choosing a verified
+package again, restoring a previous verified package, or writing without AI.
+Changed/unrecognized installed files can block both replacement and restore;
+setup does not offer deletion or weaken verification. Existing recovery and
+manuscript protections, model identity pins and training restrictions remain.
+
+Remaining release decisions are separate from this UI change: exact artifact
+redistribution rights and notices, approved acquisition/hosting and its costs,
+Developer ID signing/notarization for app and runtime distribution, and target
+hardware qualification. No rights approval, hosting approval, publication,
+model promotion or complete public onboarding service is implied. Crash/power
+loss recovery and multi-window/device qualification remain release work.
+
+Validation on 4 November for this change: the native application compiled with
+Swift 6.4.2/full Xcode on ARM64, and **138 Swift tests passed**, including six new
+setup regressions for first-run/returning preferences, missing → verified →
+missing → restored → rejected package transitions, invalid-source rejection,
+unsupported/low-memory states, acquisition wording and AI-off provider blocking.
+The existing remote-provider privacy, installer recovery and manuscript tests
+also passed. Tests use tiny synthetic packages, not downloaded weights.
+
+The default Swift build engine stalled loading compiler modules from the project
+build cache. Validation succeeded using an external cache and the native build
+engine:
+
+```bash
+swift test --package-path macos \
+  --scratch-path "$HOME/Library/Caches/DraftHarbour/OnboardingValidation" \
+  --build-system native --jobs 4
+```
+
+The first external-cache attempt reported an existing test input modified during
+compilation; the repeat completed successfully. The native build engine is
+itself deprecated by this toolchain. An isolated test app launched, but UI
+inspection was blocked by the desktop capture service's audio/video capture
+failure. Visual layout, actual folder-picker interaction and fresh real-model
+inference were not validated in that initial pass; see the subsequent trial below. No Windows/Linux, web/PWA or iOS
+build/device checks were run for this explicitly native macOS scope.
+
+
+### Subsequent native UI and inference trial — 4 November 2026
+
+A fresh source build succeeded using the same external cache/native build engine.
+A separate ad-hoc-signed **DraftHarbour First Run** app used a fresh bundle
+identifier/preferences and a blank trial project, preserving the regular app's
+preferences and manuscripts. Desktop accessibility inspection subsequently
+succeeded: the new first-run setup was displayed, the existing Craft v1 package
+was reported installed and verified, and AI initially remained off. No package
+was downloaded, bundled, replaced or published for this trial.
+
+After explicit **Use Narratryx on this computer** activation, the writing composer
+generated a short harbour-arrival prose preview through the managed local runtime.
+The preview remained open with **Append to Chapter** and **Discard** available;
+no acceptance action was taken. The editor was empty and both chapter and project
+word counts remained zero. This confirms real local preview generation in the
+updated app, not instruction adherence or literary-quality improvement. The
+folder-picker/install interaction was not repeated; installer regressions used
+synthetic packages. No other platform/device checks or distribution approvals
+were added by this follow-up.

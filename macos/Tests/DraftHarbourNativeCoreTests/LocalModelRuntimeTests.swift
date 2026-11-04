@@ -123,4 +123,76 @@ final class LocalModelRuntimeTests: XCTestCase {
       }
     }
   }
+  func testFirstRunIsOnlyOfferedWithoutAnExistingChoiceOrConnection() {
+    XCTAssertTrue(LocalAISetup.needsFirstRun(storedMode: nil, hasEnabledProviders: false))
+    XCTAssertFalse(LocalAISetup.needsFirstRun(storedMode: nil, hasEnabledProviders: true))
+    for mode in ["later", "local", "existing"] {
+      XCTAssertFalse(LocalAISetup.needsFirstRun(storedMode: mode, hasEnabledProviders: false))
+      XCTAssertFalse(LocalAISetup.needsFirstRun(storedMode: mode, hasEnabledProviders: true))
+    }
+  }
+
+  func testSetupMissingInstallVerifyRejectAndRestoreTransitions() throws {
+    let (source, catalog) = try fixture(), destination = try installDestination()
+    let key = "DraftHarbour.aiSetup.mode"
+    let originalMode = UserDefaults.standard.string(forKey: key)
+    XCTAssertEqual(LocalAISetup.inspect(root: destination, catalog: catalog), .missing)
+    XCTAssertFalse(LocalAISetup.inspect(root: destination, catalog: catalog).canEnable)
+    _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog)
+    XCTAssertEqual(LocalAISetup.inspect(root: destination, catalog: catalog), .verified(NativeLocalModelRuntime.modelID))
+    XCTAssertTrue(LocalAISetup.inspect(root: destination, catalog: catalog).canEnable)
+    // A second verified copy supplies the existing installer's recovery path.
+    _ = try LocalModelInstaller.replace(source: source, destination: destination, catalog: catalog)
+    try FileManager.default.removeItem(at: destination)
+    XCTAssertEqual(LocalAISetup.inspect(root: destination, catalog: catalog), .missing)
+    _ = try LocalModelInstaller.restorePrevious(destination: destination, catalog: catalog)
+    XCTAssertTrue(LocalAISetup.inspect(root: destination, catalog: catalog).canEnable)
+    try Data("changed".utf8).write(to: destination.appendingPathComponent("model.gguf"))
+    let rejected = LocalAISetup.inspect(root: destination, catalog: catalog)
+    guard case .rejected = rejected else { return XCTFail("Changed installed files must be rejected") }
+    XCTAssertFalse(rejected.canEnable)
+    XCTAssertTrue(rejected.message.contains("could not be verified"))
+    XCTAssertEqual(UserDefaults.standard.string(forKey: key), originalMode, "Checking, installing and restoring must never choose a provider")
+  }
+
+  func testSetupRejectsInvalidSourceWithoutEnablingOrCreatingAnInstallation() throws {
+    let (source, catalog) = try fixture(), destination = try installDestination()
+    try Data("changed".utf8).write(to: source.appendingPathComponent("model.gguf"))
+    XCTAssertThrowsError(try LocalModelInstaller.install(source: source, destination: destination, catalog: catalog))
+    XCTAssertEqual(LocalAISetup.inspect(root: destination, catalog: catalog), .missing)
+    XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+  }
+
+  func testSetupUnsupportedAndLowMemoryCannotBeEnabled() throws {
+    let (source, catalog) = try fixture()
+    XCTAssertEqual(LocalAISetup.inspect(root: source, catalog: catalog, platform: "unsupported"), .unsupported)
+    XCTAssertFalse(LocalAISetup.inspect(root: source, catalog: catalog, memory: LocalModelInstaller.minimumMemory - 1).canEnable)
+    XCTAssertTrue(LocalAISetup.inspect(root: source, catalog: catalog, memory: LocalModelInstaller.minimumMemory).canEnable)
+    XCTAssertFalse(LocalAISetup.PackageState.unchecked.canEnable)
+  }
+
+  func testSetupExplainsSeparateAcquisitionAndHardwareLimits() {
+    XCTAssertTrue(LocalAISetup.requirements.contains("not included with the app"))
+    XCTAssertTrue(LocalAISetup.requirements.contains("no public download"))
+    XCTAssertTrue(LocalAISetup.resources.contains("not a performance guarantee"))
+    XCTAssertTrue(LocalAISetup.recovery.contains("continue writing without AI"))
+  }
+
+  func testWritingWithoutAIDisablesBothManagedLocalAndExistingConnections() {
+    let defaults = UserDefaults.standard, key = "DraftHarbour.aiSetup.mode"
+    let original = defaults.string(forKey: key)
+    defer {
+      if let original { defaults.set(original, forKey: key) }
+      else { defaults.removeObject(forKey: key) }
+    }
+    defaults.set("later", forKey: key)
+    let remote = AIProviderConfig(provider: .customLLM, label: "Existing online connection",
+      endpoint: "https://example.test/v1/chat/completions", model: "test")
+    for config in [AIProviderConfig.managedLocalDefault(), remote] {
+      XCTAssertThrowsError(try NativeAIProviderFactory().provider(from: config)) { error in
+        XCTAssertTrue(error.localizedDescription.contains("AI is off"))
+      }
+    }
+  }
+
 }
